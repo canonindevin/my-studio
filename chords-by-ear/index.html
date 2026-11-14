@@ -1,0 +1,493 @@
+<!doctype html><html lang="en"><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>Chords By Ear</title></head><body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: roadmap rail on the left, one lesson at a time on the right; stacks to one column on a phone. */
+:root{
+  --bg:#f3f5f7; --panel:#ffffff; --ink:#15181e; --muted:#5b6472; --line:#d9dee5;
+  --rh:#0e7c74; --lh:#b8610b; --on-mark:#ffffff; --soft:#e6f2f0; --warn:#8a5a00; --warn-bg:#fbf1d9;
+  --key-w:#fbfcfd; --key-b:#1c2027; --key-line:#9aa3af;
+  --display:"Space Grotesk",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#111418; --panel:#1a1e24; --ink:#e8ebef; --muted:#9aa4b2; --line:#2c333d;
+  --rh:#35b8ad; --lh:#e59a3c; --on-mark:#0b0d10; --soft:#17302e; --warn:#f0c46a; --warn-bg:#33290f;
+  --key-w:#dfe3e8; --key-b:#0b0d10; --key-line:#4a5360; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#111418; --panel:#1a1e24; --ink:#e8ebef; --muted:#9aa4b2; --line:#2c333d;
+  --rh:#35b8ad; --lh:#e59a3c; --on-mark:#0b0d10; --soft:#17302e; --warn:#f0c46a; --warn-bg:#33290f;
+  --key-w:#dfe3e8; --key-b:#0b0d10; --key-line:#4a5360; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--body)}
+.wrap{max-width:1120px;margin:0 auto;padding-block:24px 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:1.9rem}
+h2{font-size:1.55rem}
+h3{font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-family:var(--body);font-weight:600}
+p{margin:0}
+.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
+.top p{color:var(--muted);max-width:60ch;margin-top:6px}
+.count{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.9rem}
+.bar{height:6px;width:180px;max-width:100%;background:var(--line);border-radius:3px;margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--rh);width:0}
+.grid{display:grid;grid-template-columns:300px minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+nav details{background:var(--panel);border:1px solid var(--line);border-radius:10px}
+nav summary{cursor:pointer;padding:12px 14px;font-family:var(--display);font-weight:700}
+.lvl{padding:10px 14px;border-top:1px solid var(--line)}
+.lvl b{font-family:var(--display);font-size:.95rem;display:block}
+.lvl small{color:var(--muted);display:block;margin:2px 0 6px;line-height:1.35}
+.lvl ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.lbtn{all:unset;cursor:pointer;display:flex;gap:8px;align-items:baseline;width:100%;box-sizing:border-box;padding:4px 8px;border-radius:6px;font-size:.9rem}
+.lbtn:hover{background:var(--soft)}
+.lbtn[aria-current="true"]{background:var(--soft);font-weight:600}
+.lbtn .tick{width:1em;color:var(--rh);flex:none}
+button:focus-visible,.lbtn:focus-visible,summary:focus-visible{outline:2px solid var(--rh);outline-offset:2px}
+article{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:24px;min-width:0;display:flex;flex-direction:column;gap:22px}
+@media (max-width:500px){article{padding:16px}}
+.eyebrow{color:var(--rh);font-weight:600;font-size:.85rem;margin-bottom:4px}
+section{display:flex;flex-direction:column;gap:8px}
+section p,section li{max-width:66ch}
+section ul,section ol{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px}
+.kbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:6px}
+.kb{min-width:0}
+.kb header{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
+.kb strong{font-family:var(--display)}
+.kb span{color:var(--muted);font-size:.85rem}
+.kb svg{display:block;width:100%;height:auto}
+.kw{fill:var(--key-w);stroke:var(--key-line)} .kbk{fill:var(--key-b);stroke:var(--key-line)}
+.kr{fill:var(--rh)} .kl{fill:var(--lh)} .kt{fill:var(--on-mark);font:600 9px var(--body);text-anchor:middle}
+.kmid{fill:var(--muted);font:8px var(--body);text-anchor:middle}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.82rem;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px}
+.btn{font:500 .85rem var(--body);padding:6px 12px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--rh)}
+.btn.primary{background:var(--rh);color:var(--on-mark);border-color:var(--rh)}
+.btn.sm{padding:3px 9px;font-size:.78rem}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.met{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.85rem}
+.song{border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.song h4{margin:0;font:700 1.05rem var(--display)}
+.song .meta{color:var(--muted);font-size:.88rem}
+.tag{display:inline-block;font-size:.75rem;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--soft);color:var(--rh)}
+.tag.check{background:var(--warn-bg);color:var(--warn)}
+.sec{display:flex;flex-wrap:wrap;gap:6px;align-items:stretch}
+.sec em{font-style:normal;font-size:.8rem;color:var(--muted);width:100%}
+.chip{border:1px solid var(--line);border-radius:6px;padding:5px 9px;min-width:54px;text-align:center}
+.chip b{font-family:var(--display);display:block;font-size:1.05rem}
+.chip small{color:var(--muted);font-size:.72rem;display:block}
+.chip .dots{letter-spacing:2px;color:var(--rh);font-size:.6rem}
+.note{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;margin:0;overflow-wrap:anywhere}
+.foot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:16px}
+.quick{background:var(--soft);border-radius:8px;padding:12px 14px}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Chords By Ear</h1>
+      <p>Ten levels, one 10 to 15 minute lesson at a time, built on the songs you already know. Count keys, play a loop, then tell Claude how it went.</p>
+    </div>
+    <div>
+      <div class="count" id="count"></div>
+      <div class="bar"><i id="bar"></i></div>
+    </div>
+  </div>
+  <div class="grid">
+    <nav><details id="navd"><summary>Roadmap</summary><div id="nav"></div></details></nav>
+    <article id="lesson"></article>
+  </div>
+</div>
+
+<script>
+/* ---------- chord shapes: "semitone+label", 0 = the C below middle C, 12 = middle C ---------- */
+const K={
+ 'C':{r:'12C 16E 19G'}, 'F':{r:'17F 21A 24C'}, 'G':{r:'19G 23B 26D'}, 'Em':{r:'16E 19G 23B'},
+ 'Am':{r:'21A 24C 28E'}, 'Dm':{r:'14D 17F 21A'}, 'D':{r:'14D 18F♯ 21A'}, 'E':{r:'16E 20G♯ 23B'},
+ 'C+':{n:'C, both hands',r:'12C 16E 19G',l:'0C'}, 'G+':{n:'G, both hands',r:'19G 23B 26D',l:'7G'},
+ 'Am+':{n:'Am, both hands',r:'21A 24C 28E',l:'9A'}, 'F+':{n:'F, both hands',r:'17F 21A 24C',l:'5F'},
+ 'F/C':{n:'F (C on the bottom)',r:'12C 17F 21A'}, 'G/B':{n:'G (B on the bottom)',r:'11B 14D 19G'},
+ 'Am/C':{n:'Am (C on the bottom)',r:'12C 16E 21A'}, 'E/B':{n:'E (B on the bottom)',r:'11B 16E 20G♯'},
+ 'Am/Cb':{n:'Am, both hands',r:'12C 16E 21A',l:'9A'}, 'G/Bb':{n:'G, both hands',r:'11B 14D 19G',l:'7G'},
+ 'Dmb':{n:'Dm, both hands',r:'14D 17F 21A',l:'2D'},
+ 'D/A':{n:'D (A on the bottom)',r:'9A 14D 18F♯'},
+ 'A':{n:'A',r:'9A 13C♯ 16E'}, 'E/G#':{n:'E (G♯ on the bottom)',r:'8G♯ 11B 16E'}, 'F#m/A':{n:'F♯m (A on the bottom)',r:'9A 13C♯ 18F♯'},
+ 'A/C#':{n:'A (C♯ on the bottom)',r:'13C♯ 16E 21A'}, 'Em/B':{n:'Em (B on the bottom)',r:'11B 16E 19G'},
+ 'Bb/D':{n:'B♭ (D on the bottom)',r:'14D 17F 22B♭'},
+ 'Bb':{n:'B♭',r:'10B♭ 14D 17F'}, 'Cm':{r:'12C 15E♭ 19G'}, 'Gm/Bb':{n:'Gm (B♭ on the bottom)',r:'10B♭ 14D 19G'},
+ 'F/A':{n:'F (A on the bottom)',r:'9A 12C 17F'}, 'Eb/Bb':{n:'E♭ (B♭ on the bottom)',r:'10B♭ 15E♭ 19G'},
+ 'Fm/C':{n:'Fm (C on the bottom)',r:'12C 17F 20A♭'}, 'Bbm':{n:'B♭m',r:'10B♭ 13D♭ 17F'},
+ 'Fm7':{n:'Fm7 (C on the bottom)',r:'12C 15E♭ 17F 20A♭'}, 'Ab/C':{n:'A♭ (C on the bottom)',r:'12C 15E♭ 20A♭'},
+ 'Am7':{r:'9A 12C 16E 19G'}, 'G7':{r:'7G 11B 14D 17F'}, 'Cmaj7':{r:'12C 16E 19G 23B'},
+ 'oom':{n:'Oom-pah in C: left hand low C, then the chord',r:'12C 16E 19G',l:'0C'}
+};
+
+/* ---------- levels ---------- */
+const LV=[
+ ['Build a chord','Come On Eileen (verse), first taste of Jealous'],
+ ['The four chords','You Say, Noah Kahan'],
+ ['Changing on time','Come On Eileen with the record, Hopeless Wanderer'],
+ ['Inversions','I Never Knew You, You Say made smooth'],
+ ['Accompaniment patterns','You Say, Hopeless Wanderer, Colors'],
+ ['Minor home and loops','Jealous, Dennis Lloyd (Nevermind)'],
+ ['Other keys','Real keys: I Never Knew You, Come On Eileen chorus, You Say, Jealous, Bruno'],
+ ['Sevenths and funk','Jealous, Old 45\'s, Over Your Shoulder, All Night feel'],
+ ['Ear skills 1','Any song: home note, hearing the changes, The Way I Am'],
+ ['Ear skills 2','Colors, The Way I Am, All Night, No Me Diga']
+];
+
+/* ---------- lessons ---------- */
+const L=[
+{id:'1-1',t:'Build a major chord by counting',
+ idea:`A chord is three notes played together. You never memorize one, because there is a recipe. Count every key, black and white: <b>major</b> is your start note, up 4 keys, up 3 more. It sounds bright.`,
+ hands:`Right hand only. Thumb (1), middle (3), pinky (5). Thumb on middle C gives C major. Keep the hand frozen in that shape and slide: thumb on F gives F major, thumb on G gives G major. Count the keys once on each to prove the recipe.`,
+ ch:['C','F','G'], bpm:[60,80],
+ drill:`Metronome on. Play C, F, G, C, holding each for 4 beats. Loop it. Move from 60 to 80 when it feels easy.`,
+ song:{t:'Come On Eileen (verse)',key:'C, same as the record',conf:'ok',note:'Skip the Em line for today if you like; just rest there. It arrives next lesson.',
+  secs:[['Verse','C:4:I Em:4:iii F:4:IV C:2:I G:2:V']]},
+ done:`You can loop C, F, G, C at 80 without stopping, and you can build D major yourself (it needs one black key).`,
+ hard:`You are hunting for each note separately. Freeze the hand shape and move the whole arm, landing all three fingers together. Sloppy and on the beat beats perfect and late.`,
+ quick:`C, F, G, C, four times through, slowly.`, solid:'major recipe (4 + 3); C, F, G'},
+
+{id:'1-2',t:'Minor chords, and your first black keys',
+ idea:`Flip the recipe and the mood flips. <b>Minor</b> is start note, up 3 keys, up 4 more. Same hand shape, the middle note drops by one key. Black keys are just keys you count like any other.`,
+ hands:`Right hand, fingers 1-3-5. Build Am, Dm and Em: all white keys. Then build D major and E major by counting: each needs one black key in the middle (F♯ and G♯). Slide your hand a little deeper into the keys so the middle finger reaches.`,
+ ch:['Am','Dm','Em','D','E'], bpm:[60,80],
+ drill:`Play C major then C minor (lower the middle note one key to E♭). Do the same on D and A. Then loop Am, G, Dm, Am, 4 beats each, 60 up to 80.`,
+ song:{t:'Jealous (I Ain\'t With It), white-key version',key:'A minor here; the record is in F minor (Level 7)',conf:'check',note:'The loop is reported as Fm, E♭, B♭m, Fm7. This is the same loop moved to white keys. I think each chord lasts one bar; you will check that by ear later.',
+  secs:[['The whole song is this loop','Am:4:i G:4:VII Dm:4:iv Am:4:i']]},
+ done:`You can turn any major chord into minor and back without counting, and the Jealous loop runs at 80.`,
+ hard:`Mixing up 4 + 3 and 3 + 4. Say it out loud: "major, big step first." Minor is the small step first.`,
+ quick:`Am, G, Dm, Am twice, humming the chorus.`, solid:'minor recipe (3 + 4); Am, Dm, Em; black keys in D and E'},
+
+{id:'2-1',t:'The four chords: I, V, vi, IV',
+ idea:`In the key of C, number the white notes from C: C is 1, F is 4, G is 5, A is 6. Chords on 1, 4 and 5 are major (I, IV, V). The chord on 6 is minor (vi, lower-case). These four cover a huge share of pop and folk, and the numbers are what let you move a song to any key later.`,
+ hands:`Right hand, 1-3-5, same shape for all four: C, G, Am, F. The jump from C up to G is the big one. Aim your thumb at the new start note and the rest follows.`,
+ ch:['C','G','Am','F'], bpm:[60,84],
+ drill:`Loop C, G, Am, F, 4 beats each. Say the numbers out loud as you land: "one, five, six, four." 60 up to 84.`,
+ song:{t:'You Say',key:'C here; the record is in F (Level 7)',conf:'check',note:'I am confident the song is built from these four chords. The exact order in each section is your first ear check: play the loop and hum; if a spot sounds wrong, try one of the other three chords there.',
+  secs:[['Chorus (try this order)','C:4:I G:4:V Am:4:vi F:4:IV']]},
+ done:`Four clean loops at 84 with no pauses, and you can name each chord's number without thinking.`,
+ hard:`The pause before G. Start moving on beat 4, not after it. If you still stall, practise only C to G, ten times.`,
+ quick:`C, G, Am, F three times, saying the numbers.`, solid:'I, V, vi, IV in C with the right hand'},
+
+{id:'2-2',t:'Left hand joins: root notes',
+ idea:`The left hand plays one note: the chord's name note (the root), lower down. That single low note is what makes it sound like a real accompaniment instead of an exercise.`,
+ hands:`Left hand one octave below middle C. Pinky on that low C. Thumb reaches G. Shift a little for A, and use your index finger for F. One note, held for the whole bar, landing together with the right-hand chord.`,
+ ch:['C+','G+','Am+','F+'], bpm:[56,80],
+ drill:`Left hand alone first: C, G, A, F, 4 beats each. Then both hands. Drop the tempo to 56 when you add the right hand; that is normal.`,
+ song:{t:'A Noah Kahan song of your choice',key:'C here',conf:'ear',note:'His writing leans hard on these four chords. I can\'t vouch for the new album, so test it: play the loop and hum a chorus from Downfall or Doors over it. Report back whether it fits. If it nearly fits, try starting the loop on Am or F instead.',
+  secs:[['Try under a chorus','C:4:I G:4:V Am:4:vi F:4:IV'],['If that feels off, same chords from a different start','Am:4:vi F:4:IV C:4:I G:4:V']]},
+ done:`Both hands land together for four loops at 80.`,
+ hard:`Hands arriving at different times. Look at the left hand only; the right hand shape already knows what to do.`,
+ quick:`Left hand C, G, A, F twice, then both hands once.`, solid:'left-hand roots under the four chords'},
+
+{id:'3-1',t:'Change on the beat, never stop',
+ idea:`A wrong chord on time sounds better than a right chord late. Today's rule: the beat is the boss. If you miss, skip that chord and catch the next one.`,
+ hands:`Both hands. Count "1, 2, 3, 4" out loud. On beat 4 your eyes go to the next chord; on beat 1 you land. The last bar has two chords, 2 beats each: that is the challenge.`,
+ ch:['C','Em','F','G'], bpm:[72,104],
+ drill:`Come On Eileen verse loop with the metronome, 72 up to 104. One chord hit at the start of each bar is enough.`,
+ song:{t:'Come On Eileen (verse), with the record',key:'C, same as the record',conf:'ok',note:'Put the record on and play along. The verse sits at roughly 105 to 110. Sit out the chorus for now: it jumps to another key, which is Level 7.',
+  secs:[['Verse','C:4:I Em:4:iii F:4:IV C:2:I G:2:V']]},
+ done:`You get through a full verse with the record without stopping, even with mistakes.`,
+ hard:`Stopping to fix mistakes. Don't. Leave the mistake behind and land the next beat 1. Fixing happens in the drill, not in the song.`,
+ quick:`One verse with the record. Mistakes allowed, stopping not allowed.`, solid:'changing on beat 1; 2-beat changes'},
+
+{id:'3-2',t:'The chord family, and a five-chord song',
+ idea:`Every key has a family of six chords. In C: C (I), Dm (ii), Em (iii), F (IV), G (V), Am (vi). Majors on 1, 4, 5. Minors on 2, 3, 6. When you work out songs by ear later, you will try these six first.`,
+ hands:`Both hands, right hand 1-3-5, left hand root. Walk up the family: C, Dm, Em, F, G, Am. It is the same shape on every white key.`,
+ ch:['C','Dm','Em','F','G','Am'], bpm:[60,88],
+ drill:`Walk up the family and back down, 2 beats per chord, saying the numbers. 60 up to 88.`,
+ song:{t:'Hopeless Wanderer',key:'C here; the record is in B♭ (Level 7)',conf:'check',note:'Chord sites report the verse moving from I to ii, then through vi, V and IV. The chart below is that shape. Hum the verse and adjust how long each chord lasts.',
+  secs:[['Verse (reported shape)','C:4:I Dm:4:ii C:4:I Dm:4:ii'],['Then','Am:4:vi G:4:V F:4:IV F:4:IV']]},
+ done:`You can name the six family chords in C with their numbers, and play them in any order someone calls out.`,
+ hard:`Forgetting which are minor. On white keys you don't have to remember: the keys make it minor for you. Just remember "2, 3, 6 are the sad ones."`,
+ quick:`Family walk up and down once, saying the numbers.`, solid:'the six-chord family in C'},
+
+{id:'4-1',t:'Inversions: same notes, new order',
+ idea:`A chord is still the same chord if you shuffle its notes. F is F-A-C, but C-F-A is also F. Picking the order closest to where your hand already is means you barely move, and it sounds much more like a real pianist.`,
+ hands:`Right hand stays near middle C the whole time. C is C-E-G (1-3-5). For F, keep your thumb on C and open to C-F-A (1-3-5). For G, drop the thumb one key to B and play B-D-G (1-2-5). The left hand still plays the root.`,
+ ch:['C','F/C','G/B'], bpm:[60,84],
+ drill:`C, F, C, G, 4 beats each, right hand only, without looking away from middle C. Then add left-hand roots C, F, C, G.`,
+ song:{t:'I Never Knew You',key:'C here; the record is in A (Level 7)',conf:'ear',note:'A three-chord song: I, IV and V. I\'m not sure of the order, and that is the exercise. Start each verse line on C. When it sounds like it wants to move, try F, then G. There are only three options.',
+  secs:[['Your three chords','C:4:I F:4:IV G:4:V']]},
+ done:`C to F to G with your hand staying in one place, eyes off the keys for at least one loop.`,
+ hard:`The G shape (B-D-G) feels cramped. Use fingers 1-2-5, not 1-3-5, and let the wrist turn slightly.`,
+ quick:`C, F, C, G with close shapes, four times.`, solid:'close shapes for C, F, G'},
+
+{id:'4-2',t:'The four chords without moving your hand',
+ idea:`Same trick for the full loop. Your thumb moves one key, twice. That is the whole journey.`,
+ hands:`Right hand: C is C-E-G. G is B-D-G (thumb down one key). Am is C-E-A (thumb back up, pinky up one key). F is C-F-A (middle finger up one key). Left hand plays roots C, G, A, F.`,
+ ch:['C','G/B','Am/C','F/C'], bpm:[60,88],
+ drill:`Loop C, G, Am, F with close shapes, 4 beats each. Right hand alone at 60, then both hands up to 88.`,
+ song:{t:'You Say, made smooth',key:'C here',conf:'check',note:'Same chords as Lesson 2-1. Notice how much calmer it sounds when the right hand stays put.',
+  secs:[['Chorus','C:4:I G:4:V Am:4:vi F:4:IV']]},
+ done:`Four loops at 88, both hands, looking at the left hand only.`,
+ hard:`Losing track of which chord you are on because the shapes look alike. Say the chord name on every beat 1.`,
+ quick:`Right hand loop three times with close shapes.`, solid:'four-chord loop with close shapes, both hands'},
+
+{id:'5-1',t:'Pattern 1: block chords and the pedal',
+ idea:`The sustain pedal glues chords together. The trick is the timing: play the new chord first, then change the pedal a split second after. "Play, then pedal."`,
+ hands:`Both hands play a chord on beat 1 and hold. Right foot: heel on the floor. As the new chord sounds, lift the pedal and press it straight back down. If the sound smears, you pressed too early.`,
+ ch:['C','G/B','Am/C','F/C'], bpm:[56,76],
+ drill:`Four-chord loop, one chord per bar, pedal change right after each beat 1. Listen for a clean join with no gap and no blur.`,
+ song:{t:'You Say, ballad style',key:'C here',conf:'check',note:'This is how the record feels: slow, held chords, lots of space.',
+  secs:[['Verse and chorus','C:4:I G:4:V Am:4:vi F:4:IV']]},
+ done:`Four loops with no gaps and no smearing between chords.`,
+ hard:`Foot and hands moving at the same instant, which cuts the sound. Say "play, pedal" out loud as two separate moments.`,
+ quick:`Two loops with pedal, eyes closed on the second.`, solid:'block chords with clean pedal changes'},
+
+{id:'5-2',t:'Pattern 2: steady pulse',
+ idea:`Folk and stomp songs drive forward because the chord repeats on every beat. Left hand lands once per bar; right hand plays four even hits.`,
+ hands:`Left hand: root on beat 1, hold. Right hand: the chord on beats 1, 2, 3, 4, light and even, like a strummed guitar. Keep the wrist loose and bounce from it.`,
+ ch:['C','Dm','Am/C','G/B','F/C'], bpm:[70,110],
+ drill:`Pulse on C alone for four bars, then the four-chord loop. Start at 70. Push toward 110 over a few sessions, not today.`,
+ song:{t:'Hopeless Wanderer, with drive',key:'C here',conf:'check',note:'Same chart as Lesson 3-2. Start soft and get louder into the chorus; that build is the whole Mumford sound.',
+  secs:[['Verse (reported shape)','C:4:I Dm:4:ii C:4:I Dm:4:ii'],['Then','Am:4:vi G:4:V F:4:IV F:4:IV']]},
+ done:`Even pulse through a chord change at 90: no hiccup on beat 1.`,
+ hard:`Tension in the forearm. If it burns, you are pressing from the arm. Play softer and smaller.`,
+ quick:`Pulse the four-chord loop twice at any tempo.`, solid:'steady quarter-note pulse'},
+
+{id:'5-3',t:'Pattern 3: broken chords',
+ idea:`Play the chord's notes one at a time and it turns into a flowing accompaniment. You already did this in Canon in D and Für Elise; now you know what those notes were.`,
+ hands:`Right hand rolls bottom, middle, top, middle, two notes per beat. Left hand holds the root. Pedal as in Lesson 5-1. E major is new in this loop: B, E, G♯, with the black key on top.`,
+ ch:['Am/C','C','G/B','E/B'], bpm:[54,76],
+ drill:`Roll one chord for a full bar: bottom, middle, top, middle, twice. Then the Colors loop below, 54 up to 76.`,
+ song:{t:'Colors',key:'A minor here; the record is reported in F♯ minor',conf:'check',note:'Reported chords are F♯m, A, E, C♯. This is that loop moved to mostly white keys. The record has a walk-up at the end of the loop that we are skipping.',
+  secs:[['Main loop (reported)','Am:4:i C:4:III G:4:VII E:4:V']]},
+ done:`A smooth roll through the whole loop with the pedal, no stumble at the chord change.`,
+ hard:`The roll speeds up. Whisper "1 and 2 and" with the metronome, one note per syllable.`,
+ quick:`Roll Am and C back and forth for one minute.`, solid:'broken-chord pattern; E major'},
+
+{id:'6-1',t:'When home is minor',
+ idea:`Some songs feel at rest on a minor chord. Most of your hip-hop, Chromeo and Dennis Lloyd tracks do. Number from the minor home: in A minor, Am is i, C is III, Dm is iv, E or Em is V, F is VI, G is VII. Same six chords as the C family, with a different one acting as home.`,
+ hands:`Both hands. Right hand close shapes: Am as C-E-A, G as B-D-G, Dm as D-F-A. Left hand roots A, G, D, A.`,
+ ch:['Am/Cb','G/Bb','Dmb'], bpm:[70,112],
+ drill:`Jealous loop, block chords, 70 up to 112. The record is near 128; that speed comes later.`,
+ song:{t:'Jealous (I Ain\'t With It), both hands',key:'A minor here; the record is in F minor',conf:'check',note:'Verse and chorus are reported to share this one loop. Check by ear whether each chord lasts a full bar.',
+  secs:[['Loop','Am:4:i G:4:VII Dm:4:iv Am:4:i']]},
+ done:`You can play the loop at 100 and hum the chorus over it without losing your place.`,
+ hard:`Losing count because the loop starts and ends on Am. Tap your foot and count the bars "1, 2, 3, 4" as well as the beats.`,
+ quick:`Loop twice, both hands.`, solid:'minor-key numbers; Jealous loop in A minor'},
+
+{id:'6-2',t:'Loop songs and the backbeat',
+ idea:`Many of your favourites are one short loop from start to finish. With so few chords, the groove carries it. Split the hands: bass on beats 1 and 3, chord on 2 and 4, where the snare drum lands.`,
+ hands:`Left hand: root on beats 1 and 3. Right hand: chord on 2 and 4, short and crisp. Say "boom, chick, boom, chick." No pedal.`,
+ ch:['Am/C','C','D/A'], bpm:[66,100],
+ drill:`Backbeat on Am alone for four bars. Then the loop below. 66 up to 100, which is the record's tempo.`,
+ song:{t:'Nevermind (Dennis Lloyd)',key:'A minor here; the record is in F minor',conf:'check',note:'Reported chords are Fm, A♭ and B♭, which become Am, C and D here. I\'m not sure of the order or the lengths, so treat this chart as a first guess and fix it by ear.',
+  secs:[['Loop (first guess)','Am:4:i C:4:III D:4:IV Am:4:i']]},
+ done:`Backbeat holds steady through the chord changes at 90.`,
+ hard:`Hands colliding into playing together. Slow right down and exaggerate: left, right, left, right, like walking.`,
+ quick:`"Boom, chick" on Am for one minute.`, solid:'backbeat (bass on 1 and 3, chord on 2 and 4)'},
+
+{id:'7-1',t:'Move a song with numbers',
+ idea:`To play in a new key, pick the new home note and count keys up from it. IV is 5 keys up. V is 7 keys up. vi is 9 keys up and minor. ii is 2 up and minor, iii is 4 up and minor. Build each chord with the recipes you know.`,
+ hands:`Key of A: A is home. Count 5 keys up for D, 7 for E, 9 for F♯ minor. Close shapes near the A below middle C: A is A-C♯-E, D is A-D-F♯, E is G♯-B-E.`,
+ ch:['A','D/A','E/G#','F#m/A'], bpm:[70,120],
+ drill:`I, IV, V, I in A, then the same in D (D, G, A, D), counting the keys yourself. 4 beats each.`,
+ song:{t:'I Never Knew You with the record, then Come On Eileen chorus',key:'A, then D',conf:'check',note:'Use the order you found in Lesson 4-1, now in A, with the record (about 140, so play one hit per bar). The Eileen chorus chart is my best memory; check it by ear.',
+  secs:[['I Never Knew You: your three chords in A','A:4:I D:4:IV E:4:V'],['Come On Eileen chorus, key of D (check by ear)','D:4:I A:4:V Em:4:ii G:2:IV A:2:V']]},
+ done:`Given any home note, you can find its I, IV, V and vi in under a minute.`,
+ hard:`Miscounting. Count the keys you move, not the key you start on. Starting key is zero.`,
+ quick:`Pick a random note. Find its IV and V. Play I, IV, V, I.`, solid:'finding I, IV, V, vi in any major key'},
+
+{id:'7-2',t:'Flat keys: F and B♭',
+ idea:`Singers and horn players love flat keys, so many records sit there. Nothing new to learn, only new black keys. B♭ is the black key just below B.`,
+ hands:`Key of F: F as C-F-A, C as C-E-G, Dm as D-F-A, B♭ as D-F-B♭. Key of B♭: B♭ as B♭-D-F, Cm as C-E♭-G, Gm as B♭-D-G, F as A-C-F, E♭ as B♭-E♭-G.`,
+ ch:['F/C','C','Dm','Bb/D','Bb','Cm','Gm/Bb','F/A','Eb/Bb'], bpm:[60,84],
+ drill:`I, V, vi, IV in F: F, C, Dm, B♭, 4 beats each. Then walk the five B♭ chords slowly.`,
+ song:{t:'You Say and Hopeless Wanderer, with the records',key:'F, then B♭',conf:'check',note:'Same shapes you found by ear in C, now in the real keys so you can play along.',
+  secs:[['You Say, key of F','F:4:I C:4:V Dm:4:vi Bb:4:IV'],['Hopeless Wanderer verse, key of B♭ (reported shape)','Bb:4:I Cm:4:ii Gm:4:vi F:4:V Eb:4:IV']]},
+ done:`You play one chorus of You Say along with the record.`,
+ hard:`Fingers slipping off black keys. Play black keys with flatter fingers, further into the keyboard.`,
+ quick:`F, C, Dm, B♭ twice.`, solid:'keys of F and B♭'},
+
+{id:'7-3',t:'Minor keys for real: F minor',
+ idea:`Count from a minor home the same way. III is 3 keys up (major). iv is 5 up (minor). V is 7 up. VI is 8 up (major). VII is 10 up (major). Jealous and Nevermind both live in F minor, so this one key pays off twice.`,
+ hands:`Close shapes around middle C. Fm is C-F-A♭. E♭ is B♭-E♭-G. B♭m is B♭-D♭-F. Left hand roots F, E♭, B♭, F. Your thumb sits on C or B♭ the whole time.`,
+ ch:['Fm/C','Eb/Bb','Bbm','Ab/C','Bb'], bpm:[80,128],
+ drill:`Jealous loop in F minor, right hand alone at 80, then both hands. Build toward 128 across sessions.`,
+ song:{t:'Jealous with the record; then Nevermind and Bruno',key:'F minor; Bruno is in C minor',conf:'check',note:'Jealous chords are reported consistently. Nevermind uses your Lesson 6-2 order moved to F minor. Bruno is reported to use Cm, Fm, G and A♭: the verse leans on Cm and G, the chorus on Fm, G and A♭. Sort out the order by ear.',
+  secs:[['Jealous','Fm:4:i Eb:4:VII Bbm:4:iv Fm:4:i'],['Nevermind (first guess)','Fm:4:i Ab:4:III Bb:4:IV Fm:4:i'],['We Don\'t Talk About Bruno: your four chords','Cm:4:i Fm:4:iv G:4:V Ab:4:VI']]},
+ done:`You get through a verse and chorus of Jealous with the record playing, one chord hit per bar.`,
+ hard:`Too many black keys at once. Learn one chord per session if you need to. This is the hardest hand position in the course so far, and it is fine for it to take two weeks.`,
+ quick:`Fm to E♭ and back, ten times.`, solid:'F minor: Fm, E♭, B♭m; Jealous in its real key'},
+
+{id:'8-1',t:'Seventh chords: one more note',
+ idea:`Funk, soul and R&B add a fourth note on top of the triad. Minor 7: minor chord, then up 3 more keys. Dominant 7 (written G7): major chord, up 3 more. Major 7: major chord, up 4 more. This is the colour you hear in Chromeo and KAYTRANADA.`,
+ hands:`Right hand, four fingers: 1-2-3-5. Build Am7 (A-C-E-G), G7 (G-B-D-F) and Cmaj7 (C-E-G-B) by counting. Then the Jealous shape: Fm7 as C-E♭-F-A♭.`,
+ ch:['Am7','G7','Cmaj7','Fm7'], bpm:[70,112],
+ drill:`Play Am then Am7, C then Cmaj7, G then G7, listening to what the extra note adds. Then the Jealous loop ending on Fm7.`,
+ song:{t:'Jealous, with the Fm7',key:'F minor',conf:'check',note:'The last chord of the loop is reported as Fm7 rather than plain Fm. Play both and decide which one you hear on the record.',
+  secs:[['Loop','Fm:4:i Eb:4:VII Bbm:4:iv Fm7:4:i7']]},
+ done:`You can add a 7th to any triad you know by counting, and you can hear the difference between Fm and Fm7.`,
+ hard:`Four notes feel like a handful. Drop the bottom note; the left hand is already playing it.`,
+ quick:`Am7, G7, Cmaj7, once each, listening closely.`, solid:'7th chord recipes; Fm7'},
+
+{id:'8-2',t:'Funk feel: short, late, and tight',
+ idea:`Funk is about where you don't play. Chords are short stabs, often on the "and" between beats, with silence around them. The bass holds the beat so the right hand can dance.`,
+ hands:`Left hand: root on beats 1 and 3, as an octave if you can reach (pinky and thumb). Right hand: count "1 and 2 and 3 and 4 and" and stab the chord on the "and" after 2 and the "and" after 4. Lift off immediately. No pedal.`,
+ ch:['Fm/C','Eb/Bb','Bbm','Fm7'], bpm:[76,120],
+ drill:`On Fm7 only: left on 1 and 3, right on the two "ands." Four bars. Then run the loop. 76 up to 120.`,
+ song:{t:'Jealous with the record; Old 45\'s as homework',key:'F minor',conf:'check',note:'Play the stabs along with the record. For Old 45\'s and Over Your Shoulder I don\'t have reliable chords, and that is deliberate: they are your Level 9 and 10 projects.',
+  secs:[['Jealous loop','Fm:4:i Eb:4:VII Bbm:4:iv Fm7:4:i7']]},
+ done:`Eight bars of stabs with the record where your right hand never lands on a main beat.`,
+ hard:`The stabs drift onto the beat. Tap the pattern on your knees first, away from the keyboard, until the hands are independent.`,
+ quick:`Knee-tap the pattern with the record for one chorus.`, solid:'off-beat stabs over a steady bass'},
+
+{id:'8-3',t:'Oom-pah: the ragtime left hand',
+ idea:`The bouncing piano in All Night is an old trick. The left hand jumps between a low bass note and the chord while the right hand is free. It is the backbeat from Lesson 6-2, played by one hand.`,
+ hands:`Left hand: low root on beats 1 and 3 (pinky), then jump up and play the chord on 2 and 4 (fingers 5-3-1 or 5-2-1). Right hand rests today, or holds the chord.`,
+ ch:['oom'], bpm:[60,100],
+ drill:`Oom-pah on C for four bars, then C, F, G, C, one bar each. Keep your eyes on the low note; the chord is the easy half. 60 up to 100.`,
+ song:{t:'All Night (the feel only)',key:'Practise in C; the record is reported in B major at 136',conf:'ear',note:'I don\'t have reliable chords for this one. Today is only the bounce. The chords are your Level 10 project.',
+  secs:[['Practice loop','C:4:I F:4:IV G:4:V C:4:I']]},
+ done:`Sixteen bars of oom-pah at 90 without missing the low note.`,
+ hard:`Missing the jump. Don't look at the chord; feel for it. Practise the jump silently, touching the keys without pressing.`,
+ quick:`Oom-pah on C for one minute.`, solid:'oom-pah left hand'},
+
+{id:'9-1',t:'Find the home note',
+ idea:`Every song has one note that feels finished, like the last word of a sentence. That note names the key. Finding it is the first step in working out any song.`,
+ hands:`Put a song on. Pause at the end of a chorus and hum the note that would feel like "the end." Hold the hum and poke single keys with one finger until the piano matches your voice. That is home.`,
+ ch:[], bpm:null,
+ drill:`Test yourself on songs where you know the answer. Come On Eileen verse: C. I Never Knew You: A. Jealous: F. Bruno: C. Colors: reported F♯. Aim for under a minute each.`,
+ song:{t:'A Noah Kahan song, then a Chromeo song',key:'Unknown: you tell me',conf:'ear',note:'Find the home note of Downfall or Doors, then of Old 45\'s. Report what you found and I will tell you what to try next.',secs:[]},
+ done:`You find the home note of three songs from your library, and it matches on a second listen.`,
+ hard:`You land on a note that fits but doesn't feel finished. That is often the 5th. Try the note 7 keys below it.`,
+ quick:`One song, one home note.`, solid:'finding the home note by humming'},
+
+{id:'9-2',t:'Major or minor, and hearing the changes',
+ idea:`Two questions about any song. First: is home bright or dark? Play the major and the minor chord on the home note; one will sit right. Second: when does the chord change? You already feel this. Now you count it.`,
+ hands:`Listen without playing. Tap your knee on every beat and say "change" each time the harmony shifts underneath. Count the beats between changes. Then count how many bars pass before the pattern repeats.`,
+ ch:[], bpm:null,
+ drill:`Do it on Jealous first, since you know the answer: minor home, and you can now settle how many beats each chord really lasts.`,
+ song:{t:'The Way I Am (Eminem)',key:'Reported A minor; unverified',conf:'ear',note:'The whole track rides one eerie piano loop. Find the home note, decide major or minor, and count how many bars the loop lasts. Chord sites suggest Am with Bm, C and E, but I don\'t trust that yet.',secs:[]},
+ done:`For two songs you can say: the home note, major or minor, and how many beats between changes.`,
+ hard:`Mistaking a busy melody for a chord change. Listen to the lowest sound in the track; when the bass moves, the chord usually has.`,
+ quick:`One chorus of any song: tap and say "change."`, solid:'major or minor home; counting chord changes'},
+
+{id:'10-1',t:'Find the bass notes',
+ idea:`The lowest note in the track is almost always the chord's root. Find the bass line with one finger and you have the skeleton of the song.`,
+ hands:`Left hand, one finger, low on the keyboard. Start on the home note. When the chord changes, slide up or down until your note melts into the record. Write the letters down in order.`,
+ ch:[], bpm:null,
+ drill:`Jealous as a warm-up: you should find F, E♭, B♭, F. Then do the song below cold.`,
+ song:{t:'Colors',key:'Reported F♯ minor',conf:'ear',note:'Find the four bass notes of the main loop. Reported answer: F♯, A, E, C♯. Don\'t peek until you have your own four.',secs:[]},
+ done:`You find a four-note bass loop from a record in under five minutes.`,
+ hard:`You can't hear the bass on phone speakers. Use headphones, or hum the bass line first and match the hum.`,
+ quick:`Find the first two bass notes of any chorus.`, solid:'picking out bass notes'},
+
+{id:'10-2',t:'From bass note to chord',
+ idea:`Each bass note gets a chord on top. There are only two candidates: major or minor. Try both with the record; one fits. Shortcut: chords from the key's family are right most of the time.`,
+ hands:`Left hand holds the bass note you found. Right hand builds major (4 + 3), then minor (3 + 4) on the same note. Keep the one that fits. If neither does, the bass may be playing a different chord note; try the family chords that contain it.`,
+ ch:[], bpm:null,
+ drill:`Take your Colors bass notes and turn them into chords. Then compare with the reported F♯m, A, E, C♯.`,
+ song:{t:'The Way I Am, then Old 45\'s',key:'You found these in Level 9',conf:'ear',note:'Full process on the Eminem loop: bass notes, then chords. Then start Old 45\'s; expect 7th chords, so if a chord is close but plain, add the 7th.',secs:[]},
+ done:`You have a complete chord loop for one song, worked out yourself, that sounds right with the record.`,
+ hard:`A chord sounds nearly right. Check three things in order: major or minor, add a 7th, different bass note.`,
+ quick:`One bass note, major or minor? Decide and move on.`, solid:'turning bass notes into chords'},
+
+{id:'10-3',t:'A whole song from nothing',
+ idea:`You now have the full method. 1: home note. 2: major or minor. 3: tap the changes. 4: bass notes. 5: chord on each. 6: pick a pattern that matches the feel. Work one section at a time.`,
+ hands:`Whatever the song asks for. Chorus first: it repeats most, so the effort pays back fastest.`,
+ ch:[], bpm:null,
+ drill:`No drill today. Set a timer for 12 minutes and get as far down the six steps as you can on one section.`,
+ song:{t:'All Night, then No Me Diga',key:'All Night reported B major; No Me Diga reported E♭ major',conf:'ear',note:'All Night first: loop-based, with the oom-pah you already own. No Me Diga is the summit. It is fast (around 165), wordy, and musical-theatre writing shifts gear between sections, so take only the main refrain and expect it to take several sessions. Both key reports come from automated analysis; trust your ear over them.',secs:[]},
+ done:`You play a recognizable chorus of a song nobody gave you the chords for.`,
+ hard:`Trying to get every chord of the whole song. Get one section right and loop it. A real chorus beats a rough full song.`,
+ quick:`Step 1 only on a new song: find home.`, solid:'the six-step method for any song'}
+];
+
+/* ---------- state ---------- */
+let done={};
+try{done=JSON.parse(localStorage.getItem('cbe-done')||'{}')}catch(e){}
+const save=()=>{try{localStorage.setItem('cbe-done',JSON.stringify(done))}catch(e){}};
+const $=s=>document.querySelector(s);
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+
+/* ---------- audio ---------- */
+let ac;
+const ctx=()=>ac||(ac=new (window.AudioContext||window.webkitAudioContext)());
+function tone(f,t,len,vol,type){const a=ctx(),o=a.createOscillator(),g=a.createGain();o.type=type||'triangle';o.frequency.value=f;
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+len);
+  o.connect(g).connect(a.destination);o.start(t);o.stop(t+len+0.05)}
+const parse=s=>(s||'').split(' ').filter(Boolean).map(x=>{const m=x.match(/^(\d+)(.+)$/);return[+m[1],m[2]]});
+function playChord(k){const a=ctx(),t=a.currentTime+0.02;[...parse(k.l),...parse(k.r)].forEach(([s])=>tone(130.81*Math.pow(2,s/12),t,1.6,0.16))}
+let metT=null,metN=0;
+function metStop(){clearInterval(metT);metT=null;const b=$('#metgo');if(b)b.textContent='Start metronome'}
+function metStart(bpm){metStop();metN=0;const tick=()=>{tone(metN%4?880:1320,ctx().currentTime+0.01,0.06,0.25,'square');metN++};tick();
+  metT=setInterval(tick,60000/bpm);const b=$('#metgo');if(b)b.textContent='Stop'}
+
+/* ---------- keyboard diagram ---------- */
+function kbSvg(k){
+  const W=22,H=92,BW=13,BH=56,white=[0,2,4,5,7,9,11],marks={};
+  parse(k.r).forEach(([s,n])=>marks[s]=['kr',n]);parse(k.l).forEach(([s,n])=>marks[s]=['kl',n]);
+  let wh='',bl='',wi=0;
+  for(let s=0;s<=28;s++){const isW=white.includes(s%12),m=marks[s];
+    if(isW){const x=wi*W;wh+=`<rect class="${m?m[0]:'kw'}" x="${x+.5}" y=".5" width="${W-1}" height="${H}" rx="2" stroke="var(--key-line)"/>`;
+      if(m)wh+=`<text class="kt" x="${x+W/2}" y="${H-8}">${m[1]}</text>`;
+      if(s===12)wh+=`<text class="kmid" x="${x+W/2}" y="${H+11}">middle C</text>`;wi++}
+    else{const x=wi*W-BW/2;bl+=`<rect class="${m?m[0]:'kbk'}" x="${x}" y=".5" width="${BW}" height="${BH}" rx="1.5" stroke="var(--key-line)"/>`;
+      if(m)bl+=`<text class="kt" style="font-size:7px" x="${x+BW/2}" y="${BH-6}">${m[1]}</text>`}}
+  return `<svg viewBox="0 0 ${17*W} ${H+14}" role="img" aria-label="Keyboard diagram">${wh}${bl}</svg>`;
+}
+
+/* ---------- render ---------- */
+function chart(sec){
+  return sec[1].split(' ').map(c=>{const[n,b,r]=c.split(':');
+    return `<div class="chip"><b>${n.replace('b','♭').replace('#','♯')}</b><small>${r||''}</small><span class="dots" title="${b} beats">${'●'.repeat(+b)}</span></div>`}).join('');
+}
+function noteFor(i){const l=L[i],lv=+l.id.split('-')[0],nx=L[i+1];
+  return `Where I am: Level ${lv}, Lesson ${l.id} (${l.t})\nWhat's solid: ${l.solid}\nNext up: ${nx?'Lesson '+nx.id+', '+nx.t:'pick a new song and run the six steps'}`}
+function renderNav(cur){
+  let h='';LV.forEach((v,i)=>{h+=`<div class="lvl"><b>Level ${i+1}: ${v[0]}</b><small>${esc(v[1])}</small><ul>`+
+    L.map((l,j)=>l.id.split('-')[0]==i+1?`<li><button class="lbtn" data-i="${j}" aria-current="${j===cur}"><span class="tick">${done[l.id]?'✓':''}</span><span>${l.id} ${esc(l.t)}</span></button></li>`:'').join('')+'</ul></div>'});
+  $('#nav').innerHTML=h;
+  const n=L.filter(l=>done[l.id]).length;$('#count').textContent=n+' of '+L.length+' lessons done';$('#bar').style.width=(100*n/L.length)+'%';
+}
+function show(i){
+  metStop();const l=L[i],lv=+l.id.split('-')[0],s=l.song;
+  const tag=s.conf==='ok'?'<span class="tag">Chords: confident</span>':s.conf==='check'?'<span class="tag check">Chords: reported, check by ear</span>':'<span class="tag check">Ear exercise</span>';
+  const hasLH=l.ch.some(c=>K[c].l);
+  $('#lesson').innerHTML=`
+  <div><div class="eyebrow">Level ${lv}: ${LV[lv-1][0]} · Lesson ${l.id} · 10 to 15 minutes</div><h2>${esc(l.t)}</h2></div>
+  <section><h3>The idea</h3><p>${l.idea}</p></section>
+  <section><h3>What your hands do</h3><p>${l.hands}</p>
+    ${l.ch.length?`<div class="legend"><span><i style="background:var(--rh)"></i>Right hand</span>${hasLH?'<span><i style="background:var(--lh)"></i>Left hand</span>':''}</div>
+    <div class="kbs">${l.ch.map(c=>{const k=K[c];return `<div class="kb"><header><strong>${k.n||c}</strong><button class="btn sm" data-play="${c}">Hear it</button></header>${kbSvg(k)}</div>`}).join('')}</div>`:''}
+  </section>
+  <section><h3>Drill</h3><p>${l.drill}</p>
+    ${l.bpm?`<div class="row"><button class="btn" id="metgo">Start metronome</button><button class="btn sm" data-bpm="${l.bpm[0]}">Slow: ${l.bpm[0]}</button><button class="btn sm" data-bpm="${l.bpm[1]}">Target: ${l.bpm[1]}</button><span class="met" id="metv">${l.bpm[0]} beats per minute</span></div>`:''}
+  </section>
+  <section><h3>Your song</h3><div class="song"><div><h4>${esc(s.t)}</h4><div class="meta">Key: ${esc(s.key)}</div></div><div>${tag}</div>
+    ${s.secs.map(x=>`<div class="sec"><em>${esc(x[0])}</em>${chart(x)}</div>`).join('')}
+    ${s.secs.length?'<div class="meta">Dots are beats. Roman numerals are the chord numbers.</div>':''}
+    <p>${s.note}</p></div></section>
+  <section><h3>Done when</h3><p>${l.done}</p></section>
+  <section><h3>If this feels hard</h3><p>${l.hard}</p></section>
+  <section class="quick"><h3>2-minute version</h3><p>${l.quick}</p></section>
+  <section><h3>Progress note to paste back to Claude</h3><pre class="note" id="note">${esc(noteFor(i))}</pre>
+    <div class="row"><button class="btn primary" id="mark">${done[l.id]?'Marked done ✓':'Mark lesson done'}</button><button class="btn" id="copy">Copy note</button></div>
+    <p style="color:var(--muted);font-size:.9rem">Stop here. Tell Claude how it went before the next lesson, so the pace can be adjusted.</p></section>
+  <div class="foot"><button class="btn" id="prev" ${i?'':'disabled'}>← Previous</button><button class="btn" id="next" ${i<L.length-1?'':'disabled'}>Next lesson →</button></div>`;
+  let bpm=l.bpm?l.bpm[0]:60;
+  $('#lesson').onclick=e=>{const t=e.target.closest('button');if(!t)return;
+    if(t.dataset.play)playChord(K[t.dataset.play]);
+    else if(t.dataset.bpm){bpm=+t.dataset.bpm;$('#metv').textContent=bpm+' beats per minute';if(metT)metStart(bpm)}
+    else if(t.id==='metgo'){metT?metStop():metStart(bpm)}
+    else if(t.id==='mark'){done[l.id]=!done[l.id];save();t.textContent=done[l.id]?'Marked done ✓':'Mark lesson done';renderNav(i)}
+    else if(t.id==='copy'){const txt=$('#note').textContent;const fb=()=>{const r=document.createRange();r.selectNodeContents($('#note'));const s=getSelection();s.removeAllRanges();s.addRange(r);t.textContent='Selected: press copy'};
+      try{navigator.clipboard.writeText(txt).then(()=>t.textContent='Copied',fb)}catch(err){fb()}}
+    else if(t.id==='prev')go(i-1); else if(t.id==='next')go(i+1)};
+  renderNav(i);
+  try{localStorage.setItem('cbe-last',l.id)}catch(e){}
+}
+function go(i){location.hash='l'+L[i].id;window.scrollTo(0,0)}
+function route(){let id=location.hash.slice(2);if(!id){try{id=localStorage.getItem('cbe-last')}catch(e){}}
+  let i=L.findIndex(l=>l.id===id);show(i<0?0:i)}
+$('#nav').onclick=e=>{const b=e.target.closest('.lbtn');if(b){go(+b.dataset.i);if(innerWidth<=860)$('#navd').open=false}};
+if(innerWidth>860)$('#navd').open=true;
+addEventListener('hashchange',route);route();
+</script>
+</body></html>

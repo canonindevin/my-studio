@@ -11,6 +11,7 @@ A shelf of interactive HTML pages: courses, instruments, tools and family projec
 | Meet Your Kernel | `meet-your-kernel/` | A visual guide to the operating system kernel |
 | Power BI Field Course | `power-bi-field-course/` | Nine self-paced Power Query and Power BI modules |
 | By Ear Piano | `by-ear-piano/` | Learn songs by number, with an ear gym |
+| Chords By Ear | `chords-by-ear/` | A 24-lesson chord course built on songs you know |
 | Middle C Piano Lab | `middle-c-piano-lab/` | Piano theory you can hear, see and play |
 | Margin Grain Bridge | `margin-grain-bridge/` | A margin reconciliation workbook |
 | The Little Book | `little-book/` | Franklin's virtue chart and daily page |
