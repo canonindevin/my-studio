@@ -1,0 +1,675 @@
+<!doctype html><html lang="en"><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>Biology From Zero</title></head><body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout concept: a lab notebook. Left rail of chapters that zoom from atoms to ecosystems, a wide reading column,
+   and diagrams drawn in histology-stain colours (hematoxylin violet, eosin pink) on cool paper. */
+:root{
+  --bg:#f2f4fa; --surface:#ffffff; --surface2:#e9ecf8; --ink:#1a1745; --muted:#58597f; --line:#d6daee;
+  --hema:#4a3fb0; --hema-soft:#e3e0fa; --eosin:#d93a76; --eosin-soft:#fbe1eb;
+  --leaf:#12896a; --leaf-soft:#d8f2e9; --amber:#b86f08; --amber-soft:#f9ebd0;
+  --shadow:0 1px 2px rgba(26,23,69,.06),0 10px 28px rgba(26,23,69,.07);
+  --display:'Bricolage Grotesque','Inter',system-ui,sans-serif; --body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f0f26; --surface:#181838; --surface2:#212148; --ink:#ecebff; --muted:#a4a7d0; --line:#2d2e5c;
+  --hema:#a99dff; --hema-soft:#2a2766; --eosin:#ff7fab; --eosin-soft:#4a1d36;
+  --leaf:#4fd6a9; --leaf-soft:#12392f; --amber:#f4b95a; --amber-soft:#43300f;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35); color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#0f0f26; --surface:#181838; --surface2:#212148; --ink:#ecebff; --muted:#a4a7d0; --line:#2d2e5c;
+  --hema:#a99dff; --hema-soft:#2a2766; --eosin:#ff7fab; --eosin-soft:#4a1d36;
+  --leaf:#4fd6a9; --leaf-soft:#12392f; --amber:#f4b95a; --amber-soft:#43300f;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35); color-scheme:dark; }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--display);line-height:1.12;text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(2.2rem,5vw,3.4rem);font-weight:700}
+h2{font-size:1.5rem;font-weight:700}
+h3{font-size:1.1rem;font-weight:700}
+p{margin:0 0 1em;max-width:68ch}
+a{color:var(--hema)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--hema);outline-offset:2px;border-radius:6px}
+
+.shell{display:grid;grid-template-columns:240px minmax(0,1fr);gap:40px;max-width:1140px;margin:0 auto;
+  padding-block:28px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.rail{position:sticky;top:calc(24px + env(safe-area-inset-top,0px));align-self:start;display:flex;flex-direction:column;gap:18px}
+.brand{font-family:var(--display);font-weight:700;font-size:1.25rem;text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:10px}
+.brand svg{width:30px;height:30px}
+.nav{display:flex;flex-direction:column;gap:4px;margin:0;padding:0;list-style:none}
+.nav a{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:center;padding:8px 10px;border-radius:10px;text-decoration:none;color:var(--muted);font-weight:500;font-size:.95rem;line-height:1.3}
+.nav a:hover{background:var(--surface2);color:var(--ink)}
+.nav a[aria-current="page"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.dot{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font:500 .8rem var(--mono);background:var(--surface2);color:var(--muted)}
+.nav a[aria-current="page"] .dot{background:var(--hema);color:var(--surface)}
+.nav .done .dot{background:var(--leaf);color:var(--surface)}
+.meter{height:6px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--hema),var(--eosin));border-radius:99px;transition:width .5s}
+.meter-l{font-size:.82rem;color:var(--muted);margin-bottom:6px}
+.theme{align-self:flex-start;background:none;border:1px solid var(--line);border-radius:99px;padding:5px 12px;font-size:.82rem;color:var(--muted)}
+
+main{min-width:0}
+.kicker{font:500 .8rem var(--mono);letter-spacing:.04em;color:var(--eosin);margin-bottom:12px}
+.lead{font-size:1.18rem;color:var(--muted);margin-top:16px}
+.block{margin-top:44px}
+.block>h2{margin-bottom:14px}
+.ideas{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;list-style:none;margin:0;padding:0}
+.ideas li{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-size:.96rem}
+.ideas b{display:block;font-family:var(--display);font-size:1.02rem;margin-bottom:2px}
+.fig{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
+.fig-scroll{overflow-x:auto}
+figure{margin:0}
+figcaption{font-size:.9rem;color:var(--muted);margin-top:12px;max-width:72ch}
+svg{display:block;width:100%;height:auto}
+svg.wide{min-width:560px}
+.lab{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow)}
+.lab-tag{display:inline-block;font:500 .72rem var(--mono);letter-spacing:.08em;text-transform:uppercase;background:var(--hema-soft);color:var(--hema);padding:3px 10px;border-radius:99px;margin-bottom:10px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-weight:500;font-size:.92rem}
+.btn:hover{border-color:var(--hema)}
+.btn.primary{background:var(--hema);border-color:var(--hema);color:var(--surface)}
+.btn[aria-pressed="true"]{background:var(--hema);color:var(--surface);border-color:var(--hema)}
+.btn:disabled{opacity:.45;cursor:default}
+.note{font-size:.92rem;color:var(--muted)}
+.callout{border-left:4px solid var(--eosin);background:var(--eosin-soft);border-radius:0 12px 12px 0;padding:12px 16px;margin-top:16px;font-size:.95rem}
+.callout p{margin:0}
+
+/* svg classes */
+.tx{fill:var(--ink);font:500 12px var(--body)}
+.tx-b{fill:var(--ink);font:700 13px var(--display)}
+.tx-m{fill:var(--muted);font:400 11.5px var(--body)}
+.tx-c{text-anchor:middle}
+.ln{stroke:var(--ink);stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ln-m{stroke:var(--muted);stroke-width:1.2;fill:none}
+.f-hema{fill:var(--hema-soft);stroke:var(--hema);stroke-width:2}
+.f-eosin{fill:var(--eosin-soft);stroke:var(--eosin);stroke-width:2}
+.f-leaf{fill:var(--leaf-soft);stroke:var(--leaf);stroke-width:2}
+.f-amber{fill:var(--amber-soft);stroke:var(--amber);stroke-width:2}
+.f-plain{fill:var(--surface);stroke:var(--ink);stroke-width:1.8}
+.s-hema{stroke:var(--hema);fill:none;stroke-width:3;stroke-linecap:round}
+.s-eosin{stroke:var(--eosin);fill:none;stroke-width:3;stroke-linecap:round}
+.s-leaf{stroke:var(--leaf);fill:none;stroke-width:3;stroke-linecap:round}
+.s-amber{stroke:var(--amber);fill:none;stroke-width:3;stroke-linecap:round}
+
+/* tiles */
+.traits{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin-top:14px}
+.trait{border-radius:12px;padding:10px;font-size:.85rem;font-weight:500;background:var(--surface2);color:var(--muted);display:flex;flex-direction:column;gap:2px}
+.trait b{font:700 1.2rem var(--display)}
+.trait.y{background:var(--leaf-soft);color:var(--ink)} .trait.y b{color:var(--leaf)}
+.trait.h{background:var(--amber-soft);color:var(--ink)} .trait.h b{color:var(--amber)}
+.verdict{margin-top:14px;font-size:.98rem}
+.verdict strong{font-family:var(--display);font-size:1.15rem}
+
+/* cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:6px;font-size:.92rem}
+.card h3{font-size:1.05rem}
+.card .tag{font:500 .75rem var(--mono);color:var(--muted)}
+.card svg{margin:4px 0}
+
+/* ph */
+.phbar{height:16px;border-radius:99px;background:linear-gradient(90deg,#e0457b,#e8a23a 30%,#59b879 50%,#3aa0c8 70%,#4a3fb0);position:relative;margin:26px 0 8px}
+.phbar i{position:absolute;top:-8px;width:6px;height:32px;border-radius:3px;background:var(--ink);transform:translateX(-50%);box-shadow:0 0 0 3px var(--surface)}
+input[type=range]{width:100%;accent-color:var(--hema)}
+.ph-n{font:700 2rem var(--display)}
+
+/* cell */
+.org{cursor:pointer;transition:opacity .2s,filter .2s}
+.org:focus-visible{outline:none;filter:drop-shadow(0 0 4px var(--hema))}
+.cellsvg.sel .org{opacity:.35}
+.cellsvg.sel .org.active{opacity:1;filter:drop-shadow(0 0 7px var(--hema))}
+.orginfo{margin-top:14px;min-height:130px}
+.orginfo h3{margin-bottom:4px}
+.orginfo .why{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:10px}
+.orginfo .why div{background:var(--surface2);border-radius:12px;padding:10px 12px;font-size:.92rem}
+.orginfo .why span{display:block;font:500 .72rem var(--mono);text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+
+/* flow */
+.flow g[data-step]{transition:opacity .3s}
+.flow.step g[data-step].off{opacity:.2}
+.eq{font:500 .92rem var(--mono);background:var(--surface2);border-radius:12px;padding:10px 14px;margin-top:10px;overflow-x:auto;white-space:nowrap}
+
+/* dna */
+.codons{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.codon{background:var(--surface2);border-radius:14px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:84px}
+.codon.skip{opacity:.35}
+.bases{display:flex;gap:3px}
+.base{width:26px;height:30px;border-radius:7px;border:1px solid transparent;font:500 .95rem var(--mono);color:#fff;display:grid;place-items:center;padding:0}
+.base.A{background:#c8336c}.base.T{background:#a76405}.base.G{background:#4a3fb0}.base.C{background:#0f7a5e}
+.base.chg{outline:3px solid var(--ink);outline-offset:1px}
+.mr{font:500 .85rem var(--mono);color:var(--muted)}
+.aa{font:700 .88rem var(--display);padding:2px 8px;border-radius:99px;background:var(--hema-soft);color:var(--hema)}
+.aa.stop{background:var(--eosin-soft);color:var(--eosin)}
+.key{display:flex;gap:14px;flex-wrap:wrap;font-size:.86rem;color:var(--muted);margin-top:8px}
+.key i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:6px;vertical-align:-1px}
+
+/* punnett */
+.pun{display:grid;grid-template-columns:repeat(3,minmax(0,84px));gap:6px;margin-top:14px}
+.pun>div{min-height:64px;border-radius:12px;display:grid;place-items:center;text-align:center;font:700 1.05rem var(--display);padding:6px}
+.pun .h{background:none;font:500 1.05rem var(--mono);color:var(--hema)}
+.pun .p{background:var(--hema);color:#fff}
+.pun .w{background:var(--surface);border:2px solid var(--hema);color:var(--ink)}
+.pun small{display:block;font:400 .7rem var(--body);opacity:.85}
+select{font:inherit;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:7px 10px}
+
+/* quiz */
+.quiz .q{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
+.q p{font-weight:600;margin-bottom:10px}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;background:var(--surface2);border:1px solid transparent;border-radius:12px;padding:10px 14px;font-size:.95rem}
+.opt:hover:not(:disabled){border-color:var(--hema)}
+.opt.bad{background:var(--eosin-soft);border-color:var(--eosin);opacity:.8}
+.opt.good{background:var(--leaf-soft);border-color:var(--leaf)}
+.why-a{margin-top:10px;font-size:.92rem;color:var(--muted)}
+.complete{background:linear-gradient(135deg,var(--hema-soft),var(--eosin-soft));border-radius:18px;padding:20px;margin-top:20px}
+.complete h3{margin-bottom:6px}
+.pager{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:36px}
+
+/* sim */
+.simwrap svg{border-radius:14px;overflow:hidden}
+.stats{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px;font-size:.92rem}
+.stats b{font:700 1.3rem var(--display)}
+
+/* pyramid */
+.pyr{display:grid;gap:6px;margin-top:14px}
+.pyr div{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:center;font-size:.88rem}
+.pyr span.bar{display:block;height:26px;border-radius:6px;min-width:3px;background:var(--leaf)}
+.pyr .e{font:500 .8rem var(--mono);color:var(--muted);margin-left:8px}
+
+/* home */
+.hero{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px;align-items:center}
+.hero svg{max-width:340px;margin:auto}
+.chgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.chcard{display:flex;flex-direction:column;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;text-decoration:none;color:var(--ink);transition:transform .15s,box-shadow .15s}
+.chcard:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.chcard .zm{font:500 .75rem var(--mono);color:var(--muted)}
+.chcard p{font-size:.9rem;color:var(--muted);margin:0}
+.chcard .st{font-size:.8rem;font-weight:600;color:var(--muted)}
+.chcard.done .st{color:var(--leaf)}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.how div{padding:14px 16px;border-radius:14px;background:var(--surface2);font-size:.94rem}
+.how b{font-family:var(--display);display:block;margin-bottom:2px}
+
+@media (max-width:880px){
+  .shell{grid-template-columns:minmax(0,1fr);gap:20px;padding-top:16px}
+  .rail{position:static}
+  .nav{flex-direction:row;overflow-x:auto;padding-bottom:6px;gap:6px}
+  .nav a{grid-template-columns:auto;padding:6px;flex:none}
+  .nav a span.t{display:none}
+  .hero{grid-template-columns:minmax(0,1fr)}
+  .hero svg{max-width:240px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="shell">
+  <aside class="rail">
+    <a class="brand" href="#start" aria-label="Biology From Zero, home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="var(--hema-soft)" stroke="var(--hema)" stroke-width="2"/><circle cx="12" cy="13" r="5" fill="var(--hema)"/><circle cx="21" cy="20" r="3.4" fill="var(--eosin)"/></svg>
+      Biology From Zero
+    </a>
+    <div><div class="meter-l" id="meterLabel"></div><div class="meter"><i id="meterBar" style="width:0"></i></div></div>
+    <ol class="nav" id="nav"></ol>
+    <button class="theme" id="themeBtn" type="button">Toggle light / dark</button>
+  </aside>
+  <main id="main" tabindex="-1"></main>
+</div>
+
+<script>
+/* ---------- helpers ---------- */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+let progress={done:{},last:0};
+try{const p=JSON.parse(localStorage.getItem('bio-from-zero')||'null'); if(p&&p.done) progress=p;}catch(e){}
+const save=()=>{try{localStorage.setItem('bio-from-zero',JSON.stringify(progress))}catch(e){}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ARROW='<defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>';
+
+/* ---------- diagrams ---------- */
+function traitWheel(){
+  const names=['Cells','Energy','Growth','Reproduce','Respond','Balance','Evolve'],cl=['f-hema','f-eosin','f-leaf','f-amber'];
+  let s='',cx=190,cy=150,R=104;
+  names.forEach((n,i)=>{const a=-Math.PI/2+i*2*Math.PI/7,x=cx+R*Math.cos(a),y=cy+R*Math.sin(a);
+    s+=`<line class="ln-m" x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`;
+    s+=`<circle class="${cl[i%4]}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="38"/><text class="tx tx-c" x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}">${n}</text>`;});
+  s+=`<circle class="f-plain" cx="${cx}" cy="${cy}" r="30"/><text class="tx-b tx-c" x="${cx}" y="${cy+5}">LIFE</text>`;
+  return `<svg viewBox="0 0 380 300" role="img" aria-label="Seven traits arranged around the word life: cells, energy use, growth, reproduction, response, balance and evolution." style="max-width:460px;margin:auto">${s}</svg>`;
+}
+function waterSVG(){
+  return `<svg class="wide" viewBox="0 0 560 250" role="img" aria-label="Two water molecules. Oxygen is slightly negative, hydrogens slightly positive. A dashed hydrogen bond links a hydrogen of one molecule to the oxygen of the other.">
+  <line class="ln" style="stroke-width:5" x1="150" y1="100" x2="112" y2="130"/><line class="ln" style="stroke-width:5" x1="150" y1="100" x2="188" y2="130"/>
+  <line class="ln" style="stroke-width:5" x1="290" y1="150" x2="320" y2="112"/><line class="ln" style="stroke-width:5" x1="290" y1="150" x2="320" y2="188"/>
+  <line class="ln" stroke-dasharray="6 6" style="stroke:var(--hema);stroke-width:3" x1="196" y1="134" x2="262" y2="147"/>
+  <circle class="f-eosin" cx="150" cy="100" r="26"/><text class="tx-b tx-c" x="150" y="105">O</text>
+  <circle class="f-plain" cx="112" cy="130" r="15"/><text class="tx tx-c" x="112" y="134">H</text>
+  <circle class="f-plain" cx="188" cy="130" r="15"/><text class="tx tx-c" x="188" y="134">H</text>
+  <circle class="f-eosin" cx="290" cy="150" r="26"/><text class="tx-b tx-c" x="290" y="155">O</text>
+  <circle class="f-plain" cx="320" cy="112" r="15"/><text class="tx tx-c" x="320" y="116">H</text>
+  <circle class="f-plain" cx="320" cy="188" r="15"/><text class="tx tx-c" x="320" y="192">H</text>
+  <text class="tx tx-c" x="150" y="62" style="fill:var(--eosin)">δ− (slightly negative)</text>
+  <text class="tx tx-c" x="100" y="168" style="fill:var(--hema)">δ+</text><text class="tx tx-c" x="200" y="168" style="fill:var(--hema)">δ+</text>
+  <text class="tx tx-c" x="338" y="150" style="fill:var(--hema)" text-anchor="start">δ+</text>
+  <text class="tx-b" x="364" y="108">Covalent bond</text><text class="tx-m" x="364" y="124">atoms share electrons: strong</text>
+  <text class="tx-b" x="364" y="176" style="fill:var(--hema)">Hydrogen bond (dashed)</text><text class="tx-m" x="364" y="192">+ pulls on −: weak alone,</text><text class="tx-m" x="364" y="207">powerful in huge numbers</text>
+  <text class="tx-m" x="150" y="228" text-anchor="middle">H₂O</text></svg>`;
+}
+const hex=(cx,cy,r)=>[0,1,2,3,4,5].map(i=>{const a=Math.PI/3*i+Math.PI/6;return (cx+r*Math.cos(a)).toFixed(1)+','+(cy+r*Math.sin(a)).toFixed(1)}).join(' ');
+function carbSVG(){let s='<line class="ln-m" x1="14" y1="35" x2="156" y2="35"/>';for(let i=0;i<5;i++)s+=`<polygon class="f-hema" points="${hex(22+31*i,35,13)}"/>`;return `<svg viewBox="0 0 170 70" role="img" aria-label="Chain of sugar rings">${s}</svg>`;}
+function lipidSVG(){return `<svg viewBox="0 0 170 70" role="img" aria-label="Fat molecule with a round head and two wavy tails"><path class="s-amber" d="M44 28q10-10 20 0t20 0t20 0t20 0"/><path class="s-amber" d="M44 43q10 10 20 0t20 0t20 0t20 0"/><circle class="f-eosin" cx="30" cy="35" r="15"/></svg>`;}
+function proteinSVG(){const c=['f-hema','f-eosin','f-leaf','f-amber'];let p=[];for(let i=0;i<9;i++)p.push([16+17*i,35+17*Math.sin(i*.95)]);
+  let s=`<polyline class="ln-m" points="${p.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ')}"/>`;p.forEach((q,i)=>s+=`<circle class="${c[(i*3)%4]}" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="7.5"/>`);return `<svg viewBox="0 0 170 70" role="img" aria-label="Chain of different coloured amino acid beads">${s}</svg>`;}
+function nucSVG(){const c=['var(--eosin)','var(--amber)','var(--hema)','var(--leaf)'];let s='<line class="ln-m" x1="8" y1="16" x2="162" y2="16"/><line class="ln-m" x1="8" y1="54" x2="162" y2="54"/>';
+  for(let i=0;i<7;i++){const x=16+22*i;s+=`<line x1="${x}" y1="16" x2="${x}" y2="35" stroke="${c[i%4]}" stroke-width="4"/><line x1="${x}" y1="35" x2="${x}" y2="54" stroke="${c[(i*2+1)%4]}" stroke-width="4"/><circle class="f-plain" cx="${x}" cy="16" r="5"/><circle class="f-plain" cx="${x}" cy="54" r="5"/>`;}
+  return `<svg viewBox="0 0 170 70" role="img" aria-label="Two backbones joined by coloured base pairs">${s}</svg>`;}
+
+const ORGS={
+ membrane:{n:'Cell membrane & cytoplasm',job:'A double layer of fat that decides what comes in and what goes out. Inside it, the cytoplasm is the jelly where everything floats.',like:'A security gate with a guest list, around a busy open-plan office.',fact:'Water slips through easily. Salts and sugars need a protein doorway.'},
+ nucleus:{n:'Nucleus',job:'Holds the DNA and controls which genes are read. The dark spot inside, the nucleolus, builds ribosome parts.',like:'The library that keeps the master recipes. The books never leave the building.',fact:'Red blood cells push their nucleus out to make more room for oxygen.'},
+ er:{n:'Rough endoplasmic reticulum',job:'Folded membranes studded with ribosomes. Proteins that will leave the cell are built and folded here.',like:'An assembly line with quality control.',fact:'"Rough" only means the ribosome dots make it look bumpy.'},
+ golgi:{n:'Golgi apparatus',job:'Sorts, tags and packages proteins and lipids into little bubbles (vesicles) for delivery.',like:'The post office: labels, sorts and ships.',fact:'Stacks of flattened sacs; cargo moves from one end to the other.'},
+ mito:{n:'Mitochondria',job:'Burn glucose with oxygen to make ATP, the cell\'s spendable energy.',like:'A power station for the cell.',fact:'They carry their own small DNA, a leftover from ancient bacteria that moved in.'},
+ lyso:{n:'Lysosome',job:'A bag of digestive enzymes. It breaks down worn-out parts, food particles and invaders.',like:'The recycling centre.',fact:'Its inside is acidic, about pH 4.5, so the enzymes work there and nowhere else.'},
+ ribo:{n:'Ribosomes',job:'Read messenger RNA and join amino acids into proteins. Some float free, some sit on the ER.',like:'Tiny 3D printers that follow a printed instruction strip.',fact:'One cell can hold millions of them.'}
+};
+function cellSVG(){
+  const dots=[[120,200],[150,255],[105,150],[205,335],[262,322],[420,245],[540,225],[560,290],[300,300]].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="var(--ink)"/>`).join('');
+  const erDots=[[335,141],[375,141],[415,141],[335,185],[375,185],[415,185],[335,203],[375,203],[415,203]].map(p=>`<circle cx="${p[0]}" cy="${p[1]-6}" r="3" fill="var(--ink)"/>`).join('');
+  const mito=(tr)=>`<g transform="${tr}"><ellipse class="f-eosin" rx="50" ry="27"/><path class="s-eosin" style="stroke-width:2" d="M-34 0q8-16 17 0t17 0t17 0t17 0"/></g>`;
+  return `<svg class="wide cellsvg" id="cellsvg" viewBox="0 0 640 440" role="group" aria-label="Animal cell diagram. Select a part to learn about it.">
+  <g class="org" data-org="membrane" tabindex="0" role="button" aria-label="Cell membrane and cytoplasm"><ellipse cx="320" cy="220" rx="300" ry="200" fill="var(--surface2)" stroke="var(--muted)" stroke-width="6"/></g>
+  <g class="org" data-org="nucleus" tabindex="0" role="button" aria-label="Nucleus"><circle class="f-hema" cx="230" cy="205" r="78" style="stroke-width:4"/><circle cx="210" cy="190" r="22" fill="var(--hema)" opacity=".45"/><path class="ln-m" d="M240 230q15-18 30 0M180 230q10 12 24 6M250 165q14-8 24 4" style="stroke:var(--hema)"/></g>
+  <g class="org" data-org="er" tabindex="0" role="button" aria-label="Rough endoplasmic reticulum"><path class="s-amber" style="stroke-width:7" d="M315 150q20-18 40 0t40 0t40 0"/><path class="s-amber" style="stroke-width:7" d="M315 175q20 18 40 0t40 0t40 0"/><path class="s-amber" style="stroke-width:7" d="M315 200q20-18 40 0t40 0t40 0"/>${erDots}</g>
+  <g class="org" data-org="golgi" tabindex="0" role="button" aria-label="Golgi apparatus"><path class="s-leaf" style="stroke-width:9" d="M400 335q50-26 100 0"/><path class="s-leaf" style="stroke-width:9" d="M408 318q42-22 84 0"/><path class="s-leaf" style="stroke-width:9" d="M416 301q34-18 68 0"/><circle class="f-leaf" cx="520" cy="305" r="7"/><circle class="f-leaf" cx="532" cy="330" r="6"/><circle class="f-leaf" cx="382" cy="300" r="6"/></g>
+  <g class="org" data-org="mito" tabindex="0" role="button" aria-label="Mitochondria">${mito('translate(505 135) rotate(-25)')}${mito('translate(135 345) rotate(22)')}</g>
+  <g class="org" data-org="lyso" tabindex="0" role="button" aria-label="Lysosome"><circle class="f-plain" cx="320" cy="372" r="20"/><circle cx="313" cy="368" r="3" fill="var(--ink)"/><circle cx="326" cy="376" r="3" fill="var(--ink)"/><circle cx="322" cy="364" r="2.5" fill="var(--ink)"/></g>
+  <g class="org" data-org="ribo" tabindex="0" role="button" aria-label="Free ribosomes">${dots}</g></svg>`;
+}
+function flowSVG(){
+  return `<svg class="wide flow step" id="flowsvg" viewBox="0 0 640 310" style="color:var(--ink)" role="img" aria-label="A loop: sunlight and a chloroplast make glucose and oxygen, which travel to a mitochondrion that makes ATP and returns carbon dioxide and water.">${ARROW}
+  <g data-step="1"><circle class="f-amber" cx="90" cy="40" r="22"/>${[0,1,2,3,4,5,6,7].map(i=>{const a=i*Math.PI/4;return `<line class="s-amber" style="stroke-width:2.5" x1="${(90+29*Math.cos(a)).toFixed(1)}" y1="${(40+29*Math.sin(a)).toFixed(1)}" x2="${(90+38*Math.cos(a)).toFixed(1)}" y2="${(40+38*Math.sin(a)).toFixed(1)}"/>`}).join('')}<text class="tx" x="150" y="38">sunlight</text></g>
+  <g data-step="1"><line class="ln" x1="90" y1="82" x2="90" y2="98" marker-end="url(#arr)"/></g>
+  <g data-step="2"><rect class="f-leaf" x="20" y="100" width="250" height="120" rx="20"/><text class="tx-b" x="40" y="127">Chloroplast</text><text class="tx-m" x="40" y="145">Photosynthesis</text>
+    ${[60,120,180].map(x=>[0,1,2].map(j=>`<ellipse class="f-leaf" style="fill:var(--surface)" cx="${x+25}" cy="${170+j*10}" rx="22" ry="4.5"/>`).join('')).join('')}</g>
+  <g data-step="3"><line class="ln" x1="274" y1="140" x2="366" y2="140" marker-end="url(#arr)"/><text class="tx tx-c" x="320" y="130">glucose + O₂</text></g>
+  <g data-step="4"><rect class="f-eosin" x="370" y="100" width="250" height="120" rx="20"/><text class="tx-b" x="390" y="127">Mitochondrion</text><text class="tx-m" x="390" y="145">Cellular respiration</text>
+    <path class="s-eosin" style="stroke-width:2.5" d="M395 185q12-24 24 0t24 0t24 0t24 0t24 0t24 0t24 0"/>
+    <line class="ln" x1="495" y1="224" x2="495" y2="262" marker-end="url(#arr)"/><text class="tx tx-c" x="495" y="282">ATP (usable energy) + heat</text></g>
+  <g data-step="5"><line class="ln" x1="366" y1="192" x2="274" y2="192" marker-end="url(#arr)"/><text class="tx tx-c" x="320" y="212">CO₂ + H₂O</text></g></svg>`;
+}
+const FLOW=[
+ ['Light arrives','Nearly all life on Earth runs on sunlight. Green pigment called chlorophyll catches it.'],
+ ['Photosynthesis','Inside the chloroplast, light energy rearranges carbon dioxide and water into glucose, a sugar. The energy is now stored in chemical bonds. Oxygen is released as a by-product.'],
+ ['Glucose and oxygen travel','Plants use the glucose themselves or get eaten. The oxygen drifts into the air. It is the oxygen you are breathing.'],
+ ['Cellular respiration','Mitochondria take glucose and oxygen and release the stored energy in small, usable packets called ATP. About 30 ATP per glucose. Some energy escapes as heat.'],
+ ['The loop closes','The waste products, carbon dioxide and water, are exactly what photosynthesis needs. Matter goes round and round. Energy does not: it comes in as light and leaves as heat.']
+];
+function helixSVG(){
+  const cy=95,amp=56,seq=[0,2,1,3,0,0,2,3,1,2,3,0,1,2,0,3,1,1,2,0,3,2,1,0,3,3,1,2,0,2];
+  const col=['var(--eosin)','var(--amber)','var(--hema)','var(--leaf)'];
+  let r='',a=[],b=[];
+  for(let x=10;x<=550;x+=3){const t=x/46;a.push(x+','+(cy+amp*Math.sin(t)).toFixed(1));b.push(x+','+(cy-amp*Math.sin(t)).toFixed(1));}
+  seq.forEach((v,i)=>{const x=22+i*18,t=x/46,y1=cy+amp*Math.sin(t),y2=cy-amp*Math.sin(t),ym=(y1+y2)/2,p=v^1;
+    r+=`<line x1="${x}" y1="${y1.toFixed(1)}" x2="${x}" y2="${ym.toFixed(1)}" stroke="${col[v]}" stroke-width="5" stroke-linecap="round"/><line x1="${x}" y1="${ym.toFixed(1)}" x2="${x}" y2="${y2.toFixed(1)}" stroke="${col[p]}" stroke-width="5" stroke-linecap="round"/>`;});
+  return `<svg class="wide" viewBox="0 0 560 190" role="img" aria-label="DNA double helix with coloured base pair rungs: A pairs with T, G pairs with C."><polyline points="${a.join(' ')}" fill="none" stroke="var(--ink)" stroke-width="4" stroke-linecap="round" opacity=".85"/><polyline points="${b.join(' ')}" fill="none" stroke="var(--muted)" stroke-width="4" stroke-linecap="round" opacity=".85"/>${r}</svg>`;
+}
+function dogmaSVG(){
+  return `<svg class="wide" viewBox="0 0 640 130" style="color:var(--ink)" role="img" aria-label="Central dogma: DNA is transcribed into messenger RNA, which is translated into a protein.">${ARROW}
+  <rect class="f-hema" x="10" y="30" width="150" height="60" rx="16"/><text class="tx-b tx-c" x="85" y="56">DNA</text><text class="tx-m tx-c" x="85" y="74">the master recipe</text>
+  <line class="ln" x1="166" y1="60" x2="244" y2="60" marker-end="url(#arr)"/><text class="tx tx-c" x="205" y="48">transcription</text><text class="tx-m tx-c" x="205" y="82">in the nucleus</text>
+  <rect class="f-amber" x="250" y="30" width="150" height="60" rx="16"/><text class="tx-b tx-c" x="325" y="56">mRNA</text><text class="tx-m tx-c" x="325" y="74">a working copy</text>
+  <line class="ln" x1="406" y1="60" x2="484" y2="60" marker-end="url(#arr)"/><text class="tx tx-c" x="445" y="48">translation</text><text class="tx-m tx-c" x="445" y="82">at a ribosome</text>
+  <rect class="f-eosin" x="490" y="30" width="140" height="60" rx="16"/><text class="tx-b tx-c" x="560" y="56">Protein</text><text class="tx-m tx-c" x="560" y="74">the worker</text></svg>`;
+}
+function mitosisSVG(){
+  const X=(x,y,r=0,c='hema')=>`<g transform="translate(${x} ${y}) rotate(${r})"><path class="s-${c}" style="stroke-width:3.5" d="M-5-8L5 8M5-8L-5 8"/></g>`;
+  const S=(x,y,c='hema')=>`<path class="s-${c}" style="stroke-width:3.5" d="M${x} ${y-7}L${x} ${y+7}"/>`;
+  const cy=62,xs=[64,192,320,448,576];let s='';
+  const cell=(x,rx=40,ry=40,y=cy)=>`<ellipse class="f-plain" style="fill:var(--surface2);stroke:var(--muted);stroke-width:3" cx="${x}" cy="${y}" rx="${rx}" ry="${ry}"/>`;
+  s+=cell(xs[0])+`<circle class="f-hema" cx="${xs[0]}" cy="${cy}" r="22" style="fill-opacity:.5"/><path class="ln-m" style="stroke:var(--hema)" d="M${xs[0]-12} ${cy}q6-10 12 0t12 0"/>`;
+  s+=cell(xs[1])+`<circle cx="${xs[1]}" cy="${cy}" r="24" fill="none" stroke="var(--hema)" stroke-dasharray="3 4" stroke-width="2"/>`+X(xs[1]-9,cy-8,20)+X(xs[1]+9,cy-10,-30,'eosin')+X(xs[1]-6,cy+9,70,'eosin')+X(xs[1]+10,cy+8,-10);
+  s+=cell(xs[2])+[-21,-7,7,21].map((d,i)=>`<line class="ln-m" x1="${xs[2]}" y1="${cy-36}" x2="${xs[2]+d}" y2="${cy-8}"/><line class="ln-m" x1="${xs[2]}" y1="${cy+36}" x2="${xs[2]+d}" y2="${cy+8}"/>`).join('')+[-21,-7,7,21].map((d,i)=>X(xs[2]+d,cy,0,i%2?'eosin':'hema')).join('');
+  s+=cell(xs[3],38,46)+[-14,-5,5,14].map((d,i)=>`<line class="ln-m" x1="${xs[3]+d*.4}" y1="${cy-42}" x2="${xs[3]+d}" y2="${cy-20}"/><line class="ln-m" x1="${xs[3]+d*.4}" y1="${cy+42}" x2="${xs[3]+d}" y2="${cy+20}"/>`).join('')+[-14,-5,5,14].map((d,i)=>S(xs[3]+d,cy-20,i%2?'eosin':'hema')+S(xs[3]+d,cy+20,i%2?'eosin':'hema')).join('');
+  s+=`<circle class="f-plain" style="fill:var(--surface2);stroke:var(--muted);stroke-width:3" cx="${xs[4]}" cy="${cy-24}" r="24"/><circle class="f-plain" style="fill:var(--surface2);stroke:var(--muted);stroke-width:3" cx="${xs[4]}" cy="${cy+24}" r="24"/>`+[-8,0,8].map((d,i)=>S(xs[4]+d,cy-24,i%2?'eosin':'hema')+S(xs[4]+d,cy+24,i%2?'eosin':'hema')).join('');
+  const lab=[['Interphase','copy the DNA'],['Prophase','chromosomes coil up'],['Metaphase','line up in the middle'],['Anaphase','copies pulled apart'],['Telophase','two cells pinch off']];
+  lab.forEach((l,i)=>s+=`<text class="tx-b tx-c" x="${xs[i]}" y="128">${l[0]}</text><text class="tx-m tx-c" x="${xs[i]}" y="144">${l[1]}</text>`);
+  return `<svg class="wide" viewBox="0 0 640 156" role="img" aria-label="Five stages of mitosis from interphase to telophase.">${s}</svg>`;
+}
+
+/* ---------- chapters ---------- */
+const ideasHTML=a=>`<ul class="ideas">${a.map(i=>`<li><b>${i[0]}</b>${i[1]}</li>`).join('')}</ul>`;
+const CH=[];
+
+CH.push({title:'What is life?',zoom:'1 m, a whole organism',min:20,blurb:'Seven traits that separate a mushroom from a flame.',
+lead:'Before we study living things, we need a working answer to a surprisingly hard question. Biologists never settled on one sentence. They use a checklist.',
+body:()=>`
+<section class="block"><h2>The big ideas</h2>${ideasHTML([
+ ['A checklist, not a definition','Living things tend to show all seven traits at once. Missing one or two does not automatically disqualify something, but missing most does.'],
+ ['Cells are the unit','Every living thing is made of one cell or many. Nothing smaller than a cell counts as fully alive on its own.'],
+ ['Life keeps itself steady','Homeostasis means holding internal conditions (temperature, salt, acidity) in a narrow range while the outside changes.'],
+ ['Life changes over generations','Populations pass on heritable information, and over time it changes. That is evolution, and Chapter 7 is devoted to it.']])}</section>
+<section class="block"><figure class="fig"><div class="fig-scroll">${traitWheel()}</div><figcaption>The seven traits. A mushroom has all of them. Hold this wheel in mind: the experiment below uses it to judge some tricky cases.</figcaption></figure></section>
+<section class="block"><div class="lab"><span class="lab-tag">Try it</span><h2>Is it alive?</h2><p class="note">Pick something. Each tile shows whether it meets that trait: green is yes, amber is partly, grey is no.</p>
+<div class="row" id="itemBtns"></div><div class="traits" id="traitTiles"></div><div class="verdict" id="verdict"></div></div></section>`,
+init(root){
+ const T=['Cells','Uses energy','Grows','Reproduces','Responds','Keeps balance','Evolves'];
+ const I=[
+  {n:'Mushroom',v:[1,1,1,1,1,1,1],r:'Alive',t:'The full set. Fungi are more closely related to animals than to plants.'},
+  {n:'Oak seed',v:[1,.5,.5,1,1,1,1],r:'Alive, resting',t:'Dormant, with metabolism turned almost to zero. Add water and warmth and every trait switches on.'},
+  {n:'Virus',v:[0,0,0,.5,0,0,1],r:'Borderline',t:'It carries genes and evolves, but cannot copy itself or use energy without hijacking a host cell. Most biologists say it is not alive alone.'},
+  {n:'Fire',v:[0,.5,.5,.5,0,0,0],r:'Not alive',t:'It eats fuel and spreads, so it imitates several traits. But there are no cells, no self-regulation and no heredity.'},
+  {n:'Quartz crystal',v:[0,0,.5,0,0,0,0],r:'Not alive',t:'It grows by stacking atoms on the outside. Living things grow from within, using energy and instructions.'},
+  {n:'Robot vacuum',v:[0,.5,0,0,1,0,0],r:'Not alive',t:'It responds to bumps and runs on energy, but it cannot repair itself, reproduce or pass on traits.'}];
+ const bw=$('#itemBtns',root);
+ I.forEach((it,i)=>{const b=document.createElement('button');b.className='btn';b.textContent=it.n;b.type='button';b.addEventListener('click',()=>show(i));bw.append(b);});
+ function show(i){const it=I[i];$$('.btn',bw).forEach((b,j)=>b.setAttribute('aria-pressed',j===i));
+  $('#traitTiles',root).innerHTML=T.map((t,k)=>{const v=it.v[k];return `<div class="trait ${v===1?'y':v===.5?'h':''}"><b>${v===1?'✓':v===.5?'~':'✕'}</b>${t}</div>`}).join('');
+  $('#verdict',root).innerHTML=`<strong>${it.r}.</strong> ${it.t}`;}
+ show(0);
+},
+quiz:[
+ {q:'Which of these is NOT part of the usual checklist for life?',o:['Made of cells','Uses energy','Moves from place to place','Responds to surroundings'],a:2,w:'Trees and corals are alive and basically stay put. Movement is common but not required.'},
+ {q:'Why do most biologists hesitate to call a virus alive?',o:['It is too small to see','It cannot copy itself or use energy outside a host cell','It has no genes','It never changes'],a:1,w:'A virus has genes and evolves, but depends on a host cell for nearly every function.'},
+ {q:'Homeostasis is best described as…',o:['Growing larger over time','Passing genes to offspring','Keeping internal conditions steady','Turning light into sugar'],a:2,w:'Your body holds temperature near 37 °C whether it is snowing or sweltering.'}]});
+
+CH.push({title:'The chemistry of life',zoom:'1 nm, molecules',min:25,blurb:'Water, four kinds of building-block molecules, and why acidity matters.',
+lead:'Life is chemistry that has learned to organise itself. You need only a few ideas here, and they come back in every later chapter.',
+body:()=>`
+<section class="block"><h2>The big ideas</h2>${ideasHTML([
+ ['Four elements do most of the work','Carbon, hydrogen, oxygen and nitrogen make up about 96% of your body\'s mass. Carbon can form four bonds, which lets it build long chains and rings.'],
+ ['Water is lopsided','Oxygen hogs the shared electrons, so water has a slightly negative end and slightly positive ends. That small imbalance explains almost everything odd about water.'],
+ ['Big molecules are chains','Cells snap small units (monomers) into long chains (polymers). Four families do nearly all the work.'],
+ ['Acidity is a dial','The pH scale measures it. Each whole step is a tenfold change, and cells survive only in narrow ranges.']])}</section>
+<section class="block"><h2>Water: small, bent, sticky</h2><figure class="fig"><div class="fig-scroll">${waterSVG()}</div><figcaption>Because each water molecule is slightly charged at both ends, neighbours cling together. That stickiness gives water its high boiling point, its surface tension, and its power to dissolve salts and sugars.</figcaption></figure></section>
+<section class="block"><h2>The four families of life molecules</h2><div class="cards">
+ <div class="card"><span class="tag">monomer: sugar</span><h3>Carbohydrates</h3>${carbSVG()}<div>Quick energy and structure. Glucose, starch, the cellulose in plant walls.</div></div>
+ <div class="card"><span class="tag">building blocks: fatty acids + glycerol</span><h3>Lipids</h3>${lipidSVG()}<div>Long-term energy storage, and the double layer that forms every cell membrane. They avoid water.</div></div>
+ <div class="card"><span class="tag">monomer: amino acid (20 kinds)</span><h3>Proteins</h3>${proteinSVG()}<div>Enzymes, muscle fibres, antibodies, transporters. The order of the beads decides how the chain folds and what it does.</div></div>
+ <div class="card"><span class="tag">monomer: nucleotide (4 kinds)</span><h3>Nucleic acids</h3>${nucSVG()}<div>DNA and RNA. They store and carry instructions. Chapter 5 is all about them.</div></div></div></section>
+<section class="block"><div class="lab"><span class="lab-tag">Try it</span><h2>Slide along the pH scale</h2>
+<p class="note">Notice how narrow the window for blood is.</p>
+<div class="row" style="align-items:baseline;gap:14px"><span class="ph-n" id="phn">7.4</span><span id="phs"></span></div>
+<div class="phbar" aria-hidden="true"><i id="phmark"></i></div>
+<input id="ph" type="range" min="0" max="14" step="0.1" value="7.4" aria-label="pH value">
+<div class="row note" style="justify-content:space-between"><span>0 acid</span><span>7 neutral</span><span>14 base</span></div>
+<div class="callout"><p id="phn2"></p></div></div></section>`,
+init(root){
+ const E=[[0,'battery acid'],[1.5,'stomach acid'],[2.5,'lemon juice'],[4.5,'tomato'],[5.6,'rain water'],[7,'pure water'],[7.4,'human blood'],[8.1,'sea water'],[9,'baking soda solution'],[11,'household ammonia'],[13,'drain cleaner']];
+ const r=$('#ph',root);
+ const upd=()=>{const v=+r.value;let best=E[0];E.forEach(e=>{if(Math.abs(e[0]-v)<Math.abs(best[0]-v))best=e});
+  $('#phn',root).textContent=v.toFixed(1);$('#phs',root).textContent='closest everyday match: '+best[1]+' (pH '+best[0]+')';
+  $('#phmark',root).style.left=(v/14*100)+'%';
+  const f=Math.pow(10,Math.abs(v-7.4));
+  $('#phn2',root).textContent=Math.abs(v-7.4)<.06?'This is healthy blood. It stays between 7.35 and 7.45. Outside about 6.8 to 7.8 you cannot survive.':`That is ${f>=100?Math.round(f).toLocaleString():f.toFixed(1)} times ${v<7.4?'more acidic':'more basic'} than blood in hydrogen-ion terms. Each step on the scale is ×10.`;};
+ r.addEventListener('input',upd);upd();
+},
+quiz:[
+ {q:'Why do water molecules stick to each other?',o:['They are magnetic','Slightly charged ends attract, forming hydrogen bonds','They contain carbon','They are all the same shape'],a:1,w:'The slightly negative oxygen of one molecule is pulled toward the slightly positive hydrogen of another.'},
+ {q:'Which family of molecules stores genetic instructions?',o:['Carbohydrates','Lipids','Proteins','Nucleic acids'],a:3,w:'DNA and RNA are chains of nucleotides; the order of their bases is the information.'},
+ {q:'Stomach acid is about pH 1.5 and blood about pH 7.4. Roughly how much more acidic is stomach acid?',o:['About 6 times','About 60 times','About 800,000 times','They are about equal'],a:2,w:'The difference is 5.9 steps and each step is ×10, so 10^5.9 ≈ 800,000.'}]});
+
+CH.push({title:'The cell',zoom:'10 µm, one cell',min:25,blurb:'A tour of an animal cell, organelle by organelle.',
+lead:'Everything alive is built from cells. Open one up and you find a crowded, organised city.',
+body:()=>`
+<section class="block"><h2>The big ideas</h2>${ideasHTML([
+ ['Cell theory','All living things are made of cells. The cell is the smallest unit of life. All cells come from earlier cells.'],
+ ['Two cell designs','Prokaryotes (bacteria) have no nucleus and few internal parts. Eukaryotes (animals, plants, fungi) keep DNA in a nucleus and have membrane-wrapped organelles.'],
+ ['Organelles divide the labour','Each organelle does one job, so reactions that would interfere can run side by side.'],
+ ['Plants add three things','A rigid cell wall, chloroplasts for photosynthesis, and one large water-filled vacuole.']])}</section>
+<section class="block"><div class="lab"><span class="lab-tag">Try it</span><h2>Explore an animal cell</h2>
+<p class="note">Tap any part of the drawing, or pick from the list.</p>
+<figure><div class="fig-scroll">${cellSVG()}</div></figure>
+<div class="row" id="orgBtns" style="margin-top:12px"></div>
+<div class="orginfo" id="orginfo" aria-live="polite"></div></div></section>
+<div class="callout"><p>Sizes: a typical animal cell is about 10 to 30 µm across. You could line up roughly 50 of them across the width of this full stop.</p></div>`,
+init(root){
+ const svg=$('#cellsvg',root),info=$('#orginfo',root),btns=$('#orgBtns',root);
+ Object.entries(ORGS).forEach(([k,o])=>{const b=document.createElement('button');b.className='btn';b.type='button';b.textContent=o.n.split(' ')[0]==='Cell'?'Membrane':o.n.replace('Rough endoplasmic reticulum','Rough ER').replace('Golgi apparatus','Golgi');b.dataset.org=k;btns.append(b);});
+ function pick(k){const o=ORGS[k];svg.classList.add('sel');$$('.org',svg).forEach(g=>g.classList.toggle('active',g.dataset.org===k));$$('.btn',btns).forEach(b=>b.setAttribute('aria-pressed',b.dataset.org===k));
+  info.innerHTML=`<h3>${o.n}</h3><p>${o.job}</p><div class="why"><div><span>Think of it as</span>${o.like}</div><div><span>Fun fact</span>${o.fact}</div></div>`;}
+ $$('.org',svg).forEach(g=>{g.addEventListener('click',e=>{e.stopPropagation();pick(g.dataset.org)});g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();pick(g.dataset.org)}})});
+ $$('.btn',btns).forEach(b=>b.addEventListener('click',()=>pick(b.dataset.org)));
+ pick('nucleus');
+},
+quiz:[
+ {q:'Which organelle produces most of the cell\'s ATP?',o:['Nucleus','Golgi apparatus','Mitochondrion','Lysosome'],a:2,w:'Mitochondria carry out cellular respiration.'},
+ {q:'What do ribosomes do?',o:['Store DNA','Build proteins by reading mRNA','Digest waste','Control what enters the cell'],a:1,w:'Ribosomes are the protein-building machines.'},
+ {q:'What is the key difference between prokaryotic and eukaryotic cells?',o:['Only eukaryotes have DNA','Only prokaryotes use energy','Eukaryotes keep DNA in a nucleus and have membrane-bound organelles','Prokaryotes are always bigger'],a:2,w:'Bacteria are prokaryotes; you, a mushroom and an oak are eukaryotes.'}]});
+
+CH.push({title:'Energy: sun to cell',zoom:'5 µm, inside organelles',min:25,blurb:'Photosynthesis and respiration as one continuous loop.',
+lead:'Every cell needs a constant supply of usable energy. Two linked processes explain where it comes from and where it goes.',
+body:()=>`
+<section class="block"><h2>The big ideas</h2>${ideasHTML([
+ ['ATP is the cell\'s currency','Cells do not spend glucose directly. They convert it into ATP, a small molecule that releases energy in tiny, controllable amounts.'],
+ ['Photosynthesis stores energy','Plants, algae and some bacteria capture light and lock it into sugar.'],
+ ['Respiration releases it','Nearly all living things, plants included, break sugar down with oxygen to make ATP.'],
+ ['Energy flows, matter cycles','Carbon, hydrogen and oxygen are reused endlessly. Energy is not reused: it ends as heat.']])}</section>
+<section class="block"><div class="lab"><span class="lab-tag">Try it</span><h2>Follow the loop, one step at a time</h2>
+<figure><div class="fig-scroll">${flowSVG()}</div></figure>
+<div class="row" style="margin:12px 0"><button class="btn" id="prevS" type="button">Back</button><button class="btn primary" id="nextS" type="button">Next</button><span class="note" id="stepN"></span></div>
+<div id="stepT" aria-live="polite"></div>
+<div class="eq">Photosynthesis: 6CO₂ + 6H₂O + light → C₆H₁₂O₆ + 6O₂</div>
+<div class="eq">Respiration: C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + ATP + heat</div></div></section>
+<div class="callout"><p>Notice that the two equations are mirror images. One stores energy, the other spends it. Together they tie plants, animals and the air into a single machine.</p></div>`,
+init(root){
+ let s=1;const svg=$('#flowsvg',root);
+ const draw=()=>{$$('g[data-step]',svg).forEach(g=>g.classList.toggle('off',+g.dataset.step!==s));
+  $('#stepN',root).textContent=`Step ${s} of 5`;$('#stepT',root).innerHTML=`<h3>${FLOW[s-1][0]}</h3><p>${FLOW[s-1][1]}</p>`;
+  $('#prevS',root).disabled=s===1;$('#nextS',root).disabled=s===5;};
+ $('#prevS',root).onclick=()=>{s=Math.max(1,s-1);draw()};$('#nextS',root).onclick=()=>{s=Math.min(5,s+1);draw()};draw();
+},
+quiz:[
+ {q:'Which are the raw materials of photosynthesis?',o:['Glucose and oxygen','Carbon dioxide, water and light','ATP and heat','Nitrogen and soil'],a:1,w:'Those go in; glucose and oxygen come out.'},
+ {q:'Where is most ATP made in a cell?',o:['Chloroplast','Ribosome','Mitochondrion','Cell wall'],a:2,w:'Respiration happens in the mitochondria (after an initial step in the cytoplasm).'},
+ {q:'Which statement is correct?',o:['Energy cycles but matter flows through','Matter cycles but energy flows through and leaves as heat','Both cycle forever','Neither is conserved'],a:1,w:'Atoms are recycled. Usable energy comes from the sun and degrades to heat.'}]});
+
+CH.push({title:'DNA to protein',zoom:'2 nm, the double helix',min:30,blurb:'Genes, the genetic code, and what a single typo can do.',
+lead:'A cell\'s instructions are written in four letters. This chapter shows how those letters turn into the molecules that do the work, and lets you edit the code yourself.',
+body:()=>`
+<section class="block"><h2>The big ideas</h2>${ideasHTML([
+ ['DNA is a code','Four bases: A, T, G, C. A pairs with T and G pairs with C. The sequence is the information.'],
+ ['Genes are recipes','A gene is a stretch of DNA that says how to build one protein (or functional RNA).'],
+ ['Copy, then build','DNA is transcribed into mRNA, a disposable copy. Ribosomes translate mRNA three letters (one codon) at a time into amino acids.'],
+ ['Small changes, big range','A mutation can do nothing, change one amino acid, or break the whole protein.']])}</section>
+<section class="block"><figure class="fig"><div class="fig-scroll">${helixSVG()}</div>
+<div class="key"><span><i style="background:#c8336c"></i>A (adenine)</span><span><i style="background:#a76405"></i>T (thymine)</span><span><i style="background:#4a3fb0"></i>G (guanine)</span><span><i style="background:#0f7a5e"></i>C (cytosine)</span></div>
+<figcaption>Each rung is a base pair. The two halves of a rung are always matched: A with T, G with C. That matching is how DNA is copied accurately.</figcaption></figure></section>
+<section class="block"><figure class="fig"><div class="fig-scroll">${dogmaSVG()}</div><figcaption>The central dogma: information flows from DNA to RNA to protein. In RNA, the letter U replaces T.</figcaption></figure></section>
+<section class="block"><div class="lab"><span class="lab-tag">Try it</span><h2>Edit a gene, watch the protein change</h2>
+<p class="note">This is the coding strand of a tiny gene. Tap a letter to change it. Reading starts at ATG and stops at a stop codon.</p>
+<div class="row"><button class="btn" id="dReset" type="button">Reset gene</button></div>
+<div class="codons" id="codons"></div><div class="callout"><p id="dEffect"></p></div></div></section>`,
+init(root){
+ const ORIG='ATGGCTAAGTTCGGATGA';let seq=ORIG.split('');
+ const AA='FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',B='TCAG';
+ const NM={F:'Phe',L:'Leu',S:'Ser',Y:'Tyr','*':'Stop',C:'Cys',W:'Trp',P:'Pro',H:'His',Q:'Gln',R:'Arg',I:'Ile',M:'Met',T:'Thr',N:'Asn',K:'Lys',V:'Val',A:'Ala',D:'Asp',E:'Glu',G:'Gly'};
+ const tr=c=>AA[16*B.indexOf(c[0])+4*B.indexOf(c[1])+B.indexOf(c[2])];
+ const prot=a=>{const o=[];for(let i=0;i+2<a.length;i+=3){const x=tr(a.slice(i,i+3).join(''));if(x==='*')break;o.push(x)}return o};
+ const origP=prot(ORIG.split('')).join('');
+ function draw(){let h='',stopped=false;
+  for(let i=0;i<seq.length;i+=3){const c=seq.slice(i,i+3),a=tr(c.join(''));
+   h+=`<div class="codon ${stopped?'skip':''}"><div class="bases">${c.map((b,k)=>`<button type="button" class="base ${b} ${b!==ORIG[i+k]?'chg':''}" data-i="${i+k}" aria-label="Base ${i+k+1}: ${b}. Tap to change.">${b}</button>`).join('')}</div><div class="mr">${c.join('').replace(/T/g,'U')}</div><span class="aa ${a==='*'?'stop':''}">${NM[a]}</span></div>`;
+   if(a==='*')stopped=true;}
+  $('#codons',root).innerHTML=h;
+  $$('.base',root).forEach(b=>b.onclick=()=>{const i=+b.dataset.i;seq[i]='ATGC'['ATGC'.indexOf(seq[i])+1>3?0:'ATGC'.indexOf(seq[i])+1];draw()});
+  const p=prot(seq).join(''),e=$('#dEffect',root);
+  if(seq.join('')===ORIG)e.textContent='Original gene: Met-Ala-Lys-Phe-Gly, then stop. Change a letter to see what happens.';
+  else if(p===origP)e.textContent='Silent mutation. The letter changed but the protein is identical, because several codons can code for the same amino acid.';
+  else if(p.length<origP.length)e.textContent='Nonsense mutation. A stop codon appeared early, so the protein is cut short and probably useless.';
+  else if(p.length===origP.length)e.textContent='Missense mutation. One amino acid was swapped. The protein may work normally, work less well, or not at all. Sickle cell disease comes from exactly this kind of single swap.';
+  else e.textContent='The stop codon was destroyed or shifted, so the ribosome keeps reading and the protein ends up longer than intended.';}
+ $('#dReset',root).onclick=()=>{seq=ORIG.split('');draw()};draw();
+},
+quiz:[
+ {q:'In DNA, which base pairs with adenine (A)?',o:['G','C','T','U'],a:2,w:'A–T and G–C. In RNA, uracil (U) takes the place of T.'},
+ {q:'What does transcription produce?',o:['A protein','A copy of a gene as mRNA','A new DNA molecule','ATP'],a:1,w:'Transcription copies DNA into mRNA in the nucleus; translation then builds the protein.'},
+ {q:'A mutation changes an amino-acid codon into a stop codon early in the gene. What is it called?',o:['Silent','Missense','Nonsense','Neutral'],a:2,w:'The protein is truncated. Try making one in the gene above.'}]});
+
+CH.push({title:'Division and heredity',zoom:'10 µm, chromosomes',min:30,blurb:'How cells copy themselves, and how traits pass from parent to child.',
+lead:'To grow, heal and reproduce, cells must divide. Two different kinds of division do two different jobs.',
+body:()=>`
+<section class="block"><h2>The big ideas</h2>${ideasHTML([
+ ['Mitosis makes copies','One cell becomes two genetically identical cells. It is how you grow and heal.'],
+ ['Meiosis makes variety','Four cells, each with half the chromosomes and a different mix. These become eggs and sperm.'],
+ ['Genes come in versions','Different versions of a gene are alleles. You inherit one from each parent.'],
+ ['Dominant is not "better"','A dominant allele shows up if present. A recessive allele only shows when you have two copies.']])}</section>
+<section class="block"><figure class="fig"><div class="fig-scroll">${mitosisSVG()}</div><figcaption>Mitosis in five snapshots. The DNA is copied first, in interphase. Then the cell coils the copies into visible chromosomes, lines them up, pulls the pairs apart, and splits.</figcaption></figure></section>
+<section class="block"><div class="lab"><span class="lab-tag">Try it</span><h2>Cross two pea plants</h2>
+<p class="note">Purple flowers (R) are dominant over white (r). Choose the parents' genes and see their children.</p>
+<div class="row"><label>Parent 1 <select id="p1"><option>RR</option><option selected>Rr</option><option>rr</option></select></label><label>Parent 2 <select id="p2"><option>RR</option><option selected>Rr</option><option>rr</option></select></label></div>
+<div class="pun" id="pun"></div><div class="callout"><p id="punT"></p></div></div></section>`,
+init(root){
+ const draw=()=>{const a=$('#p1',root).value,b=$('#p2',root).value;let h='<div class="h"></div>'+[b[0],b[1]].map(g=>`<div class="h">${g}</div>`).join('');
+  const out=[];[a[0],a[1]].forEach(x=>{h+=`<div class="h">${x}</div>`;[b[0],b[1]].forEach(y=>{const g=[x,y].sort((m,n)=>m<n?-1:1).join('').split('').sort().join('');const gt=(x===x.toUpperCase()||y===y.toUpperCase())?'p':'w';const name=[x,y].sort((m,n)=>m.toLowerCase()===n.toLowerCase()?(m<n?-1:1):0).join('');out.push(gt);h+=`<div class="${gt}">${[x,y].sort().join('')}<small>${gt==='p'?'purple':'white'}</small></div>`})});
+  $('#pun',root).innerHTML=h;const pur=out.filter(o=>o==='p').length;
+  $('#punT',root).textContent=`${pur} in 4 children are expected to be purple, ${4-pur} in 4 white. Each child is an independent coin flip, so a real family can differ from this ratio.`;};
+ $('#p1',root).onchange=draw;$('#p2',root).onchange=draw;draw();
+},
+quiz:[
+ {q:'What does mitosis produce?',o:['Four different gametes','Two genetically identical cells','One cell with double the DNA','Two cells with half the DNA'],a:1,w:'Identical daughter cells, used for growth and repair.'},
+ {q:'Two Rr pea plants are crossed. What fraction of offspring show the recessive (white) trait?',o:['0','1/4','1/2','All'],a:1,w:'Only rr is white, and that is one of four equally likely boxes.'},
+ {q:'Meiosis results in…',o:['Two identical body cells','Four genetically different cells with half the chromosomes','A larger cell','Cells with extra chromosomes'],a:1,w:'This halving is what lets two parents combine into a normal-sized genome.'}]});
+
+CH.push({title:'Evolution',zoom:'populations over time',min:30,blurb:'Run natural selection yourself, one generation at a time.',
+lead:'Evolution is the single idea that makes sense of the rest of biology. It is also easy to misunderstand, so we will test it directly.',
+body:()=>`
+<section class="block"><h2>The big ideas</h2>${ideasHTML([
+ ['Variation exists','Individuals in a population differ, and some differences are inherited.'],
+ ['Not everyone leaves equal offspring','Some variants survive and reproduce more often in a given environment.'],
+ ['Populations change, not individuals','Over generations the common traits shift. No single beetle changes colour because it needs to.'],
+ ['No foresight, no goal','Selection filters what already exists. Mutation supplies new options at random; the environment does the choosing.']])}</section>
+<section class="block"><div class="lab simwrap"><span class="lab-tag">Try it</span><h2>Beetles and birds</h2>
+<p class="note">Thirty beetles, green or brown, live on the ground. Hungry birds spot mismatched beetles more easily. Survivors repopulate the next generation, with a rare chance of colour mutation.</p>
+<div class="row" style="margin:10px 0"><button class="btn" id="envG" type="button" aria-pressed="true">Green meadow</button><button class="btn" id="envB" type="button" aria-pressed="false">Brown soil</button></div>
+<svg id="sim" viewBox="0 0 600 260" role="img" aria-label="Beetles on the ground"></svg>
+<div class="row" style="margin-top:12px"><button class="btn primary" id="gen1" type="button">Send the birds (1 generation)</button><button class="btn" id="gen10" type="button">Run 10</button><button class="btn" id="simReset" type="button">Reset</button></div>
+<div class="stats"><span>Generation <b id="gN">0</b></span><span>Green beetles <b id="gP">50%</b></span></div>
+<svg id="chart" viewBox="0 0 600 130" role="img" aria-label="Percent of green beetles over generations" style="margin-top:10px"></svg>
+<div class="callout"><p id="simT">Try the green meadow first, then switch to brown soil and keep running. Same beetles, same birds, different result.</p></div></div></section>`,
+init(root){
+ const N=30,sim=$('#sim',root),ch=$('#chart',root);let env='g',gen=0,pop=[],hist=[];
+ const G='#5fae4d',Br='#8d6a43',GG='#4b8c3c',BG='#74583a';
+ const mk=c=>({c,x:20+Math.random()*560,y:20+Math.random()*220,r:Math.random()*360});
+ function reset(){pop=Array.from({length:N},(_,i)=>mk(i<N/2?'g':'b'));gen=0;hist=[50];draw()}
+ function draw(){
+  sim.innerHTML=`<rect width="600" height="260" fill="${env==='g'?GG:BG}"/>`+(env==='g'?Array.from({length:60},(_,i)=>`<path d="M${(i*53)%600} ${((i*97)%260)}l3-12 3 12" stroke="#3d7a30" stroke-width="2" fill="none"/>`).join(''):Array.from({length:50},(_,i)=>`<circle cx="${(i*71)%600}" cy="${(i*43)%260}" r="${2+i%3}" fill="#654a30"/>`).join(''))
+   +pop.map(b=>`<g transform="translate(${b.x.toFixed(0)} ${b.y.toFixed(0)}) rotate(${b.r.toFixed(0)})"><ellipse rx="13" ry="8" fill="${b.c==='g'?G:Br}"/><line x1="-13" y1="0" x2="13" y2="0" stroke="rgba(0,0,0,.25)" stroke-width="1.2"/><circle cx="13" cy="0" r="3.5" fill="${b.c==='g'?G:Br}"/></g>`).join('');
+  const g=pop.filter(b=>b.c==='g').length,p=Math.round(g/N*100);$('#gN',root).textContent=gen;$('#gP',root).textContent=p+'%';
+  const pts=hist.map((v,i)=>[40+(hist.length<2?0:i*(540/Math.max(hist.length-1,20))),110-v*.9]);
+  ch.innerHTML=[0,50,100].map(v=>`<line x1="40" x2="580" y1="${110-v*.9}" y2="${110-v*.9}" stroke="var(--line)"/><text class="tx-m" x="34" y="${114-v*.9}" text-anchor="end">${v}%</text>`).join('')
+   +`<polyline fill="none" stroke="${'#4b8c3c'}" stroke-width="3" stroke-linejoin="round" points="${pts.map(q=>q.join(',')).join(' ')}"/><circle cx="${pts[pts.length-1][0]}" cy="${pts[pts.length-1][1]}" r="5" fill="#4b8c3c"/><text class="tx-m" x="310" y="128" text-anchor="middle">generation</text>`;
+ }
+ function step(){
+  const surv=pop.filter(b=>Math.random()<((b.c===env)?.85:.45));const s=surv.length?surv:[pop[0]];
+  pop=Array.from({length:N},()=>{const p=s[Math.floor(Math.random()*s.length)];const c=Math.random()<.03?(p.c==='g'?'b':'g'):p.c;return mk(c)});
+  gen++;hist.push(pop.filter(b=>b.c==='g').length/N*100);}
+ $('#gen1',root).onclick=()=>{step();draw()};
+ $('#gen10',root).onclick=()=>{for(let i=0;i<10;i++)step();draw()};
+ $('#simReset',root).onclick=reset;
+ const setEnv=e=>{env=e;$('#envG',root).setAttribute('aria-pressed',e==='g');$('#envB',root).setAttribute('aria-pressed',e==='b');draw()};
+ $('#envG',root).onclick=()=>setEnv('g');$('#envB',root).onclick=()=>setEnv('b');
+ reset();
+},
+quiz:[
+ {q:'Natural selection acts on…',o:['Traits an individual wants','Heritable variation that affects survival and reproduction','Only mutations that just happened','Whole species at once'],a:1,w:'Variation must exist, be inheritable, and make a difference to leaving offspring.'},
+ {q:'What actually evolves?',o:['Individuals during their lifetime','Populations across generations','Single cells only','Environments'],a:1,w:'Individuals do not change their inherited traits. The mix in the population shifts.'},
+ {q:'On a green meadow, the share of green beetles rose. Why?',o:['They decided to turn green','Green beetles were eaten less often and passed colour to offspring','Birds prefer brown food','Mutation always favours green'],a:1,w:'Better camouflage meant more survivors, and colour is inherited.'}]});
+
+CH.push({title:'Ecosystems',zoom:'communities and the planet',min:25,blurb:'Food webs, energy pyramids, and what happens when a species vanishes.',
+lead:'Zoom all the way out. Organisms do not live alone: they eat, are eaten, and rely on each other in webs of dependence.',
+body:()=>`
+<section class="block"><h2>The big ideas</h2>${ideasHTML([
+ ['Producers feed everyone','Plants, algae and some bacteria turn light into food. Every food web begins with them.'],
+ ['Consumers and decomposers','Animals eat other organisms. Fungi and bacteria break down the dead, returning nutrients to soil.'],
+ ['Energy shrinks at each step','Only about 10% moves up to the next level; the rest is used for living or lost as heat. That is why top predators are rare.'],
+ ['Webs hold, until they don\'t','Species with several food sources buffer shocks. Single-source species do not.']])}</section>
+<section class="block"><div class="lab"><span class="lab-tag">Try it</span><h2>Remove a species</h2>
+<p class="note">Arrows point from the eaten to the eater, the direction energy travels. Tap a species to remove it. Anything that loses all its food will starve (dashed).</p>
+<figure><div class="fig-scroll"><svg class="wide" id="web" viewBox="0 0 640 380" style="color:var(--ink)" role="group" aria-label="Food web"></svg></div></figure>
+<div class="row" style="margin-top:10px"><button class="btn" id="webReset" type="button">Restore all</button></div>
+<div class="callout"><p id="webT"></p></div></div></section>
+<section class="block"><div class="lab"><span class="lab-tag">Try it</span><h2>The energy pyramid</h2>
+<p class="note">Start with 10,000 kJ captured by grass. Change how much passes up each step.</p>
+<label for="eff">Transfer efficiency: <b id="effN">10%</b></label><input id="eff" type="range" min="5" max="20" step="1" value="10">
+<div class="pyr" id="pyr"></div><p class="note" style="margin-top:10px">Bars are to scale. This is why a hawk needs a large territory and a lion pride cannot be as big as the herd it hunts.</p></div></section>`,
+init(root){
+ const nodes={grass:['Grass',150,330,'p'],berry:['Berry bush',470,330,'p'],rabbit:['Rabbit',110,220,'c'],hopper:['Grasshopper',260,220,'c'],mouse:['Mouse',470,220,'c'],fox:['Fox',130,110,'s'],frog:['Frog',290,110,'s'],hawk:['Hawk',470,110,'s']};
+ const edges=[['grass','rabbit'],['grass','hopper'],['berry','mouse'],['hopper','frog'],['rabbit','fox'],['mouse','fox'],['mouse','hawk'],['frog','hawk']];
+ const colr={p:'f-leaf',c:'f-amber',s:'f-eosin'};let rem=new Set();
+ function dead(){const d=new Set(rem);let ch=true;while(ch){ch=false;Object.keys(nodes).forEach(k=>{if(d.has(k)||nodes[k][3]==='p')return;const prey=edges.filter(e=>e[1]===k).map(e=>e[0]);if(prey.length&&prey.every(p=>d.has(p))){d.add(k);ch=true}})}return d}
+ function draw(){const d=dead();let s=ARROW;
+  edges.forEach(([a,b])=>{const A=nodes[a],B=nodes[b],gone=d.has(a)||d.has(b);s+=`<line class="ln" x1="${A[1]}" y1="${A[2]-18}" x2="${B[1]}" y2="${B[2]+22}" marker-end="url(#arr)" style="${gone?'opacity:.2':''}"/>`});
+  Object.entries(nodes).forEach(([k,n])=>{const isR=rem.has(k),isD=d.has(k);
+   s+=`<g class="org" data-k="${k}" tabindex="0" role="button" aria-pressed="${isR}" aria-label="${n[0]}${isR?', removed':isD?', starved':''}" style="opacity:${isD?.4:1}"><rect class="${colr[n[3]]}" x="${n[1]-50}" y="${n[2]-18}" width="100" height="36" rx="18" ${isD&&!isR?'stroke-dasharray="5 4"':''} ${isR?'style="stroke:var(--eosin);stroke-width:3"':''}/><text class="tx-b tx-c" x="${n[1]}" y="${n[2]+5}" ${isD?'text-decoration="line-through"':''}>${n[0]}</text></g>`});
+  s+=`<text class="tx-m" x="600" y="104" text-anchor="end">top predators</text><text class="tx-m" x="600" y="214" text-anchor="end">plant eaters</text><text class="tx-m" x="600" y="324" text-anchor="end">producers</text>`;
+  $('#web',root).innerHTML=s;
+  $$('#web g.org',root).forEach(g=>{const f=()=>{const k=g.dataset.k;rem.has(k)?rem.delete(k):rem.add(k);draw()};g.onclick=f;g.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();f()}}});
+  const st=[...d].filter(k=>!rem.has(k)).map(k=>nodes[k][0]);
+  $('#webT',root).textContent=!rem.size?'Everything is present. Tap a species to remove it. Try Grass, then try Berry bush, and compare. Why does the fox survive one loss that the frog cannot?':
+   (st.length?`Removed: ${[...rem].map(k=>nodes[k][0]).join(', ')}. Starved as a result: ${st.join(', ')}.`:`Removed: ${[...rem].map(k=>nodes[k][0]).join(', ')}. Nothing else starves, because every other species has a second food source.`);}
+ draw();$('#webReset',root).onclick=()=>{rem=new Set();draw()};
+ const eff=$('#eff',root),lv=['Grass (producers)','Rabbits (1st level)','Foxes (2nd level)','Top predator'];
+ const dp=()=>{const e=+eff.value/100;$('#effN',root).textContent=eff.value+'%';
+  $('#pyr',root).innerHTML=lv.map((n,i)=>{const v=10000*Math.pow(e,i);return `<div><span>${n}</span><span><span class="bar" style="width:${Math.max(v/100,.3)}%;display:inline-block;vertical-align:middle;opacity:${1-i*.18}"></span><span class="e">${v>=10?Math.round(v).toLocaleString():v.toFixed(1)} kJ</span></span></div>`}).join('')};
+ eff.oninput=dp;dp();
+},
+quiz:[
+ {q:'Where does the energy in nearly every food web originally come from?',o:['Soil','Decomposers','Sunlight captured by producers','Predators'],a:2,w:'Producers turn light into chemical energy that the rest of the web depends on.'},
+ {q:'About how much energy passes from one trophic level to the next?',o:['About 90%','About 50%','About 10%','Almost none'],a:2,w:'The rest powers life processes and escapes as heat.'},
+ {q:'What do decomposers do for an ecosystem?',o:['Hunt predators','Make sunlight usable','Break down dead matter and return nutrients to the soil','Replace producers'],a:2,w:'Without fungi and bacteria, nutrients would stay locked in dead bodies.'}]});
+
+/* ---------- app shell ---------- */
+const main=$('#main'),nav=$('#nav');
+function renderNav(cur){
+ nav.innerHTML=CH.map((c,i)=>`<li><a href="#ch-${i+1}" class="${progress.done[i]?'done':''}" ${cur===i?'aria-current="page"':''} aria-label="Chapter ${i+1}: ${c.title}${progress.done[i]?', complete':''}"><span class="dot">${progress.done[i]?'✓':i+1}</span><span class="t">${c.title}</span></a></li>`).join('');
+ const n=Object.keys(progress.done).filter(k=>progress.done[k]).length;
+ $('#meterLabel').textContent=`${n} of ${CH.length} chapters complete`;$('#meterBar').style.width=(n/CH.length*100)+'%';
+}
+function home(){
+ const n=Object.keys(progress.done).filter(k=>progress.done[k]).length;
+ const next=CH.findIndex((c,i)=>!progress.done[i]);
+ const cta=n===0?'Begin chapter 1':next===-1?'Review from chapter 1':`Continue with chapter ${next+1}`;
+ const rings=[[140,'f-leaf','ecosystem',28],[110,'f-amber','organism',58],[80,'f-eosin','cell',88],[50,'f-hema','nucleus',118]];
+ main.innerHTML=`<section class="hero"><div><div class="kicker">A course in eight sittings</div><h1>Biology, from zero.</h1>
+ <p class="lead">You start at the smallest question there is, what counts as alive, and zoom steadily out to whole ecosystems. No background needed. Each chapter takes about half an hour.</p>
+ <div class="row" style="margin-top:20px"><a class="btn primary" href="#ch-${next===-1?1:next+1}" style="text-decoration:none">${cta}</a></div></div>
+ <svg viewBox="0 0 300 300" role="img" aria-label="Concentric circles that zoom in from ecosystem to organism, cell, nucleus and DNA.">${rings.map(r=>`<circle class="${r[1]}" cx="150" cy="150" r="${r[0]}"/><text class="tx tx-c" x="150" y="${r[3]}">${r[2]}</text>`).join('')}<circle class="f-plain" cx="150" cy="150" r="24"/><text class="tx-b tx-c" x="150" y="155">DNA</text></svg></section>
+ <section class="block"><h2>How to get the most from it</h2><div class="how">
+  <div><b>One chapter per sitting</b>Stop when it is done. Rest is part of how memory forms, and finishing one thing well beats skimming three.</div>
+  <div><b>Touch every diagram</b>The experiments are the lesson, not decoration. Break the gene, starve the fox, run the beetles.</div>
+  <div><b>Answer before you look</b>Struggling with the check questions is the point. Retrieving an answer teaches you more than re-reading it.</div>
+  <div><b>Return tomorrow</b>The next day, explain the chapter aloud in a minute, from memory. If you stumble, you have found exactly what to review.</div></div>
+  <div class="callout"><p>One honest note. You will feel lost at some point, probably in chapter 2 or 5. That is normal and it is not a sign you are bad at science. It is what learning something new feels like. Keep going slowly.</p></div></section>
+ <section class="block"><h2>The chapters</h2><div class="chgrid">${CH.map((c,i)=>`<a class="chcard ${progress.done[i]?'done':''}" href="#ch-${i+1}"><span class="zm">Chapter ${i+1} · zoom ${c.zoom}</span><h3>${c.title}</h3><p>${c.blurb}</p><span class="st">${progress.done[i]?'✓ Complete':c.min+' min'}</span></a>`).join('')}</div></section>`;
+}
+function chapter(i){
+ const c=CH[i];
+ main.innerHTML=`<article><div class="kicker">Chapter ${i+1} of ${CH.length} · Zoom: ${c.zoom} · about ${c.min} min</div><h1>${c.title}</h1><p class="lead">${c.lead}</p>${c.body()}
+ <section class="block quiz"><h2>Check yourself</h2><p class="note">Answer all three correctly to complete the chapter. A wrong answer is fine, it just points you to the idea to revisit.</p><div id="quiz"></div><div id="done"></div></section>
+ <nav class="pager" aria-label="Chapter navigation">${i>0?`<a class="btn" href="#ch-${i}" style="text-decoration:none">← ${CH[i-1].title}</a>`:`<a class="btn" href="#start" style="text-decoration:none">← Course home</a>`}${i<CH.length-1?`<a class="btn primary" href="#ch-${i+2}" style="text-decoration:none">${CH[i+1].title} →</a>`:`<a class="btn primary" href="#start" style="text-decoration:none">Back to the map →</a>`}</nav></article>`;
+ c.init(main);
+ let ok=0;const qz=$('#quiz');
+ c.quiz.forEach((q,qi)=>{const d=document.createElement('div');d.className='q';
+  d.innerHTML=`<p>${qi+1}. ${q.q}</p><div class="opts">${q.o.map((o,oi)=>`<button class="opt" type="button" data-o="${oi}">${o}</button>`).join('')}</div><div class="why-a" aria-live="polite"></div>`;
+  d.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>{const oi=+b.dataset.o,w=$('.why-a',d);
+   if(oi===q.a){b.classList.add('good');d.querySelectorAll('.opt').forEach(x=>x.disabled=true);w.textContent='Correct. '+q.w;ok++;if(ok===c.quiz.length)finish();}
+   else{b.classList.add('bad');b.disabled=true;w.textContent='Not quite. Have another look at the diagram above and try again.';}}));
+  qz.append(d);});
+ function finish(){progress.done[i]=true;save();renderNav(i);
+  $('#done').innerHTML=`<div class="complete"><h3>Chapter ${i+1} complete. Well done.</h3><p>Before you move on, close your eyes and explain "${c.title.toLowerCase()}" out loud in one minute. Then rest. Tomorrow, try it again without looking. That small habit does more than a second read-through.</p></div>`;}
+ if(progress.done[i])$('#done').innerHTML=`<div class="complete"><h3>You have completed this chapter.</h3><p>Want to lock it in? Explain it aloud in a minute, from memory, then re-run the quiz.</p></div>`;
+}
+function route(){
+ const h=location.hash.replace('#','');let m=/^ch-(\d+)$/.exec(h);
+ if(m&&+m[1]>=1&&+m[1]<=CH.length){const i=+m[1]-1;progress.last=i;save();renderNav(i);chapter(i);}
+ else{renderNav(-1);home();}
+ window.scrollTo(0,0);
+}
+window.addEventListener('hashchange',route);
+$('#themeBtn').addEventListener('click',()=>{const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.dataset.theme=dark?'light':'dark'});
+route();
+</script>
+
+</body></html>

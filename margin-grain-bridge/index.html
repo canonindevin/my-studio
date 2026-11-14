@@ -1,0 +1,800 @@
+<!doctype html><html lang="en"><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>Margin Grain Bridge</title></head><body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column of worked figures; a ledger-style workbench in the middle where
+   the reader switches bridging method and reporting grain and watches the tie-out respond. */
+:root {
+  --bg: #f4f6f9; --surface: #ffffff; --sunk: #eceff4;
+  --ink: #131820; --ink-2: #4a5362; --ink-3: #7b8494;
+  --line: #dce1e9; --line-2: #c4cbd6;
+  --g-row: #2a78d6;   /* customer x SKU grain */
+  --g-sku: #eb6834;   /* SKU grain */
+  --g-brand: #1baf7a; /* brand grain */
+  --good: #0ca30c; --good-ink: #006300; --good-wash: #e6f5e6;
+  --bad: #d03b3b; --bad-ink: #a82a2a; --bad-wash: #fbeaea;
+  --focus: #2a78d6;
+  --f-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --f-body: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e1116; --surface: #171b22; --sunk: #1f242d;
+  --ink: #eceef2; --ink-2: #b4bbc8; --ink-3: #838c9b;
+  --line: #2a303a; --line-2: #3a424f;
+  --g-row: #3987e5; --g-sku: #d95926; --g-brand: #199e70;
+  --good: #0ca30c; --good-ink: #5fd35f; --good-wash: #12301a;
+  --bad: #d03b3b; --bad-ink: #f08a8a; --bad-wash: #3a1b1d;
+  --focus: #6da7ec; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0e1116; --surface: #171b22; --sunk: #1f242d;
+  --ink: #eceef2; --ink-2: #b4bbc8; --ink-3: #838c9b;
+  --line: #2a303a; --line-2: #3a424f;
+  --g-row: #3987e5; --g-sku: #d95926; --g-brand: #199e70;
+  --good: #0ca30c; --good-ink: #5fd35f; --good-wash: #12301a;
+  --bad: #d03b3b; --bad-ink: #f08a8a; --bad-wash: #3a1b1d;
+  --focus: #6da7ec; color-scheme: dark }
+
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 40px 72px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 56px; }
+section { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(28px, 4.6vw, 42px); line-height: 1.1; font-weight: 600; max-width: 20ch; }
+h2 { font-size: 24px; line-height: 1.2; font-weight: 600; }
+h3 { font-size: 16px; font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+.lede { font-size: 17px; color: var(--ink-2); }
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.sub { color: var(--ink-2); }
+.num, td.n, th.n { font-variant-numeric: tabular-nums; }
+header { display: flex; flex-direction: column; gap: 14px; }
+
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: 1px; flex: none; }
+.dot.row { background: var(--g-row); } .dot.sku { background: var(--g-sku); } .dot.brand { background: var(--g-brand); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--ink-2); }
+
+/* tables */
+.scroll { overflow-x: auto; min-width: 0; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { padding: 7px 10px; text-align: left; white-space: nowrap; border-bottom: 1px solid var(--line); }
+th { font-size: 11.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-3); border-bottom-color: var(--line-2); }
+td.n, th.n { text-align: right; }
+tr.total td { font-weight: 600; border-top: 1px solid var(--line-2); border-bottom: 0; }
+tr.unalloc td { color: var(--ink-2); font-style: italic; }
+td.key { font-weight: 500; }
+.neg { color: var(--bad-ink); }
+
+/* sources */
+.sources { display: grid; grid-template-columns: 0.75fr 1.25fr 1.5fr; gap: 16px; align-items: start; }
+.src { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 6px 6px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.src > div.h { padding: 0 10px; display: flex; flex-direction: column; gap: 2px; }
+.src .grain { font-size: 12.5px; color: var(--ink-2); }
+.src tr:last-child td { border-bottom: 0; }
+.keycol { font-family: var(--f-mono); font-size: 12.5px; }
+.joins { font-size: 13.5px; color: var(--ink-2); }
+.joins code, p code, li code { font-family: var(--f-mono); font-size: 0.9em; background: var(--sunk); padding: 1px 5px; border-radius: 4px; }
+
+/* workbench */
+.bench { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.controls { display: grid; grid-template-columns: auto 1fr; gap: 10px 16px; align-items: center; }
+.controls .lab { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+.seg button, .presets button, .tabs button { background: var(--surface); border: 1px solid var(--line-2); border-radius: 6px; padding: 6px 11px; font-size: 13.5px; color: var(--ink-2); }
+.seg button:hover, .presets button:hover, .tabs button:hover { border-color: var(--ink-3); color: var(--ink); }
+.seg button[aria-pressed="true"], .tabs button[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); font-weight: 500; }
+button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.presets { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.presets span { font-size: 13px; color: var(--ink-3); }
+.split { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; align-items: start; }
+.split > div { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+.pill.ok { background: var(--good-wash); color: var(--good-ink); }
+.pill.no { background: var(--bad-wash); color: var(--bad-ink); }
+.notes { display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; color: var(--ink-2); padding: 0; margin: 0; list-style: none; }
+.notes li { padding-left: 14px; position: relative; max-width: 62ch; }
+.notes li::before { content: ""; position: absolute; left: 0; top: 0.62em; width: 6px; height: 1px; background: var(--ink-3); }
+.verdict { font-family: var(--f-display); font-size: 17px; font-weight: 600; }
+#chart { width: 100%; position: relative; }
+#chart svg { display: block; width: 100%; height: auto; }
+#chart text { font-family: var(--f-body); fill: var(--ink-2); font-size: 11.5px; }
+#chart text.v { fill: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+#tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12.5px; padding: 6px 9px; border-radius: 6px; max-width: 220px; z-index: 2; }
+
+/* moves */
+.fig { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.side { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.side .tag { display: flex; }
+.flow { font-family: var(--f-mono); font-size: 12.5px; display: flex; flex-direction: column; gap: 4px; }
+.flow .srcline { background: var(--sunk); border-radius: 6px; padding: 7px 10px; }
+.flow .r { display: flex; justify-content: space-between; gap: 12px; padding: 5px 10px; border-bottom: 1px dashed var(--line); }
+.flow .r span:last-child { text-align: right; white-space: nowrap; }
+.flow .sum { display: flex; justify-content: space-between; gap: 12px; padding: 6px 10px; font-weight: 500; }
+.traps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.trap { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--line-2); padding-top: 12px; }
+.trap p { font-size: 14px; color: var(--ink-2); }
+
+/* tools */
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tool { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.tool > div { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.tool h3 { display: flex; align-items: center; gap: 8px; }
+pre { margin: 0; background: var(--sunk); border-radius: 8px; padding: 12px 14px; overflow-x: auto; font-family: var(--f-mono); font-size: 12.5px; line-height: 1.55; color: var(--ink); }
+.tool ul, .checks { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 7px; font-size: 14px; color: var(--ink-2); max-width: 68ch; }
+.cap { font-size: 12.5px; color: var(--ink-3); }
+
+@media (max-width: 820px) {
+  .sources, .split, .pair, .tool, .traps { grid-template-columns: 1fr; }
+  .controls { grid-template-columns: 1fr; gap: 4px 0; }
+  .controls .lab { margin-top: 8px; }
+  .bench, .fig { padding: 14px; }
+}
+@media (prefers-reduced-motion: no-preference) { .seg button, .tabs button { transition: background .12s, color .12s, border-color .12s; } }
+</style>
+
+<style>
+input, select { font: inherit; color: var(--ink); background: var(--sunk); border: 1px solid var(--line); border-radius: 5px; padding: 4px 7px; min-width: 0; }
+input[type="number"] { width: 92px; text-align: right; font-variant-numeric: tabular-nums; }
+input[type="text"] { width: 140px; }
+select { max-width: 150px; }
+input:hover, select:hover { border-color: var(--line-2); }
+input:focus-visible, select:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.src td { padding: 4px 6px; } .src th { padding: 6px 8px; }
+.src tfoot td { font-weight: 600; border-top: 1px solid var(--line-2); border-bottom: 0; padding: 8px; }
+.sources { grid-template-columns: 0.8fr 1.5fr; }
+.sources .wide { grid-column: 1 / -1; }
+button.x { background: none; border: 0; color: var(--ink-3); font-size: 17px; line-height: 1; padding: 2px 6px; border-radius: 4px; }
+button.x:hover:not(:disabled) { color: var(--bad-ink); background: var(--bad-wash); }
+button:disabled { opacity: 0.35; cursor: default; }
+.add, .ghost { background: none; border: 1px dashed var(--line-2); border-radius: 6px; padding: 5px 11px; font-size: 13px; color: var(--ink-2); align-self: flex-start; margin: 2px 8px 8px; }
+.ghost { border-style: solid; margin: 0; }
+.add:hover:not(:disabled), .ghost:hover { color: var(--ink); border-color: var(--ink-3); }
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.bar .sp { flex: 1; }
+.prin { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 28px; min-width: 0; }
+.prin > div { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.prin h3 { font-size: 19px; line-height: 1.25; }
+.prin .k { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.prin p { font-size: 14px; color: var(--ink-2); }
+.pick { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2); }
+.side { border: 1px solid transparent; border-radius: 8px; padding: 8px; }
+.side.on { border-color: var(--line-2); background: var(--bg); }
+.side .inuse { font-size: 11.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-3); margin-left: 8px; align-self: center; }
+.prin .pair { grid-template-columns: 1fr; gap: 10px; }
+.result { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border: 1px solid var(--line-2); border-radius: 8px; padding: 9px 14px; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; font-size: 13.5px; }
+.result strong { font-family: var(--f-display); font-size: 15px; }
+@media (max-width: 820px) { .prin { grid-template-columns: 1fr; padding: 14px; gap: 16px; } .sources { grid-template-columns: 1fr; } }
+.hierbar { display: flex; flex-direction: column; gap: 12px; }
+.hier { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-height: 40px; }
+.hier .gt { color: var(--ink-3); font-size: 18px; }
+.hier .add { margin: 0; align-self: center; }
+.chip { display: inline-flex; align-items: center; gap: 2px; background: var(--sunk); border: 1px solid var(--line-2); border-radius: 8px; padding: 5px 4px 5px 11px; font-weight: 600; font-size: 14px; cursor: grab; user-select: none; }
+.chip button { background: none; border: 0; color: var(--ink-3); padding: 2px 6px; border-radius: 4px; font-size: 14px; line-height: 1; }
+.chip button:first-of-type { margin-left: 6px; }
+.chip button:hover:not(:disabled) { color: var(--ink); background: var(--surface); }
+.pill.nt { background: var(--sunk); color: var(--ink-2); }
+.nd { display: inline-flex; align-items: center; }
+.tg { display: inline-block; width: 22px; text-align: center; background: none; border: 0; color: var(--ink-3); padding: 0; font-size: 12px; flex: none; }
+button.tg:hover { color: var(--ink); }
+tr.node td { font-weight: 600; background: var(--bg); }
+tr.leaf td.key { font-weight: 400; }
+</style>
+<div class="wrap">
+<header>
+  <div class="eyebrow">Margin reconciliation workbook</div>
+  <h1>Four principles for bridging grains of data</h1>
+  <p class="lede">Enter your own brands, SKUs and customer sales. Follow or break each principle, then arrange brand, SKU and customer into any hierarchy and see how each number reaches each level.</p>
+  <div class="legend" aria-label="Grain legend">
+    <span><i class="dot row"></i>Customer × SKU grain</span>
+    <span><i class="dot sku"></i>SKU grain</span>
+    <span><i class="dot brand"></i>Brand grain</span>
+  </div>
+</header>
+
+<section id="sources">
+  <div class="bar"><h2>Your sources</h2><span class="sp"></span>
+    <button type="button" class="ghost" id="reset">Load the example</button>
+    <button type="button" class="ghost" id="blank">Start blank</button></div>
+  <p class="sub">Every cell is editable. Rename things, change amounts, add or remove rows. A grain is what one row stands for, so each table states its own.</p>
+  <div class="sources">
+    <div class="src"><div class="h"><h3><i class="dot brand"></i>Marketing spend</h3><span class="grain">One row per brand. Knows nothing about customers.</span></div><div class="scroll" id="t-brands"></div><button type="button" class="add" data-add="brands">+ Add brand</button></div>
+    <div class="src"><div class="h"><h3><i class="dot sku"></i>Standard cost</h3><span class="grain">One row per SKU. Brand is an attribute of the SKU.</span></div><div class="scroll" id="t-skus"></div><button type="button" class="add" data-add="skus">+ Add SKU</button></div>
+    <div class="src wide"><div class="h"><h3><i class="dot row"></i>Sales and freight</h3><span class="grain">One row per customer and SKU. The lowest grain. Price is per unit, freight is the total for the row.</span></div><div class="scroll" id="t-sales"></div><button type="button" class="add" data-add="sales">+ Add sales row</button></div>
+  </div>
+</section>
+
+<section>
+  <div class="bar"><h2>The principles</h2><span class="sp"></span>
+    <button type="button" class="ghost" id="p-bad">Break all</button>
+    <button type="button" class="ghost" id="p-good">Follow all</button></div>
+  <p class="sub">Each one has a switch. The worked figure beside it is built from your numbers.</p>
+  <div class="result" id="result" aria-live="polite"></div>
+
+  <div class="prin">
+    <div>
+      <span class="k">Principle 1</span>
+      <h3>A total never travels down a grain. A rate can.</h3>
+      <p>A cost that moves with volume is turned into a per-unit rate at the grain where it lives. The rate is then multiplied by the volume on each lower-grain row. A rate repeated on many rows does no harm. A total repeated on many rows is counted once per row.</p>
+      <div class="seg" data-k="cogs">
+        <button type="button" id="c-join" data-v="join">Break: join total cost</button>
+        <button type="button" id="c-rate" data-v="rate">Follow: rate × units sold</button>
+      </div>
+      <ul class="notes" id="n1"></ul>
+    </div>
+    <div>
+      <label class="pick"><i class="dot sku"></i>Show the working for <select id="figSku"></select></label>
+      <div class="pair" id="fig-cost"></div>
+    </div>
+  </div>
+
+  <div class="prin">
+    <div>
+      <span class="k">Principle 2</span>
+      <h3>A cost with no link to the row needs a named driver, or it stays where it was recorded.</h3>
+      <p>Marketing was never spent per customer, so no rate exists. To bring it down you choose a driver and split the total by each row's share. The total is preserved under any driver. The split is your assumption. Leaving it at brand level assumes nothing.</p>
+      <div class="seg" data-k="mkt">
+        <button type="button" id="m-join" data-v="join">Break: join brand spend</button>
+        <button type="button" id="m-sales" data-v="sales">Follow: share of net sales</button>
+        <button type="button" id="m-units" data-v="units">Follow: share of units</button>
+        <button type="button" id="m-none" data-v="none">Follow: keep at brand</button>
+      </div>
+      <ul class="notes" id="n2"></ul>
+    </div>
+    <div>
+      <label class="pick"><i class="dot brand"></i>Show the working for <select id="figBrand"></select></label>
+      <div class="pair" id="fig-mkt"></div>
+    </div>
+  </div>
+
+  <div class="prin">
+    <div>
+      <span class="k">Principle 3</span>
+      <h3>Ratios are rebuilt from sums at every level. They are never averaged.</h3>
+      <p>Margin %, price per unit and cost per unit are all ratios. When rows roll up, sum the numerator and the denominator separately and divide again. Averaging row percentages gives a small row the same weight as a large one.</p>
+      <div class="seg" data-k="ratio">
+        <button type="button" id="r-avg" data-v="avg">Break: average the row %</button>
+        <button type="button" id="r-sum" data-v="sum">Follow: margin ÷ sales</button>
+      </div>
+      <ul class="notes" id="n3"></ul>
+    </div>
+    <div><div class="scroll" id="fig-ratio"></div></div>
+  </div>
+
+  <div class="prin">
+    <div>
+      <span class="k">Principle 4</span>
+      <h3>Every bridged number ties to its source, or to a reconciling item you can name.</h3>
+      <p>This one has no switch. It is the test of the other three. Each measure's total in the model is compared with the total of the file it came from. A difference is either zero, a named item such as unsold stock, or an error.</p>
+      <ul class="notes" id="n4"></ul>
+    </div>
+    <div><div class="scroll" id="tie"></div></div>
+  </div>
+</section>
+
+<section>
+  <h2>Build the hierarchy</h2>
+  <p class="sub">Arrange the levels in any order. Drag a chip, or use its arrows. Remove a level or add it back. The map shows how each number reaches each level, and the report nests the same way with a subtotal at every node.</p>
+  <div class="bench">
+    <div class="hierbar">
+      <div class="hier" id="hier" aria-label="Hierarchy levels"></div>
+      <div class="presets"><span>Try</span>
+        <button type="button" data-h="brand,sku,cust">Brand › SKU › Customer</button>
+        <button type="button" data-h="cust,brand,sku">Customer › Brand › SKU</button>
+        <button type="button" data-h="sku,cust">SKU › Customer</button>
+        <button type="button" data-h="cust">Customer only</button>
+      </div>
+    </div>
+    <div>
+      <h3>How each number reaches each level</h3>
+      <div class="scroll" id="map"></div>
+      <ul class="notes" id="n5"></ul>
+    </div>
+    <div>
+      <div id="chart"><div id="tip" hidden></div></div>
+      <div class="cap">Margin bridge across all rows. Bars are colored by the grain the figure comes from. Subtotals are gray.</div>
+    </div>
+    <div class="bar"><h3>Margin by level</h3><span class="sp"></span>
+      <button type="button" class="ghost" id="ex-all">Expand all</button><button type="button" class="ghost" id="ex-top">Collapse to top level</button></div>
+    <div class="scroll" id="pl"></div>
+  </div>
+</section>
+<section>
+  <h2>The same bridge in each tool</h2>
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" id="tab-excel" aria-controls="pane-excel" aria-selected="true">Excel</button>
+    <button type="button" role="tab" id="tab-pq" aria-controls="pane-pq" aria-selected="false">Power Query</button>
+    <button type="button" role="tab" id="tab-pbi" aria-controls="pane-pbi" aria-selected="false">Power BI</button>
+  </div>
+
+  <div class="fig" id="pane-excel" role="tabpanel" aria-labelledby="tab-excel">
+    <div class="tool">
+      <div>
+        <h3><span class="pill ok">✓ Works</span></h3>
+        <pre>' tblCost, one row per SKU
+UnitCost  = [@TotalCost] / [@Volume]
+
+' tblSales, one row per customer and SKU
+Brand     = XLOOKUP([@SKU], tblSKU[SKU], tblSKU[Brand])
+COGS      = [@Units] * XLOOKUP([@SKU], tblCost[SKU], tblCost[UnitCost])
+Marketing = XLOOKUP([@Brand], tblMkt[Brand], tblMkt[Spend])
+            * [@NetSales] / SUMIFS([NetSales], [Brand], [@Brand])
+
+' Tie-out cell, must be zero
+= SUM(tblSales[Marketing]) - SUM(tblMkt[Spend])</pre>
+        <ul>
+          <li>Look up the rate, never the total. The rate is the same on every row of a SKU, so repeating it does no harm.</li>
+          <li>The <code>SUMIFS</code> denominator is the brand's total sales, so each brand's shares add to 100%.</li>
+          <li>For margin % in a PivotTable, add a calculated field <code>= GrossMargin / NetSales</code>. It divides the sums.</li>
+        </ul>
+      </div>
+      <div>
+        <h3><span class="pill no">✕ Breaks</span></h3>
+        <pre>' Total repeated on every customer row of the SKU
+COGS      = XLOOKUP([@SKU], tblCost[SKU], tblCost[TotalCost])
+
+' Brand spend repeated on every row of the brand
+Marketing = XLOOKUP([@Brand], tblMkt[Brand], tblMkt[Spend])
+
+' PivotTable value set to "Average of GM %"</pre>
+        <ul>
+          <li>Each row looks reasonable on its own. The error only shows when a PivotTable or <code>SUM</code> adds the column.</li>
+          <li>An average of row percentages weights a small customer the same as a large one.</li>
+          <li>A SKU missing from <code>tblCost</code> returns <code>#N/A</code>. Do not wrap it in <code>IFERROR(…, 0)</code>, which turns a missing cost into a 100% margin.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="fig" id="pane-pq" role="tabpanel" aria-labelledby="tab-pq" hidden>
+    <div class="tool">
+      <div>
+        <h3><span class="pill ok">✓ Works</span></h3>
+        <pre>// 1. Rate at the SKU grain, before any merge
+CostRate = Table.AddColumn(Cost, "UnitCost",
+    each [TotalCost] / [Volume], type number),
+
+// 2. Merge onto Sales by SKU, expand UnitCost and Brand only
+Merged  = Table.NestedJoin(Sales, {"SKU"}, CostRate, {"SKU"},
+    "c", JoinKind.LeftOuter),
+Sales2  = Table.ExpandTableColumn(Merged, "c", {"UnitCost", "Brand"}),
+WithCogs = Table.AddColumn(Sales2, "COGS",
+    each [Units] * [UnitCost], type number),
+
+// 3. Brand sales total, used as the allocation base
+BrandBase = Table.Group(WithCogs, {"Brand"},
+    {{"BrandSales", each List.Sum([NetSales]), type number}}),
+
+// 4. Merge BrandBase and Marketing by Brand, then
+//    Marketing = [Spend] * [NetSales] / [BrandSales]</pre>
+        <ul>
+          <li>Compare <code>Table.RowCount</code> before and after every merge. If the count grows, the lookup side has duplicate keys and rows have fanned out.</li>
+          <li>Group By is how you move a measure up a grain. Do it before merging, so both sides of the merge sit at the same grain.</li>
+        </ul>
+      </div>
+      <div>
+        <h3><span class="pill no">✕ Breaks</span></h3>
+        <pre>// Expanding the total instead of the rate
+Table.ExpandTableColumn(Merged, "c", {"TotalCost"})
+
+// Merging Marketing (brand) straight onto Sales
+// and expanding [Spend] as if it were a row value</pre>
+        <ul>
+          <li>The row count stays the same in both cases, so the row-count check passes. Only a control total catches a repeated value.</li>
+          <li>A left join from Sales drops any brand that had spend but no sales. Its marketing disappears from the model. Compare <code>List.Sum</code> of the allocated column with the source total.</li>
+          <li>Inner joins drop sales rows whose SKU has no cost record. Use a left join and inspect the nulls.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="fig" id="pane-pbi" role="tabpanel" aria-labelledby="tab-pbi" hidden>
+    <div class="tool">
+      <div>
+        <h3><span class="pill ok">✓ Works</span></h3>
+        <pre>Model, single-direction filters, one to many:
+  Brand    1 ─► *  SKU       1 ─► *  Sales
+  Brand    1 ─► *  Marketing
+  Customer 1 ─► *  Sales
+SKU[UnitCost] holds the rate.
+
+Net Sales = SUM ( Sales[NetSales] )
+
+COGS =
+SUMX ( Sales, Sales[Units] * RELATED ( SKU[UnitCost] ) )
+
+Marketing Spend = SUM ( Marketing[Spend] )
+
+Marketing Allocated =
+SUMX (
+    VALUES ( Brand[Brand] ),
+    VAR Spend      = [Marketing Spend]
+    VAR SalesHere  = [Net Sales]
+    VAR SalesBrand =
+        CALCULATE ( [Net Sales],
+            REMOVEFILTERS ( Customer ), REMOVEFILTERS ( SKU ) )
+    RETURN DIVIDE ( Spend * SalesHere, SalesBrand )
+)
+
+GM % = DIVIDE ( [Net Sales] - [COGS], [Net Sales] )</pre>
+        <ul>
+          <li>Keep each fact at its own grain and let shared dimensions connect them. Sales and Marketing never relate to each other directly.</li>
+          <li><code>SUMX</code> multiplies row by row and then sums, so COGS is right at every level of a visual.</li>
+          <li>If standard cost changes by period, keep it as a fact keyed by SKU and period and look the rate up on both.</li>
+        </ul>
+      </div>
+      <div>
+        <h3><span class="pill no">✕ Breaks</span></h3>
+        <pre>-- [Marketing Spend] in a table by Customer:
+-- the full brand total repeats on every row,
+-- because Customer does not filter Marketing.
+
+-- Sales[Units] * SKU[TotalCost] as a calculated
+-- column, or SUM ( SKU[TotalCost] ) by Customer.
+
+-- A Sales-to-Marketing relationship on Brand
+-- (many to many), or bidirectional filters
+-- switched on to make the numbers move.
+
+-- GM % = AVERAGE ( Sales[GMPct] )</pre>
+        <ul>
+          <li>A repeated total is Power BI telling you the measure does not exist at that grain. Either allocate it with a measure or show it only by brand.</li>
+          <li>Bidirectional and many-to-many relationships make the numbers change with the filter, which looks like a fix. The results are hard to predict and rarely tie.</li>
+          <li>Ratios belong in measures built from sums. A stored percentage column cannot be re-aggregated.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+<script>
+(function () {
+  const EXAMPLE = () => ({
+    next: 100,
+    brands: [{ id: 1, name: 'Northfield', spend: 18000 }, { id: 2, name: 'Harbor', spend: 12000 }],
+    skus: [
+      { id: 11, name: 'N-100', brand: 1, cost: 48000, vol: 12000 },
+      { id: 12, name: 'N-200', brand: 1, cost: 39000, vol: 6000 },
+      { id: 13, name: 'H-300', brand: 2, cost: 27500, vol: 11000 },
+      { id: 14, name: 'H-400', brand: 2, cost: 36000, vol: 4000 }],
+    sales: [
+      { id: 21, cust: 'Acme Grocers', sku: 11, u: 4000, price: 7, f: 1600 },
+      { id: 22, cust: 'Acme Grocers', sku: 12, u: 2000, price: 11, f: 1000 },
+      { id: 23, cust: 'Acme Grocers', sku: 13, u: 5000, price: 4.5, f: 1500 },
+      { id: 24, cust: 'Bluebird Market', sku: 11, u: 5000, price: 6.5, f: 2500 },
+      { id: 25, cust: 'Bluebird Market', sku: 13, u: 4000, price: 4.75, f: 1600 },
+      { id: 26, cust: 'Bluebird Market', sku: 14, u: 1500, price: 15, f: 900 },
+      { id: 27, cust: 'Corner Co-op', sku: 11, u: 2000, price: 7.5, f: 1200 },
+      { id: 28, cust: 'Corner Co-op', sku: 12, u: 3000, price: 10.5, f: 1800 },
+      { id: 29, cust: 'Corner Co-op', sku: 14, u: 2000, price: 14, f: 1400 }]
+  });
+  const BLANK = () => ({ next: 100, brands: [{ id: 1, name: 'Brand A', spend: 0 }], skus: [{ id: 11, name: 'SKU 1', brand: 1, cost: 0, vol: 0 }], sales: [{ id: 21, cust: 'Customer 1', sku: 11, u: 0, price: 0, f: 0 }] });
+  let D = EXAMPLE();
+  const state = { cogs: 'join', mkt: 'join', ratio: 'avg', hier: ['brand', 'sku', 'cust'], shut: {}, figSku: null, figBrand: null };
+  try {
+    const s = JSON.parse(localStorage.getItem('gb2') || 'null');
+    if (s && s.D && s.D.brands && s.D.brands.length && s.D.skus && s.D.sales) { D = s.D; Object.assign(state, s.state || {}); if (!Array.isArray(state.hier)) state.hier = ['brand', 'sku', 'cust']; state.shut = state.shut || {}; }
+  } catch (e) {}
+  const save = () => { try { localStorage.setItem('gb2', JSON.stringify({ D, state })); } catch (e) {} };
+
+  const $ = id => document.getElementById(id);
+  const sum = (a, f) => a.reduce((t, x) => t + f(x), 0);
+  const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
+  const money = v => { const a = Math.round(Math.abs(v)).toLocaleString('en-US'); return v < -0.5 ? '($' + a + ')' : '$' + a; };
+  const rate$ = v => '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const int = v => Math.round(v).toLocaleString('en-US');
+  const pct = v => (isFinite(v) ? (v * 100).toFixed(1) + '%' : '–');
+  const kfmt = v => { const x = Math.abs(v), a = x >= 1e6 ? (x / 1e6).toFixed(2) + 'm' : x >= 1000 ? (x / 1000).toFixed(1) + 'k' : x.toFixed(0); return v < -0.5 ? '(' + a + ')' : a; };
+  const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+  const DOT = { row: '<i class="dot row"></i>', sku: '<i class="dot sku"></i>', brand: '<i class="dot brand"></i>' };
+  const DIMS = ['brand', 'sku', 'cust'], NAME = { brand: 'Brand', sku: 'SKU', cust: 'Customer' };
+  const brandOf = id => D.brands.find(b => b.id === id), skuOf = id => D.skus.find(k => k.id === id);
+
+  function table(head, rows) {
+    return '<table><thead><tr>' + head.map(h => '<th' + (h.n ? ' class="n"' : '') + '>' + h.t + '</th>').join('') + '</tr></thead><tbody>' +
+      rows.map(r => '<tr' + (r.cls ? ' class="' + r.cls + '"' : '') + '>' + r.cells.map((c, i) =>
+        '<td class="' + (head[i].n ? 'n' : 'key') + (c && c.neg ? ' neg' : '') + '">' + (c && c.t !== undefined ? c.t : c) + '</td>').join('') + '</tr>').join('') +
+      '</tbody></table>';
+  }
+
+  // ---------- editable sources
+  const inp = (t, r, f, type) => '<input type="' + type + '" id="' + t + '-' + r.id + '-' + f + '" data-t="' + t + '" data-id="' + r.id + '" data-f="' + f + '" value="' + esc(r[f]) + '"' +
+    (type === 'number' ? ' min="0" step="any" inputmode="decimal"' : '') + ' aria-label="' + f + '">';
+  const sel = (t, r, f, list) => '<select id="' + t + '-' + r.id + '-' + f + '" data-t="' + t + '" data-id="' + r.id + '" data-f="' + f + '" aria-label="' + f + '">' +
+    list.map(o => '<option value="' + o.id + '"' + (o.id === r[f] ? ' selected' : '') + '>' + esc(o.name) + '</option>').join('') + '</select>';
+  const del = (t, r, off) => '<button type="button" class="x" data-del="' + t + '" data-id="' + r.id + '" aria-label="Remove row"' + (off ? ' disabled' : '') + '>×</button>';
+
+  function renderSources() {
+    $('t-brands').innerHTML = '<table><thead><tr><th>Brand</th><th class="n">Spend</th><th></th></tr></thead><tbody>' +
+      D.brands.map(b => '<tr><td>' + inp('brands', b, 'name', 'text') + '</td><td class="n">' + inp('brands', b, 'spend', 'number') + '</td><td>' + del('brands', b, D.brands.length < 2) + '</td></tr>').join('') +
+      '</tbody><tfoot><tr><td>Total</td><td class="n" id="tot-spend"></td><td></td></tr></tfoot></table>';
+    $('t-skus').innerHTML = '<table><thead><tr><th>SKU</th><th>Brand</th><th class="n">Total cost</th><th class="n">Volume produced</th><th></th></tr></thead><tbody>' +
+      D.skus.map(k => '<tr><td>' + inp('skus', k, 'name', 'text') + '</td><td>' + sel('skus', k, 'brand', D.brands) + '</td><td class="n">' + inp('skus', k, 'cost', 'number') + '</td><td class="n">' + inp('skus', k, 'vol', 'number') + '</td><td>' + del('skus', k, D.skus.length < 2) + '</td></tr>').join('') +
+      '</tbody><tfoot><tr><td>Total</td><td></td><td class="n" id="tot-cost"></td><td class="n" id="tot-vol"></td><td></td></tr></tfoot></table>';
+    $('t-sales').innerHTML = '<table><thead><tr><th>Customer</th><th>SKU</th><th class="n">Units sold</th><th class="n">Price per unit</th><th class="n">Freight</th><th class="n">Net sales</th><th></th></tr></thead><tbody>' +
+      D.sales.map(r => '<tr><td>' + inp('sales', r, 'cust', 'text') + '</td><td>' + sel('sales', r, 'sku', D.skus) + '</td><td class="n">' + inp('sales', r, 'u', 'number') + '</td><td class="n">' + inp('sales', r, 'price', 'number') + '</td><td class="n">' + inp('sales', r, 'f', 'number') + '</td><td class="n" id="ns-' + r.id + '"></td><td>' + del('sales', r, D.sales.length < 2) + '</td></tr>').join('') +
+      '</tbody><tfoot><tr><td>Total</td><td></td><td class="n" id="tot-u"></td><td></td><td class="n" id="tot-f"></td><td class="n" id="tot-ns"></td><td></td></tr></tfoot></table>';
+    fillPickers(); totals();
+  }
+  function fillPickers() {
+    if (!skuOf(state.figSku)) state.figSku = D.skus[0].id;
+    if (!brandOf(state.figBrand)) state.figBrand = D.brands[0].id;
+    $('figSku').innerHTML = D.skus.map(k => '<option value="' + k.id + '"' + (k.id === state.figSku ? ' selected' : '') + '>' + esc(k.name) + '</option>').join('');
+    $('figBrand').innerHTML = D.brands.map(b => '<option value="' + b.id + '"' + (b.id === state.figBrand ? ' selected' : '') + '>' + esc(b.name) + '</option>').join('');
+  }
+  function totals() {
+    $('tot-spend').textContent = money(sum(D.brands, b => b.spend));
+    $('tot-cost').textContent = money(sum(D.skus, k => k.cost)); $('tot-vol').textContent = int(sum(D.skus, k => k.vol));
+    D.sales.forEach(r => { $('ns-' + r.id).textContent = money(r.u * r.price); });
+    $('tot-u').textContent = int(sum(D.sales, r => r.u)); $('tot-f').textContent = money(sum(D.sales, r => r.f)); $('tot-ns').textContent = money(sum(D.sales, r => r.u * r.price));
+  }
+  const src = $('sources');
+  src.addEventListener('input', e => {
+    const el = e.target, t = el.dataset.t; if (!t) return;
+    const r = D[t].find(x => x.id === +el.dataset.id), f = el.dataset.f;
+    r[f] = el.type === 'number' ? Math.max(0, num(el.value)) : el.tagName === 'SELECT' ? +el.value : el.value;
+    if (f === 'name') document.querySelectorAll('option[value="' + r.id + '"]').forEach(o => { o.textContent = r.name; });
+    totals(); render();
+  });
+  src.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.add) {
+      const id = D.next++;
+      if (b.dataset.add === 'brands') D.brands.push({ id, name: 'New brand', spend: 0 });
+      if (b.dataset.add === 'skus') D.skus.push({ id, name: 'New SKU', brand: D.brands[0].id, cost: 0, vol: 0 });
+      if (b.dataset.add === 'sales') { const last = D.sales[D.sales.length - 1]; D.sales.push({ id, cust: last ? last.cust : 'Customer', sku: D.skus[0].id, u: 0, price: 0, f: 0 }); }
+    } else if (b.dataset.del) {
+      const id = +b.dataset.id, t = b.dataset.del;
+      if (t === 'brands') { const gone = D.skus.filter(k => k.brand === id).map(k => k.id);
+        if (gone.length === D.skus.length) { D.skus.forEach(k => { if (k.brand === id) k.brand = D.brands.find(x => x.id !== id).id; }); }
+        else { D.skus = D.skus.filter(k => k.brand !== id); D.sales = D.sales.filter(r => !gone.includes(r.sku)); } }
+      if (t === 'skus') D.sales = D.sales.filter(r => r.sku !== id);
+      D[t] = D[t].filter(x => x.id !== id);
+      if (!D.sales.length) D.sales.push({ id: D.next++, cust: 'Customer', sku: D.skus[0].id, u: 0, price: 0, f: 0 });
+    } else if (b.id === 'reset') D = EXAMPLE(); else if (b.id === 'blank') D = BLANK(); else return;
+    renderSources(); render();
+  });
+
+  // ---------- model
+  function model() {
+    const rows = D.sales.map(r => {
+      const k = skuOf(r.sku), b = brandOf(k.brand);
+      return { id: r.id, c: (r.cust || '').trim() || '(no name)', k, b, u: r.u, ns: r.u * r.price, f: r.f, rate: k.vol > 0 ? k.cost / k.vol : 0 };
+    });
+    const base = {}; D.brands.forEach(b => { base[b.id] = { ns: 0, u: 0, n: 0 }; });
+    rows.forEach(r => { const x = base[r.b.id]; x.ns += r.ns; x.u += r.u; x.n++; });
+    const alloc = (r, d) => { const x = base[r.b.id][d]; return x > 0 ? r.b.spend * r[d] / x : 0; };
+    rows.forEach(r => {
+      r.cogsRate = r.u * r.rate; r.cogs = state.cogs === 'join' ? r.k.cost : r.cogsRate;
+      r.mS = alloc(r, 'ns'); r.mU = alloc(r, 'u');
+      r.mkt = state.mkt === 'join' ? r.b.spend : state.mkt === 'sales' ? r.mS : state.mkt === 'units' ? r.mU : null;
+    });
+    const S = { ns: sum(rows, r => r.ns), f: sum(rows, r => r.f), u: sum(rows, r => r.u), cost: sum(D.skus, k => k.cost), mkt: sum(D.brands, b => b.spend) };
+    S.sold = {}; rows.forEach(r => { S.sold[r.k.id] = (S.sold[r.k.id] || 0) + r.u; });
+    S.inv = sum(D.skus, k => k.vol > 0 ? (k.vol - (S.sold[k.id] || 0)) * k.cost / k.vol : k.cost);
+    S.invUnits = sum(D.skus, k => k.vol - (S.sold[k.id] || 0));
+    return { rows, base, S };
+  }
+  const avgOf = (rows, f) => { const v = rows.map(f).filter(isFinite); return v.length ? sum(v, x => x) / v.length : NaN; };
+
+  function render() {
+    document.querySelectorAll('.seg').forEach(seg => seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(state[seg.dataset.k] === b.dataset.v))));
+    const { rows, base, S } = model();
+    const T = { u: S.u, ns: S.ns, f: S.f, cogs: sum(rows, r => r.cogs), rows };
+    T.mkt = state.mkt === 'join' ? sum(rows, r => r.mkt) : S.mkt;
+    const gm = T.ns - T.cogs, nm = gm - T.f - T.mkt;
+    const trueGm = gm / T.ns, shownGm = state.ratio === 'avg' ? avgOf(rows, r => (r.ns - r.cogs) / r.ns) : trueGm;
+    const cogsGap = state.cogs === 'join' ? T.cogs - S.cost : 0, mktGap = T.mkt - S.mkt;
+    const ratioGap = (isFinite(shownGm) && isFinite(trueGm)) ? shownGm - trueGm : 0;
+    const okC = Math.abs(cogsGap) < 0.5, okM = Math.abs(mktGap) < 0.5, okR = state.ratio === 'sum';
+    const pill = (ok, txt) => ok ? '<span class="pill ok">✓ ' + (txt || 'Ties') + '</span>' : '<span class="pill no">✕ ' + txt + '</span>';
+
+    // sticky result
+    const broken = [!okC || state.cogs === 'join', !okM || state.mkt === 'join', !okR].filter(Boolean).length;
+    const allOk = state.cogs === 'rate' && state.mkt !== 'join' && okR;
+    $('result').innerHTML = (allOk ? pill(true, 'All principles followed') : pill(false, broken + ' of 3 broken')) +
+      '<span>Net margin <strong class="num' + (nm < -0.5 ? ' neg' : '') + '">' + money(nm) + '</strong></span>' +
+      '<span>Gross margin % <strong class="num">' + pct(shownGm) + '</strong></span>' +
+      '<span class="sub">' + (allOk ? 'Ties to every source.' : 'Does not tie to the sources.') + '</span>';
+
+    // P1 figure
+    const k = skuOf(state.figSku), kr = rows.filter(r => r.k.id === k.id), kRate = k.vol > 0 ? k.cost / k.vol : 0, kSold = sum(kr, r => r.u), left = k.vol - kSold;
+    const side = (ok, on, tag, srcl, rws, sl, sr) => '<div class="side' + (on ? ' on' : '') + '"><div class="tag"><span class="pill ' + (ok ? 'ok">✓ ' : 'no">✕ ') + tag + '</span>' + (on ? '<span class="inuse">In use</span>' : '') + '</div><div class="flow"><div class="srcline">' + srcl + '</div>' +
+      (rws.length ? rws.map(r => '<div class="r"><span>' + r[0] + '</span><span>' + r[1] + '</span></div>').join('') : '<div class="r"><span>No sales rows</span><span></span></div>') +
+      '<div class="sum' + (ok ? '' : ' neg') + '"><span>' + sl + '</span><span>' + sr + '</span></div></div></div>';
+    $('fig-cost').innerHTML =
+      side(false, state.cogs === 'join', 'Total joined onto each row', esc(k.name) + ' total cost ' + money(k.cost), kr.map(r => [esc(r.c), money(k.cost)]), 'Sum of rows', money(k.cost * kr.length) + (kr.length > 1 ? ', ' + kr.length + '× the source' : '')) +
+      side(true, state.cogs === 'rate', 'Rate, then volume', money(k.cost) + ' ÷ ' + int(k.vol) + ' units = ' + rate$(kRate) + ' per unit',
+        kr.map(r => [esc(r.c), int(r.u) + ' × ' + rate$(kRate) + ' = ' + money(r.u * kRate)]).concat([[left >= 0 ? 'Unsold, stays in stock' : 'Sold beyond volume produced', int(left) + ' × ' + rate$(kRate) + ' = ' + money(left * kRate)]]),
+        'COGS ' + money(kSold * kRate) + ' + stock ' + money(left * kRate), money(k.vol > 0 ? k.cost : 0));
+    const n1 = [];
+    const worst = D.skus.map(x => ({ x, n: rows.filter(r => r.k.id === x.id).length })).sort((a, b) => b.n - a.n)[0];
+    if (state.cogs === 'join') n1.push('Joined totals report ' + money(T.cogs) + ' of cost against ' + money(S.cost) + ' in the source. ' + (worst.n > 1 ? esc(worst.x.name) + ' alone is counted ' + worst.n + ' times.' : ''));
+    else n1.push('COGS is ' + money(T.cogs) + ' for ' + int(S.u) + ' units sold. The source holds ' + money(S.cost) + ' for units produced. The ' + money(S.inv) + ' difference is ' + int(S.invUnits) + ' units of stock at standard.');
+    D.skus.filter(x => x.vol <= 0 && (S.sold[x.id] || 0) > 0).forEach(x => n1.push(esc(x.name) + ' has sales but no volume, so it has no rate. Its COGS shows as zero until volume is entered.'));
+    D.skus.filter(x => x.vol > 0 && (S.sold[x.id] || 0) > x.vol).forEach(x => n1.push(esc(x.name) + ' sold more units than were produced. Check the volume, or the stock change is a draw-down.'));
+    $('n1').innerHTML = n1.map(x => '<li>' + x + '</li>').join('');
+
+    // P2 figure
+    const b = brandOf(state.figBrand), br = rows.filter(r => r.b.id === b.id), drv = state.mkt === 'units' ? 'u' : 'ns', dName = drv === 'u' ? 'units' : 'net sales', bb = base[b.id][drv];
+    const lab = r => esc(r.c) + ' · ' + esc(r.k.name);
+    const right = state.mkt === 'none'
+      ? side(true, true, 'Kept at brand level', esc(b.name) + ' marketing ' + money(b.spend), [['Shown once, on the ' + esc(b.name) + ' line', money(b.spend)]], 'No row is touched', money(b.spend))
+      : side(true, state.mkt === 'sales' || state.mkt === 'units', 'Split by share of ' + dName, money(b.spend) + ' × row ' + dName + ' ÷ ' + (drv === 'u' ? int(bb) : money(bb)) + ' brand ' + dName,
+        br.map(r => [lab(r), pct(r[drv] / bb) + ' = ' + money(bb > 0 ? b.spend * r[drv] / bb : 0)]), bb > 0 ? 'Sum of rows' : 'Nothing to split on, stays unallocated', money(b.spend));
+    $('fig-mkt').innerHTML = side(false, state.mkt === 'join', 'Brand total joined onto each row', esc(b.name) + ' marketing ' + money(b.spend), br.map(r => [lab(r), money(b.spend)]), 'Sum of rows', money(b.spend * br.length) + (br.length > 1 ? ', ' + br.length + '× the spend' : '')) + right;
+    const n2 = [];
+    const custs = [...new Set(rows.map(r => r.c))].map(c => { const cr = rows.filter(r => r.c === c); return { c, s: sum(cr, r => r.mS), u: sum(cr, r => r.mU) }; }).sort((x, y) => Math.abs(y.s - y.u) - Math.abs(x.s - x.u))[0];
+    if (state.mkt === 'join') n2.push('Joined spend reports ' + money(T.mkt) + ' of marketing against ' + money(S.mkt) + ' in the source.');
+    if (custs && Math.abs(custs.s - custs.u) > 0.5) n2.push(esc(custs.c) + ' carries ' + money(custs.s) + ' by net sales and ' + money(custs.u) + ' by units. Both tie. Neither was spent on that customer, so name the driver on the report.');
+    const stranded = D.brands.filter(x => x.spend > 0 && base[x.id][drv] <= 0);
+    if (stranded.length && state.mkt !== 'join') n2.push(stranded.map(x => esc(x.name)).join(', ') + ' has spend but no ' + dName + ' to split on. That ' + money(sum(stranded, x => x.spend)) + ' stays on an unallocated line so the total still ties.');
+    $('n2').innerHTML = n2.map(x => '<li>' + x + '</li>').join('');
+
+    // P3 figure
+    const cn = [...new Set(rows.map(r => r.c))];
+    const rr = cn.map(c => { const cr = rows.filter(r => r.c === c); const a = avgOf(cr, r => (r.ns - r.cogs) / r.ns), t = sum(cr, r => r.ns - r.cogs) / sum(cr, r => r.ns);
+      return { cells: [esc(c), String(cr.length), pct(a), pct(t), isFinite(a - t) ? ((a - t) * 100).toFixed(1) + ' pts' : '–'] }; });
+    const aAll = avgOf(rows, r => (r.ns - r.cogs) / r.ns);
+    rr.push({ cls: 'total', cells: ['All rows', String(rows.length), pct(aAll), pct(trueGm), isFinite(aAll - trueGm) ? ((aAll - trueGm) * 100).toFixed(1) + ' pts' : '–'] });
+    $('fig-ratio').innerHTML = table([{ t: 'Gross margin %' }, { t: 'Rows', n: 1 }, { t: '✕ Average of rows', n: 1 }, { t: '✓ Margin ÷ sales', n: 1 }, { t: 'Gap', n: 1 }], rr);
+    $('n3').innerHTML = '<li>' + (state.ratio === 'avg' ? 'The report below shows averaged percentages. The dollar columns are unaffected, which is why this error is easy to miss.' : 'Percentages below are recomputed from summed dollars at whatever grain you report by.') + '</li>' +
+      '<li>The gap grows as rows differ in size. Change one row’s units above and watch it move.</li>';
+
+    // P4 tie-out
+    $('tie').innerHTML = table(
+      [{ t: 'Measure' }, { t: 'Source', n: 1 }, { t: 'In the model', n: 1 }, { t: 'Check' }],
+      [
+        { cells: [DOT.row + 'Net sales', money(S.ns), money(T.ns), pill(true)] },
+        { cells: [DOT.sku + 'Standard cost', money(S.cost), money(T.cogs) + (state.cogs === 'rate' ? ' + ' + money(S.inv) + ' stock' : ''), pill(okC, okC ? (state.cogs === 'rate' && Math.abs(S.inv) > 0.5 ? 'Ties with stock' : 'Ties') : 'Off by ' + money(Math.abs(cogsGap)))] },
+        { cells: [DOT.row + 'Freight', money(S.f), money(T.f), pill(true)] },
+        { cells: [DOT.brand + 'Marketing', money(S.mkt), money(T.mkt), pill(okM, okM ? 'Ties' : 'Off by ' + money(Math.abs(mktGap)))] },
+        { cells: ['Gross margin %', pct(trueGm), pct(shownGm), pill(Math.abs(ratioGap) < 0.00005, Math.abs(ratioGap) < 0.00005 ? 'Ties' : 'Off by ' + Math.abs(ratioGap * 100).toFixed(1) + ' pts')] }
+      ]);
+    const n4 = [];
+    if (state.cogs === 'rate' && Math.abs(S.inv) > 0.5) n4.push('Standard cost ties only after adding ' + money(S.inv) + ' of stock. A cost bridge that matched the source exactly while units sold and produced differ would be the suspicious one.');
+    if (state.cogs === 'join' && okC) n4.push('Standard cost happens to tie because every SKU has one sales row and all of it sold. Add a second customer to a SKU and it breaks.');
+    n4.push('Row counts do not catch these errors. A joined total leaves the row count unchanged. Only a control total does.');
+    $('n4').innerHTML = n4.map(x => '<li>' + x + '</li>').join('');
+
+    // hierarchy chips
+    const used = state.hier, free = DIMS.filter(d => !used.includes(d));
+    $('hier').innerHTML = used.map((d, i) => (i ? '<span class="gt">›</span>' : '') + '<span class="chip" draggable="true" data-d="' + d + '">' + (DOT[d] || '') + NAME[d] +
+      '<button type="button" data-mv="-1" aria-label="Move ' + NAME[d] + ' up a level"' + (i ? '' : ' disabled') + '>◂</button>' +
+      '<button type="button" data-mv="1" aria-label="Move ' + NAME[d] + ' down a level"' + (i < used.length - 1 ? '' : ' disabled') + '>▸</button>' +
+      '<button type="button" data-rm="1" aria-label="Remove ' + NAME[d] + '">×</button></span>').join('') +
+      free.map(d => '<button type="button" class="add" data-addlv="' + d + '">+ ' + NAME[d] + '</button>').join('') +
+      (used.length ? '' : '<span class="sub">No levels. The report shows the total only.</span>');
+
+    // grain map
+    const CL = { sales: ['cust', 'sku', 'brand'], cost: ['sku', 'brand'], mkt: ['brand'] };
+    const pl = (c, t) => '<span class="pill ' + c + '">' + (c === 'ok' ? '✓ ' : c === 'no' ? '✕ ' : '') + t + '</span>';
+    const how = (L, m) => {
+      const bridge = L.some(d => !CL[m].includes(d));
+      if (!bridge) { const own = m === 'sales' ? L.includes('cust') && L.includes('sku') : m === 'cost' ? L.includes('sku') : L.includes('brand'); return pl('nt', own ? 'Native grain' : 'Sums up'); }
+      if (m === 'cost') return state.cogs === 'rate' ? pl('ok', 'Rate × units') : pl('no', 'Total repeated');
+      return state.mkt === 'join' ? pl('no', 'Total repeated') : state.mkt === 'none' ? pl('nt', 'Not shown here') : pl('ok', 'Split by ' + (state.mkt === 'units' ? 'units' : 'net sales'));
+    };
+    const levels = [[]].concat(used.map((d, i) => used.slice(0, i + 1)));
+    $('map').innerHTML = table([{ t: 'Level' }, { t: DOT.row + 'Net sales, freight' }, { t: DOT.sku + 'Standard cost' }, { t: DOT.brand + 'Marketing' }],
+      levels.map(L => ({ cells: [L.length ? L.map(d => NAME[d]).join(' › ') : 'Total', how(L, 'sales'), how(L, 'cost'), how(L, 'mkt')] })));
+    const n5 = ['A number sums up freely to any level made only of things its source knows about. The moment a level includes something the source does not know, such as customer for standard cost, it has to be bridged.'];
+    if (state.cogs === 'join' || state.mkt === 'join') n5.push('The bridge happens once, at the lowest grain. A broken one is carried into every subtotal above it, so the levels marked "Sums up" are wrong too.');
+    if (state.mkt === 'none') n5.push('Marketing is kept at brand, so it appears only on levels made of brand alone. Put Brand first to see it. Elsewhere it sits on one unallocated line.');
+    $('n5').innerHTML = n5.map(x => '<li>' + x + '</li>').join('');
+
+    // nested report
+    const KEY = { brand: r => r.b.id, sku: r => r.k.id, cust: r => r.c }, LAB = { brand: r => r.b.name, sku: r => r.k.name, cust: r => r.c };
+    const head = [{ t: used.length ? used.map(d => NAME[d]).join(' › ') : 'Level' }, { t: 'Units', n: 1 }, { t: DOT.row + 'Net sales', n: 1 }, { t: DOT.sku + 'COGS', n: 1 }, { t: 'Gross margin', n: 1 }, { t: 'GM %', n: 1 },
+      { t: DOT.row + 'Freight', n: 1 }, { t: DOT.brand + 'Marketing', n: 1 }, { t: 'Net margin', n: 1 }, { t: 'NM %', n: 1 }];
+    const mm = v => ({ t: money(v), neg: v < -0.5 }), pp = v => ({ t: pct(v), neg: v < -0.0005 });
+    const line = (lead, r, cl) => {
+      const gmv = r.ns - r.cogs, has = r.mkt !== null, net = gmv - r.f - (has ? r.mkt : 0), av = state.ratio === 'avg', rowNet = av && r.rows.every(x => x.mkt !== null);
+      return { cls: cl, cells: [lead, int(r.u), money(r.ns), mm(r.cogs), mm(gmv), pp(av ? avgOf(r.rows, x => (x.ns - x.cogs) / x.ns) : gmv / r.ns), money(r.f),
+        has ? money(r.mkt) : '\u2013', has ? mm(net) : '\u2013', has ? pp(rowNet ? avgOf(r.rows, x => (x.ns - x.cogs - x.f - x.mkt) / x.ns) : net / r.ns) : '\u2013'] };
+    };
+    const body = []; let topM = 0;
+    (function walk(rs, depth, path) {
+      if (depth >= used.length) return;
+      const d = used[depth], mp = new Map();
+      rs.forEach(r => { const key = KEY[d](r); if (!mp.has(key)) mp.set(key, []); mp.get(key).push(r); });
+      mp.forEach((grp, key) => {
+        const p = path + '/' + d + ':' + key, L = used.slice(0, depth + 1), leaf = depth === used.length - 1, shut = !!state.shut[p];
+        const a = { u: sum(grp, r => r.u), ns: sum(grp, r => r.ns), f: sum(grp, r => r.f), cogs: sum(grp, r => r.cogs), rows: grp };
+        a.mkt = state.mkt === 'none' ? (L.every(x => x === 'brand') ? grp[0].b.spend : null) : sum(grp, r => r.mkt);
+        if (depth === 0) topM += a.mkt || 0;
+        const tog = leaf ? '<span class="tg"></span>' : '<button type="button" class="tg" data-tog="' + esc(p) + '" aria-expanded="' + !shut + '" aria-label="Expand or collapse">' + (shut ? '▸' : '▾') + '</button>';
+        body.push(line('<span class="nd" style="padding-left:' + depth * 18 + 'px">' + tog + esc(LAB[d](grp[0])) + '</span>', a, leaf ? 'leaf' : 'node'));
+        if (!shut) walk(grp, depth + 1, p);
+      });
+    })(rows, 0, '');
+    const unalloc = state.mkt === 'join' ? 0 : state.mkt === 'none' ? S.mkt - topM : S.mkt - sum(rows, r => r.mkt);
+    if (unalloc > 0.5) body.push({ cls: 'unalloc', cells: ['Unallocated marketing', '', '', '', '', '', '', money(unalloc), mm(-unalloc), ''] });
+    body.push(line('Total', T, 'total'));
+    $('pl').innerHTML = table(head, body);
+    drawChart(T); save();
+  }
+
+  // ---------- waterfall
+  let lastT = null;
+  function drawChart(T) {
+    lastT = T;
+    const host = $('chart'), tip = $('tip');
+    const W = Math.max(300, host.clientWidth || 480), H = 270, mt = 24, mb = 44, ml = 6, mr = 6;
+    const gm = T.ns - T.cogs, af = gm - T.f, net = af - T.mkt;
+    const bars = [
+      { l: ['Net', 'sales'], a: 0, b: T.ns, v: T.ns, c: 'var(--g-row)', d: 'Net sales, from the customer × SKU file' },
+      { l: ['COGS'], a: T.ns, b: gm, v: -T.cogs, c: 'var(--g-sku)', d: 'Standard cost, from the SKU file' },
+      { l: ['Gross', 'margin'], a: 0, b: gm, v: gm, c: 'var(--ink-3)', d: 'Gross margin: ' + pct(gm / T.ns) + ' of sales' },
+      { l: ['Freight'], a: gm, b: af, v: -T.f, c: 'var(--g-row)', d: 'Freight, from the customer × SKU file' },
+      { l: ['Mktg'], a: af, b: net, v: -T.mkt, c: 'var(--g-brand)', d: 'Marketing, from the brand file' },
+      { l: ['Net', 'margin'], a: 0, b: net, v: net, c: 'var(--ink-3)', d: 'Net margin: ' + pct(net / T.ns) + ' of sales' }];
+    const lo = Math.min(0, ...bars.map(b => Math.min(b.a, b.b))); let hi = Math.max(0, ...bars.map(b => Math.max(b.a, b.b))); if (hi - lo < 1) hi = lo + 1;
+    const y = v => mt + (hi - v) / (hi - lo) * (H - mt - mb);
+    const step = (W - ml - mr) / bars.length, bw = Math.min(64, step * 0.62);
+    let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Margin bridge from net sales to net margin">';
+    s += '<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + y(0) + '" y2="' + y(0) + '" stroke="var(--line-2)" stroke-width="1"/>';
+    bars.forEach((b, i) => {
+      const cx = ml + step * (i + 0.5), top = y(Math.max(b.a, b.b)), bot = y(Math.min(b.a, b.b)), h = Math.max(2, bot - top);
+      if (i < bars.length - 1) s += '<line x1="' + (cx + bw / 2) + '" x2="' + (cx + step - bw / 2) + '" y1="' + y(b.b) + '" y2="' + y(b.b) + '" stroke="var(--line-2)" stroke-dasharray="2 3"/>';
+      s += '<rect x="' + (cx - bw / 2) + '" y="' + top + '" width="' + bw + '" height="' + h + '" rx="3" fill="' + b.c + '"/>';
+      s += '<text class="v" x="' + cx + '" y="' + (top - 6) + '" text-anchor="middle">' + kfmt(b.v) + '</text>';
+      b.l.forEach((t, j) => { s += '<text x="' + cx + '" y="' + (H - mb + 18 + j * 14) + '" text-anchor="middle">' + t + '</text>'; });
+      s += '<rect data-i="' + i + '" x="' + (cx - step / 2) + '" y="0" width="' + step + '" height="' + H + '" fill="transparent"/>';
+    });
+    s += '</svg>';
+    const old = host.querySelector('svg'); if (old) old.remove();
+    host.insertAdjacentHTML('afterbegin', s);
+    host.querySelectorAll('rect[data-i]').forEach(r => {
+      const b = bars[+r.dataset.i];
+      r.addEventListener('pointermove', e => {
+        const box = host.getBoundingClientRect();
+        tip.hidden = false; tip.innerHTML = '<strong>' + money(b.v) + '</strong><br>' + esc(b.d);
+        tip.style.left = Math.min(Math.max(0, e.clientX - box.left + 12), box.width - tip.offsetWidth) + 'px';
+        tip.style.top = Math.max(0, e.clientY - box.top - tip.offsetHeight - 10) + 'px';
+      });
+      r.addEventListener('pointerleave', () => { tip.hidden = true; });
+    });
+  }
+  let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => lastT && drawChart(lastT), 120); });
+
+  // ---------- hierarchy interactions
+  const setHier = h => { state.hier = h; state.shut = {}; render(); };
+  $('hier').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return; const h = state.hier.slice();
+    if (b.dataset.addlv) { h.push(b.dataset.addlv); return setHier(h); }
+    const d = b.parentElement.dataset.d, i = h.indexOf(d);
+    if (b.dataset.rm) h.splice(i, 1); else { const j = i + (+b.dataset.mv); if (j < 0 || j >= h.length) return; h.splice(i, 1); h.splice(j, 0, d); }
+    setHier(h);
+  });
+  let dragD = null;
+  $('hier').addEventListener('dragstart', e => { const c = e.target.closest('.chip'); if (c) { dragD = c.dataset.d; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', dragD); } });
+  $('hier').addEventListener('dragover', e => { if (dragD) e.preventDefault(); });
+  $('hier').addEventListener('drop', e => {
+    e.preventDefault(); const c = e.target.closest('.chip'); if (!dragD) return; const h = state.hier.filter(d => d !== dragD);
+    h.splice(c ? state.hier.indexOf(c.dataset.d) : h.length, 0, dragD); dragD = null; setHier(h);
+  });
+  document.querySelectorAll('[data-h]').forEach(b => b.addEventListener('click', () => setHier(b.dataset.h.split(','))));
+  $('pl').addEventListener('click', e => { const b = e.target.closest('[data-tog]'); if (!b) return; const p = b.dataset.tog; if (state.shut[p]) delete state.shut[p]; else state.shut[p] = 1; render(); });
+  $('ex-all').addEventListener('click', () => { state.shut = {}; render(); });
+  $('ex-top').addEventListener('click', () => {
+    if (!state.hier.length) return; const d = state.hier[0], f = { brand: r => r.b.id, sku: r => r.k.id, cust: r => r.c }[d];
+    state.shut = {}; model().rows.forEach(r => { state.shut['/' + d + ':' + f(r)] = 1; }); render();
+  });
+
+  document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => { state[b.parentElement.dataset.k] = b.dataset.v; render(); }));
+  $('p-bad').addEventListener('click', () => { state.cogs = 'join'; state.mkt = 'join'; state.ratio = 'avg'; render(); });
+  $('p-good').addEventListener('click', () => { state.cogs = 'rate'; state.mkt = 'sales'; state.ratio = 'sum'; render(); });
+  $('figSku').addEventListener('change', e => { state.figSku = +e.target.value; render(); });
+  $('figBrand').addEventListener('change', e => { state.figBrand = +e.target.value; render(); });
+  const tabs = [...document.querySelectorAll('[role="tab"]')];
+  tabs.forEach(t => t.addEventListener('click', () => tabs.forEach(o => { const on = o === t; o.setAttribute('aria-selected', String(on)); $(o.getAttribute('aria-controls')).hidden = !on; })));
+
+  renderSources(); render();
+})();
+</script>
+
+</body></html>

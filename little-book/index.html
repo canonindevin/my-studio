@@ -1,0 +1,410 @@
+<!doctype html><html lang="en"><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>The Little Book</title></head><body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Public+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one narrow ledger column. The red-ruled chart is the page; everything else is quiet margin notes. */
+:root{
+  --paper:#eef1ec; --leaf:#fafbf8; --ink:#1b2430; --muted:#5a6570;
+  --rule:#a8323a; --rule-soft:#d9b9b8; --line:#d3d9d1; --tint:#f5e6e3;
+  --display:"Libre Caslon Text","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#11161b; --leaf:#182027; --ink:#e4e8eb; --muted:#97a3ae;
+  --rule:#e3848a; --rule-soft:#5a373b; --line:#2b3640; --tint:#2b1d21; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --paper:#11161b; --leaf:#182027; --ink:#e4e8eb; --muted:#97a3ae;
+  --rule:#e3848a; --rule-soft:#5a373b; --line:#2b3640; --tint:#2b1d21; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font:400 15px/1.55 var(--body);
+  padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.book{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1,h2,h3,p{margin:0}
+h1{font:400 30px/1.1 var(--display);letter-spacing:-.01em}
+h2{font:400 21px/1.2 var(--display);text-wrap:balance}
+.label{font:600 11px/1.3 var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--rule);outline-offset:2px}
+
+.top{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px}
+.status{font-size:13px;color:var(--muted)}
+.status.bad{color:var(--rule)}
+
+.focus{border-top:2px solid var(--rule);border-bottom:1px solid var(--rule-soft);padding-block:18px;display:flex;flex-direction:column;gap:8px}
+.focus .name{font:400 34px/1.1 var(--display)}
+.focus .precept{font:italic 400 18px/1.45 var(--display);max-width:34em;text-wrap:pretty}
+
+.nav{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.nav .when{font-weight:500;margin-right:auto;font-variant-numeric:tabular-nums}
+.btn{background:transparent;border:1px solid var(--line);border-radius:4px;padding:6px 12px;min-height:34px}
+.btn:hover{border-color:var(--muted)}
+.btn.solid{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.btn.small{padding:3px 8px;min-height:28px;font-size:13px}
+
+.chart{background:var(--leaf);border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+th,td{padding:0;border-bottom:1px solid var(--rule-soft);border-left:1px solid var(--rule-soft)}
+tr>:first-child{border-left:0}
+tbody tr:last-child>*{border-bottom:0}
+thead th{border-bottom:2px solid var(--rule)}
+col.v{width:33%}
+thead .corner{text-align:left;padding:8px 10px}
+.day{display:flex;flex-direction:column;align-items:center;width:100%;background:transparent;border:0;padding:6px 0 5px;line-height:1.2}
+.day b{font:400 16px var(--display)}
+.day small{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.day.today b{color:var(--rule);font-weight:700}
+.day.sel{box-shadow:inset 0 -3px 0 var(--ink)}
+tbody th{text-align:left;font-weight:500;font-size:14px;padding:0 10px;overflow-wrap:anywhere;line-height:1.25}
+tbody th i{font:400 15px var(--display);color:var(--rule);font-style:normal;margin-right:6px}
+tr.on th,tr.on td{background:var(--tint)}
+tr.on th{font-weight:600}
+.cell{display:flex;align-items:center;justify-content:center;width:100%;height:38px;background:transparent;border:0}
+.cell:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.dots{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;width:20px}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--ink)}
+.hint{font-size:13px;color:var(--muted);margin-top:8px}
+
+.page{display:grid;gap:14px}
+.page label{display:grid;gap:5px}
+.page label span{font:italic 400 16px var(--display)}
+textarea,input[type=text]{width:100%;background:var(--leaf);border:1px solid var(--line);border-radius:4px;padding:8px 10px}
+textarea{min-height:64px;resize:vertical;line-height:1.5}
+
+.ledger{display:grid;gap:0}
+.lrow{display:grid;grid-template-columns:minmax(0,1fr) 150px 2.5em;align-items:end;gap:12px;padding:6px 0;border-bottom:1px solid var(--line)}
+.lrow .n{min-width:0;overflow-wrap:anywhere;font-size:14px}
+.bars{display:flex;align-items:flex-end;gap:3px;height:30px}
+.bars span{flex:1;background:var(--muted);min-height:2px;opacity:.55}
+.bars span.f{background:var(--rule);opacity:1}
+.lrow .t{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.leads{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.leads li{display:grid;grid-template-columns:5.5em minmax(0,1fr);gap:12px}
+.leads time{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums;padding-top:2px}
+.empty{color:var(--muted);font-style:italic}
+
+section{display:grid;gap:12px}
+details{border-top:1px solid var(--line);padding-top:12px}
+summary{cursor:pointer;font:400 18px var(--display)}
+details>div{display:grid;gap:12px;margin-top:14px}
+.vrow{display:grid;grid-template-columns:minmax(0,10em) minmax(0,1fr) auto;gap:8px;align-items:start}
+.vrow .ops{display:flex;gap:4px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.confirm{background:var(--tint);border:1px solid var(--rule-soft);padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.confirm p{flex:1 1 240px}
+.how p{max-width:62ch}
+@media (max-width:520px){
+  h1{font-size:25px} .focus .name{font-size:28px}
+  tbody th{font-size:12.5px;padding:0 6px} tbody th i{display:none} thead .corner{padding:8px 6px}
+  col.v{width:31%}
+  .vrow{grid-template-columns:minmax(0,1fr)} .lrow{grid-template-columns:minmax(0,1fr) 110px 2em}
+}
+@media (prefers-reduced-motion:no-preference){ .dots i{animation:pop .15s ease-out} @keyframes pop{from{transform:scale(.3)}} }
+</style>
+
+<main class="book">
+  <header class="top">
+    <h1>The Little Book</h1>
+    <p class="status" id="status" role="status">Opening your book…</p>
+  </header>
+
+  <section class="focus" aria-live="polite">
+    <p class="label" id="course"></p>
+    <p class="name" id="fname"></p>
+    <p class="precept" id="fprecept"></p>
+  </section>
+
+  <section>
+    <div class="nav">
+      <span class="when" id="when"></span>
+      <button class="btn" id="prev" aria-label="Previous week">‹ Earlier</button>
+      <button class="btn" id="now">This week</button>
+      <button class="btn" id="next" aria-label="Next week">Later ›</button>
+    </div>
+    <div>
+      <div class="chart" id="chart"></div>
+      <p class="hint">Tap a square once for each lapse that day. A fifth tap clears it. The aim is a clean row for this week's virtue, shown shaded.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="dayhead"></h2>
+    <div class="page">
+      <label for="am"><span>What good shall I do this day?</span><textarea id="am" placeholder="Morning. One or two things are enough."></textarea></label>
+      <label for="pm"><span>What good have I done today?</span><textarea id="pm" placeholder="Evening. Name what went right before what went wrong."></textarea></label>
+      <label for="spark"><span>What held my interest today?</span><textarea id="spark" placeholder="Anything you lost track of time doing, or kept thinking about."></textarea></label>
+    </div>
+  </section>
+
+  <section>
+    <h2>Thirteen weeks at a glance</h2>
+    <p class="muted">Marks per week, oldest on the left. The red bar is the week that virtue had your full attention.</p>
+    <div class="ledger" id="ledger"></div>
+  </section>
+
+  <section>
+    <h2>What keeps holding your interest</h2>
+    <p class="muted">Your answers to the third question, newest first. Ambitions tend to appear here as repeats.</p>
+    <ul class="leads" id="leads"></ul>
+  </section>
+
+  <details id="editor">
+    <summary>Edit your virtues</summary>
+    <div>
+      <p class="muted">Rename, reword, reorder. The order sets the weekly rotation. Marks stay attached to a virtue when you rename it.</p>
+      <div id="vlist" style="display:grid;gap:10px"></div>
+      <div class="row">
+        <button class="btn" id="add">Add a virtue</button>
+        <button class="btn" id="restart">Start the course over from this week</button>
+        <button class="btn" id="loadF">Load Franklin's original thirteen</button>
+        <button class="btn" id="loadS">Load the starter set</button>
+      </div>
+      <div class="confirm" id="confirm" hidden>
+        <p id="ctext"></p>
+        <button class="btn solid" id="cyes">Replace</button>
+        <button class="btn" id="cno">Keep mine</button>
+      </div>
+    </div>
+  </details>
+
+  <details class="how">
+    <summary>How Franklin used his</summary>
+    <div>
+      <p>Around 1730 Benjamin Franklin ruled a small book with red ink: seven columns for the days, thirteen rows for his virtues. Each evening he put a black dot against any virtue he had slipped on.</p>
+      <p>He gave one virtue his strict attention each week and left the rest to ordinary care. Thirteen weeks made a course, and four courses made a year.</p>
+      <p>He never got a clean book. Order defeated him for life. He wrote that he was still "a better and a happier man than I otherwise should have been."</p>
+    </div>
+  </details>
+</main>
+
+<script>
+/* ---------- Things you are most likely to change ---------- */
+const STARTER = [
+  ["rest","Rest","Sleep enough to think clearly. Protect the hours that restore you."],
+  ["order","Order","Let all your things have their places; let each part of your day have its time."],
+  ["focus","Focus","One thing at a time. Finish before you start the next."],
+  ["resolution","Resolution","Resolve to perform what you ought; perform without fail what you resolve."],
+  ["movement","Movement","Use your body every day, even briefly."],
+  ["moderation","Moderation","Avoid extremes of work, screens, food and worry."],
+  ["frugality","Frugality","Spend money and attention only on what does good to you or others."],
+  ["curiosity","Curiosity","Try one small thing you have not tried. Follow what pulls at you."],
+  ["industry","Industry","Lose no time on what does not matter; cut off unnecessary actions."],
+  ["sincerity","Sincerity","Say what is true, to others and to yourself."],
+  ["connection","Connection","Give one person your full attention today."],
+  ["tranquility","Tranquility","Be not disturbed at trifles, or at accidents common or unavoidable."],
+  ["grace","Grace","Forgive today's marks. Begin again tomorrow."]
+];
+const FRANKLIN = [
+  ["temperance","Temperance","Eat not to dullness; drink not to elevation."],
+  ["silence","Silence","Speak not but what may benefit others or yourself; avoid trifling conversation."],
+  ["order","Order","Let all your things have their places; let each part of your business have its time."],
+  ["resolution","Resolution","Resolve to perform what you ought; perform without fail what you resolve."],
+  ["frugality","Frugality","Make no expense but to do good to others or yourself; i.e., waste nothing."],
+  ["industry","Industry","Lose no time; be always employed in something useful; cut off all unnecessary actions."],
+  ["sincerity","Sincerity","Use no hurtful deceit; think innocently and justly, and, if you speak, speak accordingly."],
+  ["justice","Justice","Wrong none by doing injuries, or omitting the benefits that are your duty."],
+  ["moderation","Moderation","Avoid extremes; forbear resenting injuries so much as you think they deserve."],
+  ["cleanliness","Cleanliness","Tolerate no uncleanliness in body, clothes, or habitation."],
+  ["tranquility","Tranquillity","Be not disturbed at trifles, or at accidents common or unavoidable."],
+  ["chastity","Chastity","Rarely use venery but for health or offspring, never to dullness, weakness, or the injury of your own or another's peace or reputation."],
+  ["humility","Humility","Imitate Jesus and Socrates."]
+];
+const MAX_MARKS = 4;          // taps per square before it clears
+const LETTERS = ["S","M","T","W","T","F","S"];   // Franklin's week began on Sunday
+
+/* ---------- Dates ---------- */
+const pad = n => String(n).padStart(2,"0");
+const iso = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const parse = k => { const [y,m,d] = k.split("-").map(Number); return new Date(y,m-1,d); };
+const utc = k => { const [y,m,d] = k.split("-").map(Number); return Date.UTC(y,m-1,d); };
+const weekKey = d => iso(new Date(d.getFullYear(), d.getMonth(), d.getDate()-d.getDay()));
+const shift = (k,days) => { const d = parse(k); d.setDate(d.getDate()+days); return iso(d); };
+const weeksBetween = (a,b) => Math.round((utc(b)-utc(a))/6048e5);
+const thisWeek = () => weekKey(new Date());
+
+/* ---------- State ---------- */
+const toVirtues = list => list.map(([id,name,precept]) => ({id,name,precept}));
+const S = {
+  cfg: { start: thisWeek(), virtues: toVirtues(STARTER) },
+  cfgSaved: false, weeks: {}, view: thisWeek(), day: new Date().getDay(),
+  ready: false, local: false, note: "", failed: false
+};
+const clone = o => JSON.parse(JSON.stringify(o));
+function normCfg(d){
+  const v = Array.isArray(d && d.virtues) ? d.virtues.filter(x => x && x.id).map(x => ({id:String(x.id), name:String(x.name||""), precept:String(x.precept||"")})) : [];
+  return { start: /^\d{4}-\d\d-\d\d$/.test(d && d.start) ? d.start : thisWeek(), virtues: v.length ? v : toVirtues(STARTER) };
+}
+function normWeek(k,d){ return { key:k, marks: clone((d && d.marks) || {}), days: clone((d && d.days) || {}) }; }
+function getWeek(k){ return S.weeks[k] || (S.weeks[k] = { key:k, marks:{}, days:{} }); }
+function focusOf(k){
+  const n = weeksBetween(S.cfg.start,k), N = S.cfg.virtues.length;
+  return { idx: ((n%N)+N)%N, week: ((n%N)+N)%N + 1, course: Math.floor(n/N)+1, N };
+}
+
+/* ---------- Saving: one write at a time per document ---------- */
+let store = null;
+const pending = new Map();
+function queueSave(key, delay){
+  if (key !== "cfg" && !S.cfgSaved && !pending.has("cfg")) queueSave("cfg", 0);
+  const p = pending.get(key) || { busy:false, again:false, timer:null };
+  pending.set(key,p); clearTimeout(p.timer);
+  p.timer = setTimeout(() => flush(key), delay);
+  renderStatus();
+}
+async function flush(key){
+  const p = pending.get(key); if (!p) return;
+  if (p.busy){ p.again = true; return; }
+  p.busy = true;
+  try { await store.write(key, clone(key === "cfg" ? S.cfg : S.weeks[key])); S.failed = false; if (key === "cfg") S.cfgSaved = true; }
+  catch (e) { S.failed = true; }
+  p.busy = false;
+  if (p.again){ p.again = false; return flush(key); }
+  pending.delete(key); renderStatus();
+}
+
+/* ---------- DOM helper ---------- */
+const $ = id => document.getElementById(id);
+function h(tag, a, ...kids){
+  const e = document.createElement(tag);
+  for (const k in (a||{})){ const v = a[k]; if (v == null || v === false) continue;
+    if (k === "class") e.className = v; else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v === true ? "" : v); }
+  for (const c of kids.flat()){ if (c != null) e.append(c.nodeType ? c : document.createTextNode(c)); }
+  return e;
+}
+
+/* ---------- Rendering ---------- */
+function renderStatus(){
+  const el = $("status"); let t, bad = false;
+  if (!S.ready) { t = S.note === "slow" ? "Your saved book can't be reached yet. Still trying." : S.note === "error" ? "Your saved book can't be opened in this view." : "Opening your book…"; bad = !!S.note; }
+  else if (S.failed) { t = "Your last change was not saved. Make another mark to retry."; bad = true; }
+  else if (pending.size) t = "Saving…";
+  else t = S.local ? "Saved in this browser only" : "Saved. Only you can read this.";
+  el.textContent = t; el.className = "status" + (bad ? " bad" : "");
+}
+function renderFocus(){
+  const f = focusOf(S.view), v = S.cfg.virtues[f.idx];
+  $("course").textContent = f.course < 1 ? "Before your course began" : "Course " + f.course + " · Week " + f.week + " of " + f.N + " · This week's virtue";
+  $("fname").textContent = v.name || "Unnamed"; $("fprecept").textContent = v.precept;
+  const a = parse(S.view), b = parse(shift(S.view,6)), o = {month:"short", day:"numeric"};
+  $("when").textContent = a.toLocaleDateString(undefined,o) + " – " + b.toLocaleDateString(undefined,o) + ", " + b.getFullYear();
+}
+function renderChart(){
+  const keep = document.activeElement && document.activeElement.id;
+  const f = focusOf(S.view), w = S.weeks[S.view], today = S.view === thisWeek() ? new Date().getDay() : -1;
+  const head = h("tr", null, h("th", {class:"corner label", scope:"col"}, "Virtue"),
+    LETTERS.map((L,d) => { const dt = parse(shift(S.view,d));
+      return h("th", {scope:"col"}, h("button", {id:"d-"+d, class:"day"+(d===today?" today":"")+(d===S.day?" sel":""),
+        "aria-pressed": d===S.day ? "true":"false", "aria-label": dt.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"}),
+        onclick: () => { S.day = d; renderChart(); renderDay(); }}, h("b",null,L), h("small",null,String(dt.getDate())))); }));
+  const rows = S.cfg.virtues.map((v,i) => h("tr", {class: i===f.idx ? "on" : null},
+    h("th", {scope:"row"}, h("i",null,(v.name||"?").charAt(0).toUpperCase()), v.name || "Unnamed"),
+    LETTERS.map((_,d) => { const n = (w && w.marks[v.id] && w.marks[v.id][d]) || 0;
+      return h("td", null, h("button", {id:"c-"+v.id+"-"+d, class:"cell", "aria-label": (v.name||"Unnamed")+", day "+(d+1)+": "+n+(n===1?" mark":" marks"),
+        onclick: () => mark(v.id,d)}, n ? h("span",{class:"dots"}, Array.from({length:n}, () => h("i"))) : null)); })));
+  $("chart").replaceChildren(h("table", null, h("colgroup",null,h("col",{class:"v"}),LETTERS.map(()=>h("col"))), h("thead",null,head), h("tbody",null,rows)));
+  if (keep && /^[cd]-/.test(keep)) { const e = $(keep); if (e) e.focus(); }
+}
+function renderDay(){
+  $("dayhead").textContent = parse(shift(S.view,S.day)).toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"});
+  const d = (S.weeks[S.view] && S.weeks[S.view].days[String(S.day)]) || {};
+  for (const k of ["am","pm","spark"]) { const el = $(k); if (document.activeElement !== el) el.value = d[k] || ""; }
+}
+function renderLedger(){
+  const now = thisWeek(), keys = Array.from({length:13}, (_,i) => shift(now, (i-12)*7));
+  const sum = (k,id) => ((S.weeks[k] && S.weeks[k].marks[id]) || []).reduce((a,b) => a+(b||0), 0);
+  const data = S.cfg.virtues.map(v => keys.map(k => sum(k,v.id)));
+  const max = Math.max(4, ...data.flat());
+  $("ledger").replaceChildren(...S.cfg.virtues.map((v,i) => h("div", {class:"lrow"},
+    h("span",{class:"n"}, v.name || "Unnamed"),
+    h("span",{class:"bars", role:"img", "aria-label":"Marks per week for the last thirteen weeks: "+data[i].join(", ")},
+      data[i].map((t,j) => h("span",{class: focusOf(keys[j]).idx===i && focusOf(keys[j]).course>=1 ? "f" : null, style:"height:"+Math.round(t/max*28+2)+"px", title: t+" in the week of "+keys[j]}))),
+    h("span",{class:"t", title:"Marks this week"}, String(data[i][12])))));
+  const leads = [];
+  for (const k of Object.keys(S.weeks).sort().reverse()) for (let d = 6; d >= 0; d--) {
+    const t = S.weeks[k].days[String(d)] && S.weeks[k].days[String(d)].spark;
+    if (t && t.trim() && leads.length < 40) leads.push([shift(k,d), t.trim()]); }
+  $("leads").replaceChildren(...(leads.length ? leads.map(([k,t]) => h("li",null,
+      h("time",{datetime:k}, parse(k).toLocaleDateString(undefined,{month:"short",day:"numeric"})), h("span",null,t)))
+    : [h("li",{class:"empty", style:"display:block"}, "Nothing yet. Answer the third question tonight and it will appear here.")]));
+}
+function renderEditor(){
+  const vs = S.cfg.virtues;
+  $("vlist").replaceChildren(...vs.map((v,i) => h("div",{class:"vrow"},
+    h("input",{type:"text", id:"vn-"+v.id, value:v.name, "aria-label":"Name of virtue "+(i+1), maxlength:"40", onchange: e => editV(v.id,"name",e.target.value)}),
+    h("input",{type:"text", id:"vp-"+v.id, value:v.precept, "aria-label":"Precept for "+v.name, maxlength:"240", onchange: e => editV(v.id,"precept",e.target.value)}),
+    h("span",{class:"ops"},
+      h("button",{class:"btn small", "aria-label":"Move "+v.name+" up", disabled:i===0, onclick:() => moveV(i,-1)}, "↑"),
+      h("button",{class:"btn small", "aria-label":"Move "+v.name+" down", disabled:i===vs.length-1, onclick:() => moveV(i,1)}, "↓"),
+      h("button",{class:"btn small", disabled:vs.length<2, onclick:() => { vs.splice(i,1); cfgChanged(true); }}, "Remove")))));
+}
+function renderAll(){
+  renderStatus(); renderFocus(); renderChart(); renderDay(); renderLedger();
+  if (!$("editor").contains(document.activeElement)) renderEditor();
+}
+
+/* ---------- Actions ---------- */
+function mark(id,d){
+  if (!S.ready) return;
+  const w = getWeek(S.view), a = w.marks[id] || (w.marks[id] = [0,0,0,0,0,0,0]);
+  a[d] = ((a[d]||0)+1) % (MAX_MARKS+1);
+  queueSave(S.view,600); renderChart(); renderLedger();
+}
+for (const k of ["am","pm","spark"]) $(k).addEventListener("input", e => {
+  if (!S.ready) return;
+  const w = getWeek(S.view), d = w.days[String(S.day)] || (w.days[String(S.day)] = {});
+  d[k] = e.target.value; queueSave(S.view,900); if (k === "spark") renderLedger();
+});
+function go(k){ S.view = k; S.day = k === thisWeek() ? new Date().getDay() : 0; renderAll(); }
+$("prev").onclick = () => go(shift(S.view,-7));
+$("next").onclick = () => go(shift(S.view,7));
+$("now").onclick = () => go(thisWeek());
+
+function cfgChanged(redraw){ if (!S.ready) return; queueSave("cfg",400); renderFocus(); renderChart(); renderLedger(); if (redraw) renderEditor(); }
+function editV(id,field,val){ const v = S.cfg.virtues.find(x => x.id === id); if (v && S.ready){ v[field] = val.trim(); cfgChanged(false); } }
+function moveV(i,dir){ const vs = S.cfg.virtues; [vs[i],vs[i+dir]] = [vs[i+dir],vs[i]]; cfgChanged(true); }
+$("add").onclick = () => { if (!S.ready) return; const id = "v"+Date.now().toString(36);
+  S.cfg.virtues.push({id, name:"New virtue", precept:"Write its precept in your own words."}); cfgChanged(true); const e = $("vn-"+id); if (e){ e.focus(); e.select(); } };
+let confirmAction = null;
+function ask(text, yes, fn){ $("ctext").textContent = text; $("cyes").textContent = yes; confirmAction = fn; $("confirm").hidden = false; $("cyes").focus(); }
+$("cno").onclick = () => { $("confirm").hidden = true; confirmAction = null; };
+$("cyes").onclick = () => { $("confirm").hidden = true; if (confirmAction && S.ready) confirmAction(); confirmAction = null; };
+const swap = list => () => { S.cfg.virtues = toVirtues(list); cfgChanged(true); };
+$("loadF").onclick = () => ask("Replace your list with Franklin's thirteen? Marks under virtues that leave the list stay stored but hidden.", "Replace", swap(FRANKLIN));
+$("loadS").onclick = () => ask("Replace your list with the starter set? Marks under virtues that leave the list stay stored but hidden.", "Replace", swap(STARTER));
+$("restart").onclick = () => ask("Make this week Week 1 of a new course? Your marks and notes are kept.", "Start over", () => { S.cfg.start = thisWeek(); cfgChanged(false); });
+
+/* ---------- Storage: your private book on claude.ai, or this browser when opened elsewhere ---------- */
+function startLocal(){
+  const KEY = "little-book";
+  try { const d = JSON.parse(localStorage.getItem(KEY) || "null");
+    if (d){ S.cfg = normCfg(d.cfg); S.cfgSaved = true; for (const k in (d.weeks||{})) S.weeks[k] = normWeek(k,d.weeks[k]); } } catch (e) {}
+  store = { write: async () => { localStorage.setItem(KEY, JSON.stringify({cfg:S.cfg, weeks:S.weeks})); } };
+  S.local = true; S.ready = true; renderAll();
+}
+async function init(){
+  renderAll();
+  let db = null, uid = null;
+  try { if (window.claude && window.claude.use){ const [d,u] = await Promise.all([claude.use("db"), claude.use("user")]); db = d; uid = u ? await u.id() : null; } } catch (e) {}
+  if (!db || !uid) return startLocal();
+  const cfgRef = db.doc("data/users/"+uid+"/book"), weeksCol = cfgRef.collection("weeks");
+  store = { write: (key,data) => key === "cfg" ? cfgRef.set(data) : weeksCol.doc(key).set(data) };
+  const got = {c:false, w:false};
+  const timer = setTimeout(() => { if (!S.ready){ S.note = "slow"; renderStatus(); } }, 10000);
+  const done = () => { if (got.c && got.w && !S.ready){ S.ready = true; S.note = ""; clearTimeout(timer); } renderAll(); };
+  const fail = () => { clearTimeout(timer); if (!S.ready) S.note = "error"; else S.failed = true; renderStatus(); };
+  cfgRef.onSnapshot(s => {
+    if (!pending.has("cfg") && s.exists){ S.cfg = normCfg(s.data()); S.cfgSaved = true; }
+    if (!s.metadata.fromCache) got.c = true; done();
+  }, fail);
+  weeksCol.orderBy("key","desc").limit(104).onSnapshot(q => {
+    for (const d of q.docs) if (!pending.has(d.id)) S.weeks[d.id] = normWeek(d.id, d.data());
+    if (!q.metadata.fromCache) got.w = true; done();
+  }, fail);
+}
+init();
+</script>
+
+</body></html>

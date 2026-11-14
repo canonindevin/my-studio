@@ -1,0 +1,1467 @@
+<!doctype html><html lang="en"><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>Color Theory Studio</title></head><body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout concept: a neutral grey studio wall. The UI stays colorless so the one color you choose
+   (shared across every tab) is the only chroma on the page and is never skewed by its surroundings. */
+:root{
+  --bg:#eeeff2; --surface:#f8f8fa; --fg:#18191d; --muted:#585b64; --line:#d2d4da; --chip:#e2e3e8;
+  --cur:#2a3790; --warm:#f08a2a; --cool:#3a6fe0; --ok:#1d7a46; --bad:#b3261e;
+  --f-disp:Arial,'Helvetica Neue',Helvetica,sans-serif;
+  --f-body:Arial,'Helvetica Neue',Helvetica,sans-serif;
+  --f-mono:Arial,'Helvetica Neue',Helvetica,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#16171a; --surface:#1f2024; --fg:#ececf0; --muted:#a0a3ac; --line:#34363c; --chip:#2b2d33;
+    --ok:#5fcf8f; --bad:#ff8a80; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#16171a; --surface:#1f2024; --fg:#ececf0; --muted:#a0a3ac; --line:#34363c; --chip:#2b2d33;
+  --ok:#5fcf8f; --bad:#ff8a80; color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{
+  background:var(--bg); color:var(--fg); font:15px/1.55 var(--f-body); margin:0;
+  padding-block:18px 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1080px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-disp);text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(26px,5vw,38px);line-height:1.05;font-weight:700}
+h2{font-size:clamp(22px,3.4vw,28px);line-height:1.15;font-weight:700}
+h3{font-size:17px;font-weight:700}
+p{margin:0}
+.mono{font-family:var(--f-mono)}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.eyebrow{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:flex-end;justify-content:space-between;padding-bottom:18px}
+.brand p{color:var(--muted);margin-top:6px;max-width:46ch}
+.base{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.pick{display:flex;align-items:center;gap:10px}
+input[type=color]{appearance:none;-webkit-appearance:none;width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:6px;background:none;cursor:pointer}
+input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+input[type=color]::-webkit-color-swatch{border:0;border-radius:5px}
+input[type=color]::-moz-color-swatch{border:0;border-radius:5px}
+.btn{border:1px solid var(--line);background:var(--surface);padding:9px 14px;border-radius:6px;font-weight:500;min-height:40px}
+.btn:hover{border-color:var(--fg)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;flex-wrap:wrap;background:var(--surface)}
+.seg button{border:0;background:none;padding:9px 13px;min-height:40px;font-weight:500}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.prog{font-size:13px;color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line);align-self:center}
+
+/* tabs */
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:none;padding:13px 16px 10px;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;white-space:nowrap;margin-bottom:-1px}
+.tab[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--cur)}
+.tab:hover{color:var(--fg)}
+
+/* panels */
+.panel{padding-top:28px;display:flex;flex-direction:column;gap:30px}
+.lede{color:var(--muted);max-width:62ch;margin-top:6px}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:start}
+.stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+.cols3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+.cols4{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+@media (max-width:760px){.split{grid-template-columns:minmax(0,1fr);gap:24px}}
+.callout{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;font-size:14px;color:var(--muted)}
+.callout b{color:var(--fg)}
+.sect{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+/* wheel + canvases */
+.wheelbox{display:flex;justify-content:center;min-width:0}
+canvas{display:block;max-width:100%;touch-action:none}
+#wheel{cursor:grab}
+#wheel:active{cursor:grabbing}
+#svc{cursor:crosshair;border-radius:6px;border:1px solid var(--line)}
+
+/* chips and swatches */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.cp{border:1px solid var(--line);background:var(--surface);padding:7px 12px;border-radius:999px;font-size:14px;font-weight:500;min-height:36px}
+.cp[aria-checked="true"],.cp[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(86px,1fr));gap:10px}
+.sw{border:0;background:none;text-align:left;padding:0;min-width:0}
+.sw .chip{display:block;height:74px;border-radius:6px;border:1px solid var(--line)}
+.sw .hx{display:block;margin-top:6px;font:500 12px var(--f-mono)}
+.sw .lb{display:block;font-size:12px;color:var(--muted)}
+.rng{display:grid;grid-template-columns:96px minmax(0,1fr) 40px;gap:10px;align-items:center;font-size:14px}
+.rng output{font:12px var(--f-mono);color:var(--muted);text-align:right}
+input[type=range]{width:100%;accent-color:var(--cur);min-height:28px}
+select{font:inherit;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:9px 10px;min-height:40px}
+
+/* mix */
+.pgrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pg{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);padding:0;position:relative}
+.pg[aria-pressed="true"]{outline:2px solid var(--fg);outline-offset:2px}
+.pglabel{font-size:13px;min-width:120px}
+.res{display:flex;flex-direction:column;gap:8px;min-width:0}
+.res .big{height:96px;border-radius:6px;border:1px solid var(--line)}
+.strip{display:flex;height:22px;border-radius:4px;overflow:hidden;border:1px solid var(--line)}
+.strip i{flex:1}
+.strip.tall{height:44px}
+
+/* value */
+.ladder{display:flex;gap:2px;margin-top:4px}
+.ladder span{flex:1;height:52px;font:500 10px var(--f-mono);display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;border-radius:2px}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(86px,1fr));gap:10px}
+.vcell .chip{display:block;height:46px;border:1px solid var(--line)}
+.vcell .chip:first-child{border-radius:6px 6px 0 0}
+.vcell .chip+.chip{border-radius:0 0 6px 6px;border-top:0}
+.vcell .hx{font:500 12px var(--f-mono);margin-top:6px;display:block}
+.scale{position:relative;margin-top:22px}
+.scale .strip{height:34px}
+.scale .mk{position:absolute;top:-20px;transform:translateX(-50%);font:600 12px var(--f-mono);white-space:nowrap}
+.scale .mk::after{content:"";display:block;width:2px;height:54px;background:var(--fg);margin:2px auto 0}
+.ticks{display:flex;font:11px var(--f-mono);color:var(--muted);margin-top:4px}
+.ticks span{flex:1;text-align:center}
+
+/* contrast */
+.tile{aspect-ratio:1/1;border-radius:6px;display:grid;place-items:center;border:1px solid var(--line)}
+.tile i{width:38%;aspect-ratio:1/1;display:block}
+.join{display:flex;height:60px;border-radius:6px;overflow:hidden}
+.join i{flex:1}
+.meter{position:relative;height:14px;border-radius:7px;background:linear-gradient(90deg,var(--cool),#bdbdc4 50%,var(--warm));margin:8px 0 2px}
+.meter b{position:absolute;top:-5px;width:6px;height:24px;background:var(--fg);border:2px solid var(--bg);border-radius:3px;transform:translateX(-50%)}
+.tchips{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px}
+.tchips button{height:44px;border:1px solid var(--line);border-radius:4px;padding:0}
+.tchips button[aria-pressed="true"]{outline:2px solid var(--fg);outline-offset:2px}
+@media (max-width:520px){.tchips{grid-template-columns:repeat(6,minmax(0,1fr))}}
+
+/* mediums */
+.mdetail{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:32px}
+@media (max-width:760px){.mdetail{grid-template-columns:minmax(0,1fr);gap:22px}}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:0;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.pair div{height:110px;display:flex;align-items:flex-end;padding:8px 10px;font:500 12px var(--f-mono)}
+dl.props{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 16px;margin:0;font-size:14px}
+dl.props dt{color:var(--muted)}
+dl.props dd{margin:0}
+ul.tips{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px}
+.lbox{position:relative;isolation:isolate;height:130px;border-radius:6px;border:1px solid var(--line);overflow:hidden}
+.lbox i{position:absolute;top:17px;width:96px;height:96px;border-radius:50%}
+.lbox i:nth-child(1){left:calc(50% - 72px)}
+.lbox i:nth-child(2){left:calc(50% - 24px)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:14px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600}
+tr:last-child td{border-bottom:0}
+tr.cur td{background:var(--chip)}
+
+/* palette */
+.land{width:100%;height:auto;border-radius:6px;border:1px solid var(--line);display:block}
+.land.gray{filter:grayscale(1)}
+.pbar{display:flex;height:14px;border-radius:7px;overflow:hidden;border:1px solid var(--line)}
+.pbar i{display:block}
+
+/* practice */
+.ptarget{height:110px;border-radius:6px;border:1px solid var(--line);max-width:260px}
+.popts{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}
+.popt{border:2px solid transparent;background:none;padding:0;text-align:left;border-radius:8px}
+.popt .chip{display:block;height:96px;border-radius:6px;border:1px solid var(--line)}
+.popt .note{display:block;min-height:22px;margin-top:6px;font:500 12px var(--f-mono)}
+.popt.ok{border-color:var(--ok)}
+.popt.bad{border-color:var(--bad)}
+.popt.ok .note{color:var(--ok)}
+.popt.bad .note{color:var(--bad)}
+.score{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:14px}
+.score b{font-family:var(--f-mono)}
+
+/* path */
+.levels{display:flex;flex-direction:column;gap:0}
+.lvl{border-top:1px solid var(--line);padding:22px 0;display:grid;grid-template-columns:84px minmax(0,1fr);gap:8px 20px}
+.lvl .no{font:700 40px/1 var(--f-disp);color:var(--muted)}
+.lvl.next .no{color:var(--cur)}
+.lvl ul{list-style:none;padding:0;margin:14px 0 0;display:flex;flex-direction:column;gap:10px}
+.lvl li{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.lvl label{display:flex;gap:10px;align-items:flex-start;flex:1 1 280px;min-width:0;cursor:pointer}
+.lvl input[type=checkbox]{width:20px;height:20px;margin-top:2px;accent-color:var(--cur);flex:none}
+.lvl .go{font-size:13px;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:5px 10px}
+.tag{display:inline-block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;border:1px solid var(--line);border-radius:999px;padding:2px 9px;margin-left:8px;color:var(--muted);vertical-align:middle}
+.lvl.next .tag{color:var(--fg);border-color:var(--fg)}
+.meterbar{height:8px;border-radius:4px;background:var(--chip);overflow:hidden}
+.meterbar i{display:block;height:100%;background:var(--cur);width:0}
+@media (max-width:560px){.lvl{grid-template-columns:minmax(0,1fr)}.lvl .no{font-size:30px}}
+
+/* foundations, light, apply */
+.plot{display:block;max-width:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:18px;height:5px;border-radius:2px;vertical-align:middle;margin-right:6px;border:1px solid var(--line)}
+.bars{display:grid;grid-template-columns:20px minmax(0,1fr) 36px;gap:6px 10px;align-items:center;font-size:13px}
+.bar{height:12px;border-radius:6px;background:var(--chip);overflow:hidden;display:block}
+.bar i{display:block;height:100%}
+.step{display:grid;grid-template-columns:44px minmax(0,1fr);gap:6px 16px;border-top:1px solid var(--line);padding-top:22px}
+.step>.no{font:700 30px/1 var(--f-disp);color:var(--muted)}
+@media (max-width:560px){.step{grid-template-columns:minmax(0,1fr)}}
+.box{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px}
+.box button{border:0;background:none;padding:0;text-align:left;font-size:11px;color:var(--muted);min-width:0}
+.box button span{display:block;height:46px;border-radius:5px;border:1px solid var(--line);margin-bottom:4px}
+.box button[aria-pressed="true"] span{outline:2px solid var(--fg);outline-offset:2px}
+.after{height:220px;border-radius:6px;border:1px solid var(--line);background:#8a8a8a;display:grid;place-items:center;max-width:360px}
+.after i{width:130px;height:130px;border-radius:50%;display:grid;place-items:center}
+.after i::after{content:"";width:6px;height:6px;border-radius:50%;background:#000;box-shadow:0 0 0 2px #fff}
+.rules{display:flex;flex-direction:column}
+.rule{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) auto;gap:8px 20px;padding:14px 0;border-top:1px solid var(--line);align-items:start}
+@media (max-width:700px){.rule{grid-template-columns:minmax(0,1fr)}}
+.go{font-size:13px;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:5px 10px;white-space:nowrap}
+.opp{position:relative;height:12px;border-radius:6px;margin:6px 0 12px;border:1px solid var(--line)}
+.opp b{position:absolute;top:-6px;width:6px;height:24px;background:var(--fg);border:2px solid var(--bg);border-radius:3px;transform:translateX(-50%)}
+#sphere{width:100%;max-width:460px;height:auto;border-radius:6px;border:1px solid var(--line);touch-action:auto}
+.cmp{display:grid;grid-template-columns:1fr 1fr;border-radius:6px;overflow:hidden;border:1px solid var(--line);margin-top:10px}
+.cmp div{height:64px;display:flex;align-items:flex-end;padding:6px 8px;font-size:12px}
+.recipe{display:grid;grid-template-columns:120px minmax(0,1fr);gap:14px;align-items:center}
+.foot{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);max-width:70ch}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:6px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:20;max-width:90vw}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Color Theory Studio</h1>
+      <p>One color follows you through every lab. Change it anywhere and watch what each tool does with it.</p>
+    </div>
+    <div class="base">
+      <label class="pick"><input type="color" id="basePick" aria-label="Base color"><span id="baseHex" class="mono small"></span></label>
+      <button class="btn" id="rand" type="button">Shuffle</button>
+      <div class="seg" role="group" aria-label="Color wheel model">
+        <button type="button" data-model="ryb" aria-pressed="true">Painter's wheel</button>
+        <button type="button" data-model="rgb" aria-pressed="false">Light wheel</button>
+      </div>
+      <a class="prog" href="#path" id="progChip">Your path</a>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Labs"></nav>
+
+  <main>
+    <!-- FOUNDATIONS -->
+    <section class="panel" id="p-foundations" role="tabpanel">
+      <div>
+        <h2>How color works</h2>
+        <p class="lede">Color is not a property of paint. It is what happens when light leaves a source, is filtered by a surface, lands on three kinds of sensor in your eye and is compared by your brain. Every rule in the other labs follows from these four steps, so start here.</p>
+      </div>
+
+      <div class="step"><div class="no">1</div><div class="sect">
+        <h3>Light is a mix of wavelengths, and your eye reads it with three sensors</h3>
+        <p class="muted">Drag the wavelength. The curves show how strongly each cone type responds: S for short, M for medium, L for long wavelengths. Your brain never receives the wavelength, only these three numbers.</p>
+        <canvas class="plot" id="conePlot"></canvas>
+        <div class="legend"><span><i style="background:#3a6fe0"></i>S cones</span><span><i style="background:#2e9e58"></i>M cones</span><span><i style="background:#d6452f"></i>L cones</span></div>
+        <label class="rng" style="grid-template-columns:96px minmax(0,1fr) 60px;max-width:640px">Wavelength <input type="range" id="wl" min="400" max="700" value="580"><output id="oWl"></output></label>
+        <div class="split" style="gap:20px;max-width:640px">
+          <div><div id="wlSw" style="height:70px;border-radius:6px;border:1px solid var(--line)"></div><p class="small muted" id="wlName" style="margin-top:6px"></p></div>
+          <div class="bars" id="coneBars"></div>
+        </div>
+        <div class="callout"><b>What follows from this.</b> Three sensors mean any color is fully described by three numbers. That is why three well-chosen primaries can mix most colors, why screens need only red, green and blue, and why hue, value and saturation are enough to name any color.</div>
+      </div></div>
+
+      <div class="step"><div class="no">2</div><div class="sect">
+        <h3>Physically different light can be the same color</h3>
+        <p class="muted">The left patch is one yellow wavelength, 580 nm. The right patch contains no yellow light at all, only green (540 nm) and red (620 nm). Slide until the cone responses match.</p>
+        <div class="split" style="gap:20px;max-width:640px">
+          <div class="stack" style="gap:8px"><div id="metaT" style="height:70px;border-radius:6px;border:1px solid var(--line)"></div><span class="small muted">Single wavelength, 580 nm</span><div class="bars" id="barsT"></div></div>
+          <div class="stack" style="gap:8px"><div id="metaM" style="height:70px;border-radius:6px;border:1px solid var(--line)"></div><span class="small muted">Green light plus red light</span><div class="bars" id="barsM"></div></div>
+        </div>
+        <label class="rng" style="grid-template-columns:110px minmax(0,1fr) 50px;max-width:640px">Green to red <input type="range" id="meta" min="0" max="200" value="30"><output id="oMeta"></output></label>
+        <div class="callout" id="metaNote"></div>
+      </div></div>
+
+      <div class="step"><div class="no">3</div><div class="sect">
+        <h3>A surface can only subtract from the light that hits it</h3>
+        <p class="muted">Paint has no color in the dark. A pigment absorbs some wavelengths and sends back the rest. Choose a light, then a paint, and watch what is left to reach your eye.</p>
+        <div class="chips" id="illChips" role="group" aria-label="Light source"></div>
+        <label class="chips" style="align-items:center;gap:10px"><input type="checkbox" id="adapt" style="width:20px;height:20px;accent-color:var(--cur)"> Let the eye adapt to this light</label>
+        <div class="box" id="paintBox"></div>
+        <canvas class="plot" id="surfPlot"></canvas>
+        <div class="legend" id="surfLegend"></div>
+        <div class="callout" id="surfNote"></div>
+      </div></div>
+
+      <div class="step"><div class="no">4</div><div class="sect">
+        <h3>The brain compares, it does not measure</h3>
+        <p class="muted">The three cone signals are recombined into three opposing channels: light against dark, red against green, blue against yellow. Here is your current color on each one.</p>
+        <div style="max-width:640px">
+          <span class="eyebrow">Dark to light</span><div class="opp" style="background:linear-gradient(90deg,#000,#fff)"><b id="oppL"></b></div>
+          <span class="eyebrow">Green to red</span><div class="opp" style="background:linear-gradient(90deg,#2e9e58,#9a9a9a,#d6452f)"><b id="oppA"></b></div>
+          <span class="eyebrow">Blue to yellow</span><div class="opp" style="background:linear-gradient(90deg,#3a6fe0,#9a9a9a,#e9c62a)"><b id="oppB"></b></div>
+        </div>
+        <p class="muted">You can feel these channels working. Stare at the dot for twenty seconds. The channels tire, and when the disc disappears they rebound the other way.</p>
+        <div class="after"><i id="afterDisc"></i></div>
+        <div class="chips"><button class="btn" type="button" id="afterBtn">Start the 20 second test</button></div>
+        <div class="callout" id="afterNote"><b>Before you start, predict:</b> what color will the ghost disc be?</div>
+      </div></div>
+
+      <div class="sect">
+        <h3>From mechanism to studio rule</h3>
+        <p class="muted">Each mechanism on the left produces a rule on the right. When you forget a rule, you can rebuild it from the cause.</p>
+        <div class="rules" id="rules"></div>
+      </div>
+    </section>
+
+    <!-- WHEEL -->
+    <section class="panel" id="p-wheel" role="tabpanel" hidden>
+      <div>
+        <h2>Wheel and harmony</h2>
+        <p class="lede">Drag around the wheel to pick a hue. The dots show which other hues work with it under the scheme you choose.</p>
+      </div>
+      <div class="split">
+        <div class="wheelbox"><canvas id="wheel" tabindex="0" role="slider" aria-label="Base hue" aria-valuemin="0" aria-valuemax="359"></canvas></div>
+        <div class="stack">
+          <div class="chips" id="schemes" role="radiogroup" aria-label="Harmony scheme"></div>
+          <div id="harmSwatches" class="swatches"></div>
+          <div>
+            <h3 id="schemeName"></h3>
+            <p id="schemeText" class="muted"></p>
+            <p id="schemeTip" style="margin-top:8px"></p>
+          </div>
+          <div class="stack" style="gap:6px">
+            <label class="rng">Saturation <input type="range" id="sSat" min="0" max="100"><output id="oSat"></output></label>
+            <label class="rng">Value <input type="range" id="sVal" min="5" max="100"><output id="oVal"></output></label>
+          </div>
+          <div class="callout" id="modelNote"></div>
+          <div class="callout" id="compFact"></div>
+          <div class="callout"><b>Why opposites behave this way.</b> Your brain codes hue on opposing channels, red against green and blue against yellow. A hue and its opposite push those channels in opposite directions, so side by side they exaggerate each other and mixed together they cancel. The wheel is a map of that system. The two wheels disagree slightly because each is an approximation built from a different set of primaries.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MIX -->
+    <section class="panel" id="p-mix" role="tabpanel" hidden>
+      <div>
+        <h2>Mixing</h2>
+        <p class="lede">The same two colors give three different answers depending on what is doing the mixing: light, a digital blend, or pigment. Pick two colors and slide between them.</p>
+      </div>
+      <div class="stack">
+        <div class="pgrow"><span class="pglabel"><b>Color A</b> <span id="nameA" class="muted"></span></span><span class="pgrow" id="chipsA"></span></div>
+        <div class="pgrow"><span class="pglabel"><b>Color B</b> <span id="nameB" class="muted"></span></span><span class="pgrow" id="chipsB"></span></div>
+        <label class="rng" style="grid-template-columns:96px minmax(0,1fr) 48px;max-width:560px">Mix amount <input type="range" id="mixT" min="0" max="100" value="50"><output id="oMix"></output></label>
+        <div class="chips" id="mixPairs" aria-label="Pairs to try"></div>
+      </div>
+      <div class="cols3" id="mixRes"></div>
+      <div class="callout" id="mixInsight"></div>
+      <div class="sect">
+        <h3>Why the paint mix looks like that</h3>
+        <p class="muted">Each curve shows how much of each wavelength a paint reflects. A mixture can only send back light that both paints let through, so the mix curve sits low wherever either parent absorbs. Blue and yellow make green because green is the only band neither one fully absorbs. Compare the Clean green and Dull green pairs: the more the two curves overlap in the green band, the brighter the green.</p>
+        <canvas class="plot" id="mixPlot"></canvas>
+        <div class="legend" id="mixLegend"></div>
+      </div>
+      <div class="sect">
+        <h3>Recipe finder</h3>
+        <p class="muted">Searches every two-paint mix from the box above, plus white, for the closest match to your current color. A poor match means the color lies outside what these paints can reach.</p>
+        <div class="chips"><button class="btn" type="button" id="recipeBtn">Find a recipe for my color</button></div>
+        <div id="recipeOut" class="stack"></div>
+      </div>
+    </section>
+
+    <!-- VALUE -->
+    <section class="panel" id="p-value" role="tabpanel" hidden>
+      <div>
+        <h2>Value and saturation</h2>
+        <p class="lede">Value is how light or dark a color is. It carries the structure of a picture, and hue only decorates it. Train value first and everything else gets easier.</p>
+      </div>
+      <div class="split">
+        <div class="stack">
+          <h3>Saturation and value of your color</h3>
+          <div class="wheelbox" style="justify-content:flex-start"><canvas id="svc"></canvas></div>
+          <p class="small muted">Left to right is saturation (grey to pure). Top to bottom is value (light to dark). Click or drag.</p>
+        </div>
+        <div class="stack">
+          <h3>Tints, tones and shades</h3>
+          <div><span class="eyebrow">Tints, adding white</span><div class="ladder" id="ldTint"></div></div>
+          <div><span class="eyebrow">Tones, adding grey</span><div class="ladder" id="ldTone"></div></div>
+          <div><span class="eyebrow">Shades, adding black</span><div class="ladder" id="ldShade"></div></div>
+          <p class="small muted">Numbers are lightness on a 0 to 10 scale, close to the Munsell value scale many painters use.</p>
+        </div>
+      </div>
+      <div class="sect">
+        <h3>Where your color sits</h3>
+        <div class="scale"><div class="mk" id="scaleMk"></div><div class="strip" id="scaleStrip"></div><div class="ticks" id="scaleTicks"></div></div>
+      </div>
+      <div class="sect">
+        <h3>Squint test for your current harmony</h3>
+        <p class="muted small">Each swatch is shown in color, then as the grey a black and white photo would give it.</p>
+        <div class="vgrid" id="vcheck"></div>
+        <div class="callout" id="vnote"></div>
+        <div class="callout"><b>Why value comes first.</b> Of the brain's three channels, the light and dark one carries nearly all the fine detail, edges and sense of form. The two hue channels are much blurrier. A picture with correct values and wrong hues still reads. A picture with lovely hues and wrong values does not.</div>
+      </div>
+    </section>
+
+    <!-- CONTRAST -->
+    <section class="panel" id="p-contrast" role="tabpanel" hidden>
+      <div>
+        <h2>Contrast and temperature</h2>
+        <p class="lede">A color is never seen alone. Its neighbors change how light, dark, bright and warm it looks. This is the skill that separates a flat painting from a convincing one.</p>
+      </div>
+      <div class="sect">
+        <h3>Simultaneous contrast</h3>
+        <p class="muted">The center of every tile below is exactly the same color. Check the strip underneath.</p>
+        <div class="cols4" id="tiles"></div>
+        <div class="join" id="joined" aria-label="The four centers placed side by side"></div>
+        <div class="callout" id="simNote"></div>
+        <div class="callout"><b>Why it happens.</b> Nerve cells in the eye and brain report the difference between a spot and its surroundings, not the absolute amount of light. Each surround pushes the center the opposite way on all three channels at once: lighter or darker, redder or greener, bluer or yellower.</div>
+      </div>
+      <div class="sect">
+        <h3>Temperature is relative</h3>
+        <p class="muted">Warm and cool depend on what a color sits next to. Pick a second color and compare it with your base.</p>
+        <div class="tchips" id="tchips" role="group" aria-label="Second color"></div>
+        <div class="split" style="gap:20px">
+          <div><span class="eyebrow">Your base</span><div class="meter"><b id="mkA"></b></div><div class="small muted" id="tA"></div></div>
+          <div><span class="eyebrow">Second color</span><div class="meter"><b id="mkB"></b></div><div class="small muted" id="tB"></div></div>
+        </div>
+        <div class="callout" id="tempNote"></div>
+      </div>
+    </section>
+
+    <!-- LIGHT -->
+    <section class="panel" id="p-light" role="tabpanel" hidden>
+      <div>
+        <h2>Light on form</h2>
+        <p class="lede">The color you paint is never the object's own color. On the lit side it is the object's color multiplied by the color of the light. In shadow it is the object's color multiplied by whatever fills the shadow, usually the sky or the room. Set the light and watch your color change.</p>
+      </div>
+      <div class="split">
+        <div class="stack">
+          <canvas id="sphere" width="480" height="360" role="img" aria-label="A sphere in your color under the chosen light"></canvas>
+          <div class="swatches" id="ltSw"></div>
+        </div>
+        <div class="stack">
+          <div><span class="eyebrow">Main light</span><div class="chips" id="ltMain" style="margin-top:8px" role="group" aria-label="Main light"></div></div>
+          <div><span class="eyebrow">Fill light in the shadows</span><div class="chips" id="ltFill" style="margin-top:8px" role="group" aria-label="Fill light"></div></div>
+          <label class="rng">Fill strength <input type="range" id="ltAmb" min="5" max="70" value="30"><output id="oAmb"></output></label>
+          <div class="callout" id="ltNote"></div>
+          <div class="callout"><b>Why adding black fails.</b> Black lowers value and nothing else. A real shadow is also tinted by its fill light, so it shifts in hue and temperature. Same darkness, different color:
+            <div class="cmp" id="ltCmp"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MEDIUMS -->
+    <section class="panel" id="p-mediums" role="tabpanel" hidden>
+      <div>
+        <h2>Mediums</h2>
+        <p class="lede">Color theory stays the same across media. What changes is where the light comes from, how transparent the layers are, and what happens as the color dries. Choose a medium to see how your color behaves in it.</p>
+      </div>
+      <div class="seg" id="medSeg" role="group" aria-label="Medium"></div>
+      <div class="mdetail">
+        <div class="stack">
+          <div><span class="eyebrow" id="mKind"></span><h3 id="mName" style="font-size:24px;margin-top:2px"></h3></div>
+          <p id="mEssence" class="muted"></p>
+          <div>
+            <div class="pair" id="mPair"></div>
+            <p class="small muted" id="mDelta" style="margin-top:6px"></p>
+          </div>
+          <div><span class="eyebrow">Starter palette</span><div class="pgrow" id="mStarter" style="margin-top:8px"></div></div>
+        </div>
+        <div class="stack">
+          <dl class="props" id="mProps"></dl>
+          <div><span class="eyebrow">Color theory in this medium</span><ul class="tips" id="mTips" style="margin-top:8px"></ul></div>
+          <div class="callout"><b>Watch out.</b> <span id="mTrap"></span></div>
+        </div>
+      </div>
+      <div class="sect">
+        <h3>Layering lab</h3>
+        <p class="muted">Lay one color over another. Three kinds of layering give three different overlaps.</p>
+        <div class="pgrow">
+          <label class="pgrow">Bottom <input type="color" id="lyA" value="#2a3790"></label>
+          <label class="pgrow">Top <input type="color" id="lyB" value="#f7b500"></label>
+          <label class="rng" style="grid-template-columns:70px 180px 40px">Strength <input type="range" id="lyO" min="10" max="100" value="75"><output id="oLy"></output></label>
+          <button class="btn" type="button" id="lyBase">Use my color and its complement</button>
+        </div>
+        <div class="cols3" id="layers"></div>
+      </div>
+      <div class="sect">
+        <h3>How the mediums compare</h3>
+        <div class="tbl"><table id="medTable"></table></div>
+      </div>
+    </section>
+
+    <!-- PALETTE -->
+    <section class="panel" id="p-palette" role="tabpanel" hidden>
+      <div>
+        <h2>Palette builder</h2>
+        <p class="lede">Turn a harmony into a working painting palette: one dominant color, a supporting color and a small accent, plus a light and a dark. Then see it applied to a landscape.</p>
+      </div>
+      <div class="split">
+        <div class="stack">
+          <label class="stack" style="gap:6px">Scheme <select id="palScheme"></select></label>
+          <label class="rng" style="grid-template-columns:96px minmax(0,1fr) 64px">Key <input type="range" id="palKey" min="0" max="100" value="55"><output id="oKey"></output></label>
+          <label class="rng" style="grid-template-columns:96px minmax(0,1fr) 64px">Intensity <input type="range" id="palInt" min="0" max="100" value="50"><output id="oInt"></output></label>
+          <div id="palSwatches" class="swatches"></div>
+          <div>
+            <div class="pbar" id="pbar" aria-hidden="true"></div>
+            <p class="small muted" style="margin-top:6px">Rough share of the canvas: 60% dominant, 30% secondary, 10% accent.</p>
+          </div>
+          <div class="chips">
+            <button class="btn" type="button" id="palCopy">Copy hex list</button>
+            <button class="btn" type="button" id="palShuffle">New base hue</button>
+          </div>
+        </div>
+        <div class="stack">
+          <svg class="land" id="land" viewBox="0 0 400 240" role="img" aria-label="Landscape painted with the generated palette">
+            <rect data-r="sky" width="400" height="240" fill="#ccc"/>
+            <circle data-r="acc" cx="292" cy="66" r="22" fill="#ccc"/>
+            <path data-r="far" d="M0 150 C60 110 110 120 160 140 C220 162 280 100 400 138 L400 240 L0 240Z" fill="#ccc"/>
+            <path data-r="mid" d="M0 178 C70 140 130 160 200 172 C270 184 330 150 400 170 L400 240 L0 240Z" fill="#ccc"/>
+            <path data-r="fore" d="M0 210 C90 190 180 200 260 206 C320 210 360 200 400 198 L400 240 L0 240Z" fill="#ccc"/>
+            <path data-r="dark" d="M40 218 L54 164 L68 218Z M66 222 L84 152 L102 222Z M330 220 L342 176 L354 220Z" fill="#ccc"/>
+          </svg>
+          <label class="chips" style="align-items:center;gap:10px"><input type="checkbox" id="grayChk" style="width:20px;height:20px;accent-color:var(--cur)"> Check values in greyscale</label>
+          <div class="callout" id="palNote"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- APPLY -->
+    <section class="panel" id="p-apply" role="tabpanel" hidden>
+      <div>
+        <h2>Apply it</h2>
+        <p class="lede">Principles only matter if they change what you do at the easel. Here is an order of decisions for starting a picture, a diagnosis guide for when one is not working, and a method for matching any color.</p>
+      </div>
+      <div class="sect">
+        <h3>Five decisions, in this order</h3>
+        <p class="muted">Each decision narrows the next one. Most color trouble comes from making decision four before decisions one and two.</p>
+        <div class="rules" id="five"></div>
+      </div>
+      <div class="sect">
+        <h3>What is going wrong?</h3>
+        <p class="muted">Pick the symptom. You get the cause, traced back to how color works, and what to do about it.</p>
+        <div class="chips" id="symChips" role="group" aria-label="Symptom"></div>
+        <div class="callout" id="symOut"></div>
+      </div>
+      <div class="sect">
+        <h3>Match any color in three moves</h3>
+        <ol class="tips" style="max-width:66ch">
+          <li><b>Value first.</b> Mix until a dab of your paint disappears against the target when you squint. This is the hardest move and the one that matters most.</li>
+          <li><b>Then hue.</b> Ask which way the target leans around the wheel compared with your mix, and add a little of the neighbor on that side.</li>
+          <li><b>Then saturation.</b> If your mix is too bright, add a touch of its complement. If it is too dull, you cannot fix it by adding more paint. Start again with fewer, purer pigments.</li>
+        </ol>
+        <div class="chips"><button class="go" type="button" data-lab="mix">Open the recipe finder</button></div>
+      </div>
+    </section>
+
+    <!-- PRACTICE -->
+    <section class="panel" id="p-practice" role="tabpanel" hidden>
+      <div>
+        <h2>Eye training</h2>
+        <p class="lede">Short drills for your judgment. They get harder as you get more right. Two minutes at a time is enough.</p>
+      </div>
+      <div class="seg" id="pModes" role="group" aria-label="Drill type" style="align-self:flex-start">
+        <button type="button" data-pm="comp" aria-pressed="true">Complements</button>
+        <button type="button" data-pm="temp" aria-pressed="false">Temperature</button>
+        <button type="button" data-pm="val" aria-pressed="false">Value</button>
+        <button type="button" data-pm="mixq" aria-pressed="false">Predict the mix</button>
+      </div>
+      <div class="stack">
+        <p id="pPrompt" style="font-size:18px;font-family:var(--f-disp);font-weight:600"></p>
+        <div class="ptarget" id="pTarget" hidden></div>
+        <div class="popts" id="pOpts"></div>
+        <p id="pFeedback" aria-live="polite" style="min-height:48px"></p>
+        <div class="chips"><button class="btn" type="button" id="pNext">Next question</button></div>
+        <div class="score" id="pScore"></div>
+      </div>
+    </section>
+
+    <!-- PATH -->
+    <section class="panel" id="p-path" role="tabpanel" hidden>
+      <div>
+        <h2>Your path</h2>
+        <p class="lede">Eight levels, starting from how color works and each built on the one before. The labs show you the idea and the exercises make it yours. Paint or draw with real materials as often as you can. Twenty minutes, three times a week, will take you further than one heroic Saturday.</p>
+      </div>
+      <div class="stack" style="max-width:560px">
+        <div class="meterbar"><i id="pathBar"></i></div>
+        <p class="small muted" id="pathCount"></p>
+      </div>
+      <div class="callout" id="nextUp"></div>
+      <div class="levels" id="levels"></div>
+      <div><button class="btn" type="button" id="pathReset">Reset progress</button></div>
+    </section>
+  </main>
+
+  <p class="foot">The mixing and drying models here are simplified approximations for learning. Your pigments, paper and screen will behave a little differently, so treat every result as a hypothesis to test with real paint.</p>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var clamp=function(x,a,b){a=a==null?0:a;b=b==null?1:b;return Math.min(b,Math.max(a,x))};
+var mod=function(x){return ((x%360)+360)%360};
+var lerp=function(a,b,t){return a.map(function(x,i){return Math.round(x+(b[i]-x)*t)})};
+var rnd=function(a,b){return a+Math.random()*(b-a)};
+
+var store={
+  get:function(k,d){try{var v=localStorage.getItem('cts:'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+  set:function(k,v){try{localStorage.setItem('cts:'+k,JSON.stringify(v))}catch(e){}}
+};
+
+/* ---------- color math ---------- */
+function hsv2rgb(h,s,v){h=mod(h);var c=v*s,x=c*(1-Math.abs((h/60)%2-1)),m=v-c,r,g,b;
+  if(h<60){r=c;g=x;b=0}else if(h<120){r=x;g=c;b=0}else if(h<180){r=0;g=c;b=x}else if(h<240){r=0;g=x;b=c}else if(h<300){r=x;g=0;b=c}else{r=c;g=0;b=x}
+  return [r+m,g+m,b+m].map(function(k){return Math.round(k*255)})}
+function rgb2hsv(r,g,b){r/=255;g/=255;b/=255;var mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn,h=0;
+  if(d){if(mx===r)h=((g-b)/d)%6;else if(mx===g)h=(b-r)/d+2;else h=(r-g)/d+4;h*=60;if(h<0)h+=360}
+  return [h,mx?d/mx:0,mx]}
+function hex(rgb){return '#'+rgb.map(function(x){return clamp(Math.round(x),0,255).toString(16).padStart(2,'0')}).join('')}
+function unhex(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(function(c){return c+c}).join('');var n=parseInt(h,16);return [n>>16&255,n>>8&255,n&255]}
+function toLin(c){c/=255;return c<=.04045?c/12.92:Math.pow((c+.055)/1.055,2.4)}
+function toSrgb(l){l=clamp(l);return Math.round(255*(l<=.0031308?l*12.92:1.055*Math.pow(l,1/2.4)-.055))}
+function lum(c){return .2126*toLin(c[0])+.7152*toLin(c[1])+.0722*toLin(c[2])}
+function Lstar(c){var y=lum(c);return y>216/24389?116*Math.cbrt(y)-16:y*24389/27}
+function grayRGB(c){var g=toSrgb(lum(c));return [g,g,g]}
+function grayFromL(L){var y=L>8?Math.pow((L+16)/116,3):L/903.3;var g=toSrgb(y);return [g,g,g]}
+function chroma(c){return (Math.max(c[0],c[1],c[2])-Math.min(c[0],c[1],c[2]))/255}
+function warmth(c){return Math.cos((rgb2hsv(c[0],c[1],c[2])[0]-35)*Math.PI/180)}
+function ink(c){return Lstar(c)>58?'#111':'#fff'}
+
+/* painter's RYB wheel angle <-> screen hue */
+var RYB=[0,60,120,180,240,300,360], HUE=[0,30,60,140,240,285,360];
+function interp(x,xs,ys){for(var i=0;i<xs.length-1;i++){if(x>=xs[i]&&x<=xs[i+1]){var t=(x-xs[i])/(xs[i+1]-xs[i]);return ys[i]+t*(ys[i+1]-ys[i])}}return ys[ys.length-1]}
+function wheelToHue(a,m){return m==='ryb'?interp(mod(a),RYB,HUE)%360:mod(a)}
+function hueToWheel(h,m){return m==='ryb'?interp(mod(h),HUE,RYB)%360:mod(h)}
+function hueName(h){h=mod(h);var t=[[15,'red'],[40,'orange'],[65,'yellow'],[90,'yellow-green'],[160,'green'],[190,'blue-green'],[210,'cyan-blue'],[255,'blue'],[290,'violet'],[335,'magenta'],[350,'crimson'],[361,'red']];
+  for(var i=0;i<t.length;i++)if(h<t[i][0])return t[i][1];return 'red'}
+
+/* mixing models */
+function mixLight(a,b,t){return [0,1,2].map(function(i){return toSrgb(2*(1-t)*toLin(a[i])+2*t*toLin(b[i]))})}
+function mixAvg(a,b,t){return [0,1,2].map(function(i){return Math.round(a[i]*(1-t)+b[i]*t)})}
+function mixPaint(a,b,t){return [0,1,2].map(function(i){return toSrgb(Math.pow(Math.max(toLin(a[i]),1e-4),1-t)*Math.pow(Math.max(toLin(b[i]),1e-4),t))})}
+
+/* ---------- state ---------- */
+var st=Object.assign({h:240,s:.82,v:.72,model:'ryb',scheme:'comp'},store.get('state',{}));
+function hueOf(a){return wheelToHue(a==null?st.h:a,st.model)}
+function colorAt(a,s,v){return hex(hsv2rgb(hueOf(a),s==null?st.s:s,v==null?st.v:v))}
+function curHex(){return colorAt(st.h)}
+
+var SCHEMES={
+  comp:{name:'Complementary',offs:[0,180],roles:[0,15,180],
+    blurb:'Two hues directly across the wheel from each other. Side by side they make each other look more intense. Mixed together they cancel toward a neutral.',
+    tip:'Let one hue dominate and use its opposite as a small accent. Equal amounts of both fight for attention.'},
+  analog:{name:'Analogous',offs:[-30,0,30],roles:[0,-30,30],
+    blurb:'Neighbors within about 30 degrees of the base. They share pigment, so they blend smoothly and feel calm and unified.',
+    tip:'Add one contrasting accent or push the values apart, or the picture can feel flat.'},
+  triad:{name:'Triadic',offs:[0,120,240],roles:[0,120,240],
+    blurb:'Three hues evenly spaced, 120 degrees apart. Lively and balanced, with more variety than an analogous scheme.',
+    tip:'Let one hue lead and mute the other two with their complements or with grey.'},
+  split:{name:'Split-complementary',offs:[0,150,210],roles:[0,150,210],
+    blurb:'The base plus the two hues on either side of its complement. It keeps most of the punch of a complement with less tension.',
+    tip:'A good first scheme if a straight complement feels harsh.'},
+  rect:{name:'Tetradic',offs:[0,60,180,240],roles:[0,60,180],
+    blurb:'Two complementary pairs. Rich and varied, and the hardest scheme to keep in balance.',
+    tip:'Pick one pair to carry the picture and use the other pair in small, muted touches.'},
+  square:{name:'Square',offs:[0,90,180,270],roles:[0,90,180],
+    blurb:'Four hues spaced 90 degrees apart. Maximum variety.',
+    tip:'Vary saturation and value strongly, or the colors compete.'},
+  mono:{name:'Monochromatic',offs:[0],roles:[0,0,0],
+    blurb:'One hue, changed only in value and saturation. Unified by design, and a good way to train value control.',
+    tip:'With no hue contrast, value and temperature shifts do all the work. Push them further than feels natural.'}
+};
+var SCHEME_KEYS=Object.keys(SCHEMES);
+
+function harmony(key){
+  var sc=SCHEMES[key];
+  if(key==='mono'){
+    var base=[
+      [Math.min(st.s,.18),1,'Tint'],[st.s*.45,Math.min(1,st.v*1.1+.06),'Light tone'],[st.s,st.v,'Base'],
+      [Math.min(1,st.s*1.05),st.v*.6,'Shade'],[st.s*.8,st.v*.32,'Deep shade']];
+    return base.map(function(x){return {hex:colorAt(st.h,x[0],x[1]),label:x[2],angle:st.h}});
+  }
+  return sc.offs.map(function(o){
+    return {hex:colorAt(st.h+o),label:o===0?'Base':o===180?'Complement':(o>0?'+':'')+o+'°',angle:st.h+o};
+  });
+}
+
+function setState(p){Object.assign(st,p);store.set('state',st);render()}
+
+/* ---------- shared UI helpers ---------- */
+var toastT;
+function toast(msg){var t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('on')},1700)}
+function copy(text,msg){
+  var done=function(){toast(msg||('Copied '+text))};
+  var fail=function(){toast('Select and copy: '+text)};
+  try{navigator.clipboard.writeText(text).then(done,fail)}catch(e){fail()}
+}
+function swatchEl(hx,label){
+  var b=document.createElement('button');b.type='button';b.className='sw';b.title='Copy '+hx;
+  b.innerHTML='<span class="chip" style="background:'+hx+'"></span><span class="hx">'+hx+'</span>'+(label?'<span class="lb">'+label+'</span>':'');
+  b.addEventListener('click',function(){copy(hx)});return b;
+}
+function strip(colors,cls){var d=document.createElement('div');d.className='strip'+(cls?' '+cls:'');d.innerHTML=colors.map(function(c){return '<i style="background:'+c+'" title="'+c+'"></i>'}).join('');return d}
+function modelName(){return st.model==='ryb'?"painter's":'light'}
+
+/* ---------- tabs ---------- */
+var TABS=[['foundations','Foundations'],['wheel','Wheel'],['mix','Mix'],['value','Value'],['contrast','Contrast'],['light','Light'],['mediums','Mediums'],['palette','Palette'],['apply','Apply'],['practice','Practice'],['path','Path']];
+var active='foundations';
+var tabsEl=$('#tabs');
+TABS.forEach(function(t){
+  var b=document.createElement('button');b.type='button';b.className='tab';b.dataset.tab=t[0];b.textContent=t[1];b.setAttribute('role','tab');
+  b.addEventListener('click',function(){show(t[0]);try{history.replaceState(null,'','#'+t[0])}catch(e){}});
+  b.addEventListener('keydown',function(e){
+    var i=TABS.findIndex(function(x){return x[0]===active});
+    if(e.key==='ArrowRight'||e.key==='ArrowLeft'){var n=(i+(e.key==='ArrowRight'?1:TABS.length-1))%TABS.length;show(TABS[n][0]);$$('.tab')[n].focus();e.preventDefault()}
+  });
+  tabsEl.appendChild(b);
+});
+function show(t){
+  if(!TABS.some(function(x){return x[0]===t}))t='foundations';
+  active=t;
+  $$('.tab').forEach(function(b){var on=b.dataset.tab===t;b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1});
+  $$('.panel').forEach(function(p){p.hidden=p.id!=='p-'+t});
+  render();
+}
+window.addEventListener('hashchange',function(){show(location.hash.slice(1))});
+
+/* ---------- header controls ---------- */
+$('#basePick').addEventListener('input',function(e){
+  var c=unhex(e.target.value),hsv=rgb2hsv(c[0],c[1],c[2]);
+  setState({h:hsv[1]<.03?st.h:hueToWheel(hsv[0],st.model),s:hsv[1],v:hsv[2]});
+});
+$('#rand').addEventListener('click',function(){setState({h:Math.floor(Math.random()*360),s:rnd(.5,.92),v:rnd(.55,.95)})});
+$$('[data-model]').forEach(function(b){b.addEventListener('click',function(){
+  var m=b.dataset.model;if(m===st.model)return;var hue=hueOf();st.model=m;setState({h:hueToWheel(hue,m)});
+})});
+
+/* ---------- render ---------- */
+var R={};
+function render(){
+  var hx=curHex();
+  document.documentElement.style.setProperty('--cur',hx);
+  $('#basePick').value=hx;$('#baseHex').textContent=hx;
+  $$('[data-model]').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.model===st.model)});
+  if(R[active])R[active]();
+  refreshPath(true);
+}
+
+/* ===== WHEEL ===== */
+var schemesEl=$('#schemes');
+SCHEME_KEYS.forEach(function(k){
+  var b=document.createElement('button');b.type='button';b.className='cp';b.setAttribute('role','radio');b.dataset.k=k;b.textContent=SCHEMES[k].name;
+  b.addEventListener('click',function(){setState({scheme:k})});schemesEl.appendChild(b);
+});
+function wheelLabels(){
+  return st.model==='ryb'?[[0,'Red'],[60,'Orange'],[120,'Yellow'],[180,'Green'],[240,'Blue'],[300,'Violet']]
+                         :[[0,'Red'],[60,'Yellow'],[120,'Green'],[180,'Cyan'],[240,'Blue'],[300,'Magenta']];
+}
+function drawWheel(){
+  var cv=$('#wheel'),box=cv.parentElement,size=Math.floor(Math.min(box.clientWidth,480));if(size<60)return;
+  var dpr=window.devicePixelRatio||1;cv.width=size*dpr;cv.height=size*dpr;cv.style.width=size+'px';cv.style.height=size+'px';
+  var ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,size,size);
+  var cs=getComputedStyle(document.documentElement);
+  var fg=cs.getPropertyValue('--fg').trim()||'#000',muted=cs.getPropertyValue('--muted').trim()||'#666',surf=cs.getPropertyValue('--surface').trim()||'#fff';
+  var cx=size/2,cy=size/2,pad=30,Rr=size/2-pad,r0=Rr*.56,i;
+  for(i=0;i<360;i++){
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,Rr,(i-90)*Math.PI/180,(i+1.6-90)*Math.PI/180);ctx.closePath();
+    ctx.fillStyle='hsl('+wheelToHue(i+.5,st.model)+' 100% 50%)';ctx.fill();
+  }
+  ctx.globalCompositeOperation='destination-out';ctx.beginPath();ctx.arc(cx,cy,r0,0,Math.PI*2);ctx.fill();ctx.globalCompositeOperation='source-over';
+  ctx.beginPath();ctx.arc(cx,cy,r0-9,0,Math.PI*2);ctx.fillStyle=curHex();ctx.fill();
+  ctx.font='600 12px '+getComputedStyle(document.body).fontFamily;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=muted;
+  wheelLabels().forEach(function(l){var t=l[0]*Math.PI/180;ctx.fillText(l[1],cx+(Rr+17)*Math.sin(t),cy-(Rr+17)*Math.cos(t))});
+  var rm=(Rr+r0)/2,hs=harmony(st.scheme),pts=hs.map(function(h){var t=h.angle*Math.PI/180;return {x:cx+rm*Math.sin(t),y:cy-rm*Math.cos(t),hex:h.hex,a:mod(h.angle)}});
+  if(st.scheme!=='mono'){
+    var sorted=pts.slice().sort(function(p,q){return p.a-q.a});
+    ctx.beginPath();sorted.forEach(function(p,k){k?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)});if(sorted.length>2)ctx.closePath();
+    ctx.strokeStyle=fg;ctx.globalAlpha=.55;ctx.lineWidth=1.5;ctx.stroke();ctx.globalAlpha=1;
+  } else pts=[pts[2]];
+  pts.forEach(function(p,k){
+    var isBase=st.scheme==='mono'||Math.abs(mod(p.a-st.h))<.01,rad=isBase?15:11;
+    ctx.beginPath();ctx.arc(p.x,p.y,rad+3,0,Math.PI*2);ctx.fillStyle=surf;ctx.fill();
+    ctx.beginPath();ctx.arc(p.x,p.y,rad,0,Math.PI*2);ctx.fillStyle=p.hex;ctx.fill();ctx.lineWidth=isBase?2.5:1.5;ctx.strokeStyle=fg;ctx.stroke();
+  });
+  cv.setAttribute('aria-valuenow',Math.round(mod(st.h)));cv.setAttribute('aria-valuetext',hueName(hueOf())+', '+Math.round(mod(st.h))+' degrees');
+}
+R.wheel=function(){
+  drawWheel();
+  var sc=SCHEMES[st.scheme];
+  $$('.cp',schemesEl).forEach(function(b){b.setAttribute('aria-checked',b.dataset.k===st.scheme)});
+  var box=$('#harmSwatches');box.replaceChildren.apply(box,harmony(st.scheme).map(function(c){return swatchEl(c.hex,c.label)}));
+  $('#schemeName').textContent=sc.name;$('#schemeText').textContent=sc.blurb;$('#schemeTip').textContent=sc.tip;
+  $('#sSat').value=Math.round(st.s*100);$('#oSat').textContent=Math.round(st.s*100);
+  $('#sVal').value=Math.round(st.v*100);$('#oVal').textContent=Math.round(st.v*100);
+  $('#modelNote').innerHTML=st.model==='ryb'
+    ?"<b>Painter's wheel.</b> Built on red, yellow and blue. Opposites are red and green, blue and orange, yellow and violet. It matches how most artists learn to mix, though real pigments only approximate it, and no single red, yellow and blue can mix every color."
+    :"<b>Light wheel.</b> Built on red, green and blue light. Opposites are red and cyan, green and magenta, blue and yellow. This is how screens work, and its secondaries (cyan, magenta, yellow) are the print primaries.";
+  var comp=colorAt(st.h+180);
+  $('#compFact').innerHTML='<b>Your color '+curHex()+' and its complement '+comp+'.</b> '+(st.model==='ryb'
+    ?'Put them side by side and each looks stronger. Mix them in paint and you get a family of rich greys, which is the quickest way to make a color that sits comfortably in a picture.'
+    :'Two lights of these colors overlapping make white, and side by side on screen each looks stronger.');
+};
+(function(){
+  var cv=$('#wheel'),drag=false;
+  function pt(e){var r=cv.getBoundingClientRect(),x=e.clientX-r.left-r.width/2,y=e.clientY-r.top-r.height/2;setState({h:Math.round(mod(Math.atan2(x,-y)*180/Math.PI))})}
+  cv.addEventListener('pointerdown',function(e){drag=true;try{cv.setPointerCapture(e.pointerId)}catch(_){}pt(e)});
+  cv.addEventListener('pointermove',function(e){if(drag)pt(e)});
+  cv.addEventListener('pointerup',function(){drag=false});
+  cv.addEventListener('pointercancel',function(){drag=false});
+  cv.addEventListener('keydown',function(e){
+    var d=e.shiftKey?10:1;
+    if(e.key==='ArrowRight'||e.key==='ArrowUp'){setState({h:mod(st.h+d)});e.preventDefault()}
+    else if(e.key==='ArrowLeft'||e.key==='ArrowDown'){setState({h:mod(st.h-d)});e.preventDefault()}
+  });
+  $('#sSat').addEventListener('input',function(e){setState({s:e.target.value/100})});
+  $('#sVal').addEventListener('input',function(e){setState({v:e.target.value/100})});
+})();
+
+/* ===== MIX ===== */
+/* ---------- spectral core: light x surface x eye ---------- */
+var WL=[];for(var _w=400;_w<=700;_w+=10)WL.push(_w);var NW=WL.length;
+function g2(x,mu,s1,s2){var t=(x-mu)/(x<mu?s1:s2);return Math.exp(-.5*t*t)}
+function gs(l,c,w){var t=(l-c)/w;return Math.exp(-.5*t*t)}
+function sig(l,c,w){return 1/(1+Math.exp(-(l-c)/w))}
+/* CIE 1931 observer, analytic fit */
+function cmf(l){return [1.056*g2(l,599.8,37.9,31.0)+.362*g2(l,442.0,16.0,26.7)-.065*g2(l,501.1,20.4,26.2),
+  .821*g2(l,568.8,46.9,40.5)+.286*g2(l,530.9,16.3,31.1),
+  1.217*g2(l,437.0,11.8,36.0)+.681*g2(l,459.0,26.0,13.8)]}
+var CMF=WL.map(cmf);
+function xyz2lin(X,Y,Z){return [3.2406*X-1.5372*Y-.4986*Z,-.9689*X+1.8758*Y+.0415*Z,.0557*X-.2040*Y+1.0570*Z]}
+function conesRaw(l){var c=cmf(l);return [.38971*c[0]+.68898*c[1]-.07868*c[2],-.22981*c[0]+1.1834*c[1]+.04641*c[2],c[2]]}
+var CMAX=[0,0,0];for(var _l=400;_l<=700;_l+=2){var _c=conesRaw(_l);for(var _k=0;_k<3;_k++)CMAX[_k]=Math.max(CMAX[_k],_c[_k])}
+function wlRgb(l){var c=cmf(l),r=xyz2lin(c[0],c[1],c[2]).map(function(v){return Math.max(0,v)}),m=Math.max(r[0],r[1],r[2],1e-6),k=clamp((c[0]+c[1]+c[2])/.5);return r.map(function(v){return toSrgb(v/m*k)})}
+var D65=[82.75,91.49,93.43,86.68,104.86,117.01,117.81,114.86,115.92,108.81,109.35,107.80,104.79,107.69,104.41,104.05,100.00,96.33,95.79,88.69,90.01,89.60,87.70,83.29,83.70,80.03,80.21,82.28,78.28,69.72,71.61];
+function planck(T){return WL.map(function(l){return 1e15*Math.pow(l,-5)/(Math.exp(1.4388e7/(l*T))-1)})}
+function whiteOf(spd){var X=0,Y=0,Z=0;for(var i=0;i<NW;i++){X+=spd[i]*CMF[i][0];Y+=spd[i]*CMF[i][1];Z+=spd[i]*CMF[i][2]}return [X,Y,Z]}
+var WD=whiteOf(D65);
+function specToRgb(refl,spd,adapt){
+  spd=spd||D65;var w=whiteOf(spd),X=0,Y=0,Z=0;
+  for(var i=0;i<NW;i++){var e=refl[i]*spd[i];X+=e*CMF[i][0];Y+=e*CMF[i][1];Z+=e*CMF[i][2]}
+  var ref=adapt||spd===D65?w:[WD[0]/WD[1]*w[1],w[1],WD[2]/WD[1]*w[1]];
+  return xyz2lin(X/ref[0]*.9505,Y/ref[1],Z/ref[2]*1.089).map(toSrgb);
+}
+/* Kubelka-Munk: pigments add up in absorption, not in reflected color */
+function kmMix(specs,ws){var out=new Array(NW);for(var i=0;i<NW;i++){var ks=0;for(var j=0;j<specs.length;j++){if(!ws[j])continue;var r=clamp(specs[j][i],.005,.995);ks+=ws[j]*(1-r)*(1-r)/(2*r)}out[i]=1+ks-Math.sqrt(ks*ks+2*ks)}return out}
+function rgbSpec(c){var r=toLin(c[0]),g=toLin(c[1]),b=toLin(c[2]);return WL.map(function(l){var bb=1-sig(l,490,10),br=sig(l,590,10);return clamp(r*br+g*(1-bb-br)+b*bb,.02,.97)})}
+function rgb2lab(c){var r=toLin(c[0]),g=toLin(c[1]),b=toLin(c[2]),X=(.4124*r+.3576*g+.1805*b)/.9505,Y=.2126*r+.7152*g+.0722*b,Z=(.0193*r+.1192*g+.9505*b)/1.089,f=function(t){return t>.008856?Math.cbrt(t):7.787*t+16/116};return [116*f(Y)-16,500*(f(X)-f(Y)),200*(f(Y)-f(Z))]}
+function lab2rgb(L,a,b){var fy=(L+16)/116,fx=fy+a/500,fz=fy-b/200,f=function(t){return t*t*t>.008856?t*t*t:(t-16/116)/7.787};return xyz2lin(.9505*f(fx),f(fy),1.089*f(fz)).map(toSrgb)}
+function dE(a,b){var p=rgb2lab(a),q=rgb2lab(b);return Math.sqrt(Math.pow(p[0]-q[0],2)+Math.pow(p[1]-q[1],2)+Math.pow(p[2]-q[2],2))}
+/* approximate reflectance curves for common pigments */
+var SF={
+  'Lemon Yellow':function(l){return .05+.84*sig(l,500,9)},
+  'Cadmium Yellow':function(l){return .07+.83*sig(l,514,9)},
+  'Yellow Ochre':function(l){return .05+.5*sig(l,545,22)},
+  'Cadmium Orange':function(l){return .04+.83*sig(l,570,8)},
+  'Cadmium Red':function(l){return .04+.78*sig(l,604,8)},
+  'Alizarin Crimson':function(l){return .03+.04*gs(l,430,30)+.6*sig(l,632,12)},
+  'Quinacridone Magenta':function(l){return .04+.24*gs(l,435,32)+.76*sig(l,612,12)},
+  'Dioxazine Violet':function(l){return .03+.2*gs(l,432,22)+.35*sig(l,675,14)},
+  'Ultramarine':function(l){return .06+.5*gs(l,452,40)+.3*sig(l,690,12)},
+  'Cerulean':function(l){return .07+.52*gs(l,485,40)},
+  'Phthalo Blue':function(l){return .04+.46*gs(l,480,32)},
+  'Phthalo Green':function(l){return .04+.46*gs(l,508,30)},
+  'Sap Green':function(l){return .04+.27*gs(l,555,35)+.1*sig(l,690,15)},
+  'Burnt Sienna':function(l){return .04+.4*sig(l,600,28)},
+  'Titanium White':function(){return .94},
+  'Ivory Black':function(){return .035}
+};
+var SPEC={};Object.keys(SF).forEach(function(n){SPEC[n]=WL.map(SF[n])});
+var PIG=Object.keys(SF).map(function(n){return [n,hex(specToRgb(SPEC[n]))]});
+function specOfHex(h){var n=pigName(h);return n==='Custom'?rgbSpec(unhex(h)):SPEC[n]}
+function cssv(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+function plot(cv,series,mark){
+  var box=cv.parentElement,w=Math.floor(Math.min(box.clientWidth,640));if(w<80)return;var h=200;
+  var dpr=window.devicePixelRatio||1;cv.width=w*dpr;cv.height=h*dpr;cv.style.width=w+'px';cv.style.height=h+'px';
+  var ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+  var fg=cssv('--fg'),muted=cssv('--muted'),line=cssv('--line'),pl=6,pr=6,pt=8,pb=34,W=w-pl-pr,H=h-pt-pb;
+  var X=function(l){return pl+(l-400)/300*W},Y=function(v){return pt+(1-clamp(v))*H};
+  ctx.strokeStyle=line;ctx.lineWidth=1;[0,.5,1].forEach(function(v){ctx.beginPath();ctx.moveTo(pl,Y(v)+.5);ctx.lineTo(pl+W,Y(v)+.5);ctx.stroke()});
+  for(var x=0;x<W;x++){ctx.fillStyle=hex(wlRgb(400+x/W*300));ctx.fillRect(pl+x,pt+H+4,1.5,10)}
+  ctx.fillStyle=muted;ctx.font='11px Arial,sans-serif';ctx.textBaseline='top';
+  [400,450,500,550,600,650,700].forEach(function(l){ctx.textAlign=l===400?'left':l===700?'right':'center';ctx.fillText(l+(l===700?' nm':''),X(l),pt+H+18)});
+  series.forEach(function(s){
+    var path=function(){ctx.beginPath();s.y.forEach(function(v,i){var px=X(s.x?s.x[i]:WL[i]),py=Y(v);if(i)ctx.lineTo(px,py);else ctx.moveTo(px,py)})};
+    ctx.setLineDash(s.dash||[]);ctx.lineJoin='round';
+    path();ctx.strokeStyle=fg;ctx.globalAlpha=.28;ctx.lineWidth=(s.w||2)+2;ctx.stroke();ctx.globalAlpha=1;
+    path();ctx.strokeStyle=s.c==='fg'?fg:s.c==='muted'?muted:s.c;ctx.lineWidth=s.w||2;ctx.stroke();
+  });
+  ctx.setLineDash([]);
+  if(mark!=null){ctx.strokeStyle=fg;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(X(mark),pt);ctx.lineTo(X(mark),pt+H+14);ctx.stroke()}
+}
+function legend(el,items){el.innerHTML=items.map(function(i){return '<span><i style="background:'+i[1]+'"></i>'+i[0]+'</span>'}).join('')}
+document.addEventListener('click',function(e){var b=e.target.closest?e.target.closest('.go[data-lab]'):null;if(!b||b.closest('#levels'))return;show(b.dataset.lab);try{history.replaceState(null,'','#'+b.dataset.lab)}catch(_){}window.scrollTo(0,0)});
+function pig(n){for(var i=0;i<PIG.length;i++)if(PIG[i][0]===n)return PIG[i][1];return '#888'}
+function pigName(h){for(var i=0;i<PIG.length;i++)if(PIG[i][1]===h)return PIG[i][0];return 'Custom'}
+var mix={a:pig('Phthalo Blue'),b:pig('Lemon Yellow'),t:.5};
+function buildChips(el,key){
+  var baseB=document.createElement('button');baseB.type='button';baseB.className='cp';baseB.textContent='My color';baseB.addEventListener('click',function(){mix[key]=curHex();R.mix()});
+  el.appendChild(baseB);
+  PIG.forEach(function(p){
+    var b=document.createElement('button');b.type='button';b.className='pg';b.style.background=p[1];b.title=p[0];b.setAttribute('aria-label',p[0]);b.dataset.hex=p[1];
+    b.addEventListener('click',function(){mix[key]=p[1];R.mix()});el.appendChild(b);
+  });
+}
+buildChips($('#chipsA'),'a');buildChips($('#chipsB'),'b');
+var PAIRS=[['Blue + Orange','Ultramarine','Cadmium Orange'],['Red + Green','Cadmium Red','Phthalo Green'],['Yellow + Violet','Cadmium Yellow','Dioxazine Violet'],['Clean green','Phthalo Blue','Lemon Yellow'],['Dull green','Ultramarine','Cadmium Yellow'],['Red + Yellow (neighbors)','Cadmium Red','Cadmium Yellow'],['Color + White','Phthalo Blue','Titanium White']];
+PAIRS.forEach(function(p){var b=document.createElement('button');b.type='button';b.className='cp';b.textContent=p[0];b.addEventListener('click',function(){mix.a=pig(p[1]);mix.b=pig(p[2]);mix.t=.5;$('#mixT').value=50;R.mix()});$('#mixPairs').appendChild(b)});
+$('#mixT').addEventListener('input',function(e){mix.t=e.target.value/100;R.mix()});
+R.mix=function(){
+  var a=unhex(mix.a),b=unhex(mix.b),t=mix.t;
+  var sa=specOfHex(mix.a),sb=specOfHex(mix.b),paint=function(_a,_b,tt){return specToRgb(kmMix([sa,sb],[1-tt,tt]))};
+  $$('#chipsA .pg').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.hex===mix.a)});
+  $$('#chipsB .pg').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.hex===mix.b)});
+  $('#nameA').textContent=pigName(mix.a)+' '+mix.a;$('#nameB').textContent=pigName(mix.b)+' '+mix.b;$('#oMix').textContent=Math.round(t*100)+'%';
+  var models=[['Projected light','Additive. Overlapping beams add up.',mixLight],['Digital blend','Average of screen values, as in gradients.',mixAvg],['Paint','Subtractive. Pigments absorb light.',paint]];
+  var box=$('#mixRes');box.replaceChildren();
+  models.forEach(function(m){
+    var c=m[2](a,b,t),h=hex(c),d=document.createElement('div');d.className='res';
+    d.innerHTML='<h3>'+m[0]+'</h3><div class="big" style="background:'+h+'"></div><span class="mono small">'+h+'</span><span class="small muted">'+m[1]+'</span>';
+    var steps=[];for(var i=0;i<=8;i++)steps.push(hex(m[2](a,b,i/8)));d.appendChild(strip(steps));box.appendChild(d);
+  });
+  var P=paint(a,b,t),parents=chroma(a)*(1-t)+chroma(b)*t,loss=parents>.05?1-chroma(P)/parents:0,msg;
+  if(loss>.4)msg='<b>The paint mix kept about '+Math.round((1-loss)*100)+'% of its parents’ saturation.</b> Pigments each absorb part of the light, so mixing colors far apart on the wheel removes a lot of intensity. This is how you make chromatic greys, and why mixing opposites by accident gives mud.';
+  else if(loss>.15)msg='<b>The paint mix kept about '+Math.round((1-loss)*100)+'% of its parents’ saturation.</b> A moderate loss. These hues are partly related, so the mix is quieter than either parent but still clearly colored.';
+  else msg='<b>The paint mix stayed close to full saturation.</b> The two colors are neighbors on the wheel or one is near neutral, so little light is absorbed. Neighbors are how you keep mixes clean.';
+  $('#mixInsight').innerHTML=msg+' Compare the three cards: the same input gives a brighter result in light and a duller one in paint.';
+  plot($('#mixPlot'),[{y:sa,c:mix.a,w:2},{y:sb,c:mix.b,w:2},{y:kmMix([sa,sb],[1-t,t]),c:'fg',w:3}]);
+  legend($('#mixLegend'),[['Color A reflects',mix.a],['Color B reflects',mix.b],['The mix reflects','var(--fg)']]);
+};
+$('#recipeBtn').addEventListener('click',function(){
+  var target=unhex(curHex()),names=PIG.map(function(p){return p[0]}).filter(function(n){return n!=='Titanium White'&&n!=='Ivory Black'});
+  var Wt=SPEC['Titanium White'],all=[],wfs=[0,.3,.6,.8,.9,.95,.98],i,j;
+  for(i=0;i<names.length;i++)for(j=i;j<names.length;j++){
+    var rs=i===j?[0]:[.125,.25,.375,.5,.625,.75,.875];
+    rs.forEach(function(r){wfs.forEach(function(wf){
+      var ws=[(1-wf)*(1-r),(1-wf)*r,wf],c=specToRgb(kmMix([SPEC[names[i]],SPEC[names[j]],Wt],ws));
+      all.push({d:dE(c,target),a:names[i],b:names[j],ws:ws,c:c});
+    })});
+  }
+  all.sort(function(p,q){return p.d-q.d});
+  var top=[],seen={};all.some(function(x){var k=x.a+'|'+x.b;if(!seen[k]){seen[k]=1;top.push(x)}return top.length>=3});
+  var out=$('#recipeOut');out.replaceChildren();
+  top.forEach(function(x,n){
+    var parts=[[x.a,x.ws[0]],[x.b,x.a===x.b?0:x.ws[1]],['Titanium White',x.ws[2]]].filter(function(p){return p[1]>.004}).sort(function(p,q){return q[1]-p[1]});
+    var q=x.d<6?'Close match':x.d<14?'Near match':'Rough match. Your color is more saturated or darker than these paints can reach';
+    var d=document.createElement('div');d.className='recipe';
+    d.innerHTML='<div class="pair"><div style="background:'+hex(target)+';height:56px;color:'+ink(target)+'">Target</div><div style="background:'+hex(x.c)+';height:56px;color:'+ink(x.c)+'">Mix</div></div><div><b>'+(n===0?'Best: ':'Or: ')+'</b>'+parts.map(function(p){return Math.max(1,Math.round(p[1]*100))+'% '+p[0]}).join(', ')+'<br><span class="small muted">'+q+'.</span></div>';
+    out.appendChild(d);
+  });
+  var note=document.createElement('p');note.className='small muted';note.textContent='Proportions are a starting point. Real tubes vary in strength, so begin with the largest amount and add the others a little at a time.';out.appendChild(note);
+});
+
+/* ===== FOUNDATIONS ===== */
+var fd={wl:580,meta:.15,ill:'day',adapt:false,pg:'Ultramarine'};
+var CX=[];for(var _x=400;_x<=700;_x+=4)CX.push(_x);
+var CONEC=['#d6452f','#2e9e58','#3a6fe0'],CONEN=['L','M','S'];
+function coneN(l){var c=conesRaw(l);return c.map(function(v,k){return clamp(v/CMAX[k])})}
+function barsHtml(v){return v.map(function(x,i){return '<span>'+CONEN[i]+'</span><span class="bar"><i style="width:'+(clamp(x)*100)+'%;background:'+CONEC[i]+'"></i></span><span>'+x.toFixed(2)+'</span>'}).join('')}
+function wlName(l){var t=[[430,'violet'],[485,'blue'],[505,'blue-green'],[565,'green'],[590,'yellow'],[625,'orange'],[701,'red']];for(var i=0;i<t.length;i++)if(l<t[i][0])return t[i][1];return 'red'}
+var ILL={day:['Daylight',D65],sky:['Blue sky shade',planck(10000)],bulb:['Tungsten bulb',planck(2856)],candle:['Candle',planck(1900)],sodium:['Sodium street lamp',WL.map(function(l){return gs(l,589,8)+.003})]};
+var ILLNOTE={
+  day:'Daylight contains every wavelength in fairly even amounts, so each paint can show its full character.',
+  sky:'Light from a blue sky is rich in short wavelengths. Blues strengthen, and reds and oranges lose some force. This is the light that fills shadows outdoors.',
+  bulb:'A tungsten bulb is rich in long wavelengths and poor in short ones. Reds and yellows glow. Blues have little light to send back, so they darken and dull.',
+  candle:'Candlelight has almost no blue in it. A blue paint has nothing to reflect and goes close to black.',
+  sodium:'This lamp emits almost a single wavelength. Every paint can only send back that orange, lighter or darker. Hue disappears and only value is left.'};
+Object.keys(ILL).forEach(function(k){var b=document.createElement('button');b.type='button';b.className='cp';b.dataset.ill=k;b.textContent=ILL[k][0];b.addEventListener('click',function(){fd.ill=k;R.foundations()});$('#illChips').appendChild(b)});
+$('#wl').addEventListener('input',function(e){fd.wl=+e.target.value;R.foundations()});
+$('#meta').addEventListener('input',function(e){fd.meta=e.target.value/200;R.foundations()});
+$('#adapt').addEventListener('change',function(e){fd.adapt=e.target.checked;R.foundations()});
+var afterTimer=null;
+$('#afterBtn').addEventListener('click',function(){
+  if(afterTimer)return;var n=20,btn=$('#afterBtn'),disc=$('#afterDisc');disc.style.background=curHex();
+  $('#afterNote').innerHTML='<b>Keep your eyes on the dot.</b> Try not to blink much.';btn.textContent='Keep staring: '+n;
+  afterTimer=setInterval(function(){
+    n--;btn.textContent='Keep staring: '+n;
+    if(n<=0){clearInterval(afterTimer);afterTimer=null;disc.style.background='transparent';btn.textContent='Run it again';
+      var lab=rgb2lab(unhex(curHex())),ex=hex(lab2rgb(64,-lab[1]*.4,-lab[2]*.4));
+      $('#afterNote').innerHTML='<b>Keep looking at the dot.</b> You should see a pale ghost close to this: <span style="display:inline-block;width:38px;height:18px;vertical-align:middle;border-radius:3px;border:1px solid var(--line);background:'+ex+'"></span>. Nothing on the screen is that color. Your red-green and blue-yellow channels are rebounding, which is the same opposition that makes complements cancel in a mix and intensify side by side.';}
+  },1000);
+});
+var RULES=[
+  ['Three cone types reduce all light to three numbers.','Three primaries are enough to mix most colors. Hue, value and saturation fully describe one. The wheel is a map of cone ratios.','wheel'],
+  ['Pigments subtract light, and absorption adds up in a mix.','Every mix is darker and duller than its parents. Fewer pigments give cleaner color. Opposites mixed make grey.','mix'],
+  ['The light and dark channel carries the detail.','Get the values right first. Check every picture in greyscale.','value'],
+  ['Hue is coded on opposing channels, and each spot is judged against its surround.','Complements intensify each other side by side. A color changes with its neighbors. Warm and cool are relative.','contrast'],
+  ['What reaches the eye is light multiplied by surface.','Lit planes take the color of the light, and shadows take the color of the fill. Never darken with black alone.','light'],
+  ['A paint layer either passes light to the layer below or blocks it.','Transparent media work light to dark and mix by glazing. Opaque media can cover and correct.','mediums']];
+(function(){var el=$('#rules');RULES.forEach(function(r){var d=document.createElement('div');d.className='rule';d.innerHTML='<div><span class="eyebrow">Mechanism</span><p>'+r[0]+'</p></div><div><span class="eyebrow">Studio rule</span><p>'+r[1]+'</p></div><button type="button" class="go" data-lab="'+r[2]+'">Open the '+r[2]+' lab</button>';el.appendChild(d)})})();
+R.foundations=function(){
+  /* 1 cones */
+  var ys=[0,1,2].map(function(k){return CX.map(function(l){return coneN(l)[k]})});
+  plot($('#conePlot'),[{x:CX,y:ys[2],c:CONEC[2]},{x:CX,y:ys[1],c:CONEC[1]},{x:CX,y:ys[0],c:CONEC[0]}],fd.wl);
+  $('#oWl').textContent=fd.wl+' nm';$('#wlSw').style.background=hex(wlRgb(fd.wl));
+  $('#wlName').textContent=fd.wl+' nm looks '+wlName(fd.wl)+'. The patch is as close as a screen can get.';
+  $('#coneBars').innerHTML=barsHtml(coneN(fd.wl));
+  /* 2 metamer */
+  var t=fd.meta,cT=conesRaw(580),ca=conesRaw(540),cb=conesRaw(620),raw=[0,1,2].map(function(k){return (1-t)*ca[k]+t*cb[k]}),k=(cT[0]+cT[1])/(raw[0]+raw[1]);
+  var xa=cmf(540),xb=cmf(620),xt=cmf(580),xm=[0,1,2].map(function(i){return ((1-t)*xa[i]+t*xb[i])*k});
+  var lin=xyz2lin(xt[0],xt[1],xt[2]),sc=.95/Math.max(lin[0],lin[1],lin[2]);
+  var toHex=function(x){return hex(xyz2lin(x[0]*sc,x[1]*sc,x[2]*sc).map(function(v){return toSrgb(Math.max(0,v))}))};
+  $('#metaT').style.background=toHex(xt);$('#metaM').style.background=toHex(xm);
+  $('#barsT').innerHTML=barsHtml(cT.map(function(v,i){return v/CMAX[i]}));
+  $('#barsM').innerHTML=barsHtml(raw.map(function(v,i){return v*k/CMAX[i]}));
+  $('#oMeta').textContent=Math.round(t*100)+'%';
+  var diff=(raw[0]*k-cT[0])/cT[0];
+  $('#metaNote').innerHTML=Math.abs(diff)<.012
+    ?'<b>Match.</b> Your cones now send the same three numbers for both patches, so they are the same color to you even though the light is physically different. This is called metamerism. It is why a screen can show yellow with no yellow light in it, and why two paints that match in daylight can part ways under a lamp.'
+    :'<b>Not matched yet.</b> The mix is too '+(diff>0?'red: the L cones respond more than they do to the single wavelength. Slide toward green.':'green: the M cones respond more than they do to the single wavelength. Slide toward red.');
+  /* 3 surfaces */
+  $$('#illChips .cp').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.ill===fd.ill)});
+  var spd=ILL[fd.ill][1],box=$('#paintBox');box.replaceChildren();
+  PIG.forEach(function(p){var b=document.createElement('button');b.type='button';b.setAttribute('aria-pressed',p[0]===fd.pg);
+    b.innerHTML='<span style="background:'+hex(specToRgb(SPEC[p[0]],spd,fd.adapt))+'"></span>'+p[0];b.addEventListener('click',function(){fd.pg=p[0];R.foundations()});box.appendChild(b)});
+  var mx=Math.max.apply(null,spd),sn=spd.map(function(v){return v/mx}),rf=SPEC[fd.pg];
+  plot($('#surfPlot'),[{y:sn,c:'muted',w:2,dash:[5,4]},{y:rf,c:pig(fd.pg),w:2},{y:rf.map(function(v,i){return v*sn[i]}),c:'fg',w:3}]);
+  legend($('#surfLegend'),[['Light source',cssv('--muted')],[fd.pg+' reflects',pig(fd.pg)],['What reaches your eye','var(--fg)']]);
+  $('#surfNote').innerHTML='<b>'+ILL[fd.ill][0]+'.</b> '+ILLNOTE[fd.ill]+' '+(fd.ill==='day'?'':fd.adapt?'With adaptation on, your visual system rescales the cone signals until the light itself looks white. Colors recover much of their identity, though not all of it.':'Adaptation is off, so this is what a camera locked to daylight would record.');
+  /* 4 opponent */
+  var lab=rgb2lab(unhex(curHex()));
+  $('#oppL').style.left=clamp(lab[0]/100)*100+'%';$('#oppA').style.left=clamp((lab[1]+90)/180)*100+'%';$('#oppB').style.left=clamp((lab[2]+90)/180)*100+'%';
+  if(!afterTimer)$('#afterDisc').style.background=curHex();
+};
+
+/* ===== LIGHT ===== */
+var LIGHTS=[['Noon sun','#fff3df'],['Golden hour','#ffb066'],['Overcast','#e6ecf2'],['Tungsten lamp','#ffc887'],['Moonlight','#9fb9e6']];
+var FILLS=[['Blue sky','#78aaff'],['Grey studio','#b4b4b4'],['Warm room','#d2a877'],['Green foliage','#86b56a']];
+var lt={m:1,f:0,amb:.3};
+function chipRow(el,list,key){list.forEach(function(x,i){var b=document.createElement('button');b.type='button';b.className='cp';b.dataset.i=i;b.innerHTML='<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:'+x[1]+';border:1px solid var(--line);margin-right:6px;vertical-align:-1px"></span>'+x[0];b.addEventListener('click',function(){lt[key]=i;R.light()});el.appendChild(b)})}
+chipRow($('#ltMain'),LIGHTS,'m');chipRow($('#ltFill'),FILLS,'f');
+$('#ltAmb').addEventListener('input',function(e){lt.amb=e.target.value/100;R.light()});
+R.light=function(){
+  $$('#ltMain .cp').forEach(function(b){b.setAttribute('aria-pressed',+b.dataset.i===lt.m)});
+  $$('#ltFill .cp').forEach(function(b){b.setAttribute('aria-pressed',+b.dataset.i===lt.f)});
+  $('#oAmb').textContent=Math.round(lt.amb*100)+'%';
+  var alb=unhex(curHex()).map(toLin),Lc=unhex(LIGHTS[lt.m][1]).map(toLin),Fc=unhex(FILLS[lt.f][1]).map(toLin),amb=lt.amb;
+  var G=[0,1,2].map(function(i){return .62*(Lc[i]*.65+Fc[i]*amb)});
+  var sh=function(d,up,bn){return [0,1,2].map(function(i){return toSrgb(alb[i]*(Lc[i]*d+Fc[i]*amb*up+G[i]*bn))})};
+  var cv=$('#sphere'),ctx=cv.getContext('2d'),W=480,H=360,img=ctx.createImageData(W,H),dt=img.data;
+  var cx=210,cy=165,r=117,ln=Math.sqrt(.25+.3844+.36),lx=-.5/ln,ly=.62/ln,lz=.6/ln,ex=cx+99,ey=cy+r+3;
+  var gnd=function(x,y){var e=Math.pow((x-ex)/141,2)+Math.pow((y-ey)/31,2),sf=clamp((e-.6)/.5);return [0,1,2].map(function(i){return toSrgb(.62*(Lc[i]*.65*sf+Fc[i]*amb))})};
+  for(var y=0;y<H;y++)for(var x=0;x<W;x++){
+    var o=(y*W+x)*4,dx=(x-cx)/r,dy=-(y-cy)/r,d2=dx*dx+dy*dy,c;
+    if(d2<=1){var nz=Math.sqrt(1-d2),dd=Math.max(0,dx*lx+dy*ly+nz*lz);c=sh(dd,.5+.5*dy,Math.max(0,-dy)*.3);
+      var edge=(1-Math.sqrt(d2))*r;if(edge<1.5){var g0=gnd(x,y),al=edge/1.5;c=c.map(function(v,i){return Math.round(v*al+g0[i]*(1-al))})}}
+    else c=gnd(x,y);
+    dt[o]=c[0];dt[o+1]=c[1];dt[o+2]=c[2];dt[o+3]=255;
+  }
+  ctx.putImageData(img,0,0);
+  var s=[['Light side',sh(1,.8,0)],['Halftone',sh(.4,.6,0)],['Core shadow',sh(0,.45,.04)],['Reflected light',sh(0,.1,.3)],['Cast shadow',[0,1,2].map(function(i){return toSrgb(.62*Fc[i]*amb)})]];
+  var box=$('#ltSw');box.replaceChildren.apply(box,s.map(function(x){return swatchEl(hex(x[1]),x[0])}));
+  var wl=warmth(s[0][1]),ws=warmth(s[2][1]),dw=wl-ws;
+  $('#ltNote').innerHTML='<b>'+LIGHTS[lt.m][0]+' with '+FILLS[lt.f][0].toLowerCase()+' fill.</b> '+(Math.abs(dw)<.08?'Lights and shadows sit at nearly the same temperature here, so the form is carried by value alone.':'The lit side is '+(dw>0?'warmer':'cooler')+' than the shadow. The same local color appears as two different hues, and that hue shift is what makes form look lit instead of merely shaded.')+' Raise the fill strength and the shadows lighten and take on more of the fill color.';
+  var shd=s[2][1],base=unhex(curHex()),kk=lum(shd)/Math.max(lum(base),1e-4),blk=base.map(function(v){return toSrgb(toLin(v)*kk)});
+  $('#ltCmp').innerHTML='<div style="background:'+hex(blk)+';color:'+ink(blk)+'">Your color plus black</div><div style="background:'+hex(shd)+';color:'+ink(shd)+'">Shadow from the fill light</div>';
+};
+
+/* ===== APPLY ===== */
+var FIVE=[
+  ['1. What is the light?','Decide its color, direction and strength before anything else. It sets the temperature of every lit plane and, through the fill, of every shadow.','light'],
+  ['2. What are the big value shapes?','Group the picture into three to five values. If it reads as a tiny greyscale thumbnail, color can hardly ruin it.','value'],
+  ['3. Which hue leads?','Choose a dominant hue and a narrow family around it. Harmony is mostly restraint: fewer hue families, more variation inside them.','wheel'],
+  ['4. Where does the saturation go?','The eye goes to the strongest contrast. Keep most of the surface muted and spend full saturation at the focal point only.','palette'],
+  ['5. What will my medium do?','Decide where the lightest light comes from, paper or white paint. Decide whether you build with glazes or opaque layers, and allow for the drying shift.','mediums']];
+(function(){var el=$('#five');FIVE.forEach(function(r){var d=document.createElement('div');d.className='rule';d.innerHTML='<div><b>'+r[0]+'</b></div><div><p>'+r[1]+'</p></div><button type="button" class="go" data-lab="'+r[2]+'">Open the '+r[2]+' lab</button>';el.appendChild(d)})})();
+var SYM=[
+  ['Muddy colors','Every pigment absorbs part of the spectrum. Three or more pigments in one mix, or complements mixed by accident, leave very little light to come back.',['Limit each mix to two pigments plus white.','Clean the brush and change the water between color families.','When you want a grey, mix it on purpose from a complementary pair so it keeps a temperature.'],'mix'],
+  ['The picture looks flat','Form and depth are read mainly through the light and dark channel. If neighboring shapes share a value, no difference in hue can separate them.',['Photograph it in greyscale.','Regroup the picture into three clear values.','Darken the darks before you brighten anything.'],'value'],
+  ['Garish or clashing','Several saturated hues at equal strength drive every channel hard at once, so nothing leads and the eye has nowhere to rest.',['Choose one dominant hue.','Mute the others with a little of their complements.','Keep one small saturated accent.'],'palette'],
+  ['Dead or dirty shadows','A shadow is the object lit by the fill light. Black lowers value but removes the hue shift the fill would give, so the shadow looks like a hole.',['Name the color of the fill light.','Mix the shadow from the local color plus its complement or the fill color.','Keep shadows thinner and simpler than the lights.'],'light'],
+  ['Right on the palette, wrong on the canvas','The brain judges every color against its neighbors. A mix seen against a white palette looks different among the colors of the picture.',['Cover the white of the canvas early.','Test a dab beside its real neighbors before committing.','Mix on a mid-grey palette.'],'contrast'],
+  ['It changed after drying, or under another light','Drying changes how light travels through the paint film, and a different lamp supplies a different mix of wavelengths for the pigment to return.',['Swatch each key mix and let it dry first.','Paint and judge under the same light.','Use daylight-balanced bulbs where you can.'],'mediums'],
+  ['Nothing draws the eye','Attention goes to the largest difference. When contrast of value, saturation and temperature is spread evenly, there is no peak.',['Choose the focal point.','Put the lightest light against the darkest dark there.','Lower every kind of contrast elsewhere.'],'contrast'],
+  ['Chalky lights','White reflects all wavelengths evenly, so it raises value but also lowers saturation and cools the mix.',['Lighten with a lighter neighboring hue first, such as yellow into red.','Add white last and in small amounts.','In watercolor, thin the wash and let the paper do it.'],'mix']];
+var symI=0;
+SYM.forEach(function(s,i){var b=document.createElement('button');b.type='button';b.className='cp';b.textContent=s[0];b.dataset.i=i;b.addEventListener('click',function(){symI=i;R.apply()});$('#symChips').appendChild(b)});
+R.apply=function(){
+  $$('#symChips .cp').forEach(function(b){b.setAttribute('aria-pressed',+b.dataset.i===symI)});
+  var s=SYM[symI];
+  $('#symOut').innerHTML='<p><b>Cause.</b> <span style="color:var(--fg)">'+s[1]+'</span></p><p style="margin-top:10px"><b>What to do.</b></p><ol class="tips" style="margin-top:6px;color:var(--fg)">'+s[2].map(function(x){return '<li>'+x+'</li>'}).join('')+'</ol><p style="margin-top:12px"><button type="button" class="go" data-lab="'+s[3]+'">See it in the '+s[3]+' lab</button></p>';
+};
+
+/* ===== VALUE ===== */
+function drawSV(){
+  var cv=$('#svc'),box=cv.parentElement,w=Math.floor(Math.min(box.clientWidth,380));if(w<60)return;var h=Math.round(w*.72);
+  var dpr=window.devicePixelRatio||1;cv.width=w*dpr;cv.height=h*dpr;cv.style.width=w+'px';cv.style.height=h+'px';
+  var ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle='hsl('+hueOf()+' 100% 50%)';ctx.fillRect(0,0,w,h);
+  var g=ctx.createLinearGradient(0,0,w,0);g.addColorStop(0,'#fff');g.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+  g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'#000');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+  var x=st.s*w,y=(1-st.v)*h;ctx.beginPath();ctx.arc(x,y,9,0,Math.PI*2);ctx.lineWidth=3;ctx.strokeStyle='#fff';ctx.stroke();ctx.beginPath();ctx.arc(x,y,10.5,0,Math.PI*2);ctx.lineWidth=1;ctx.strokeStyle='#000';ctx.stroke();
+}
+(function(){
+  var cv=$('#svc'),drag=false;
+  function pt(e){var r=cv.getBoundingClientRect();setState({s:clamp((e.clientX-r.left)/r.width),v:clamp(1-(e.clientY-r.top)/r.height,.03,1)})}
+  cv.addEventListener('pointerdown',function(e){drag=true;try{cv.setPointerCapture(e.pointerId)}catch(_){}pt(e)});
+  cv.addEventListener('pointermove',function(e){if(drag)pt(e)});
+  cv.addEventListener('pointerup',function(){drag=false});cv.addEventListener('pointercancel',function(){drag=false});
+})();
+function ladder(el,target){
+  var base=unhex(curHex());el.replaceChildren();
+  for(var i=0;i<9;i++){var c=lerp(base,target,i/8*.9),s=document.createElement('span');s.style.background=hex(c);s.style.color=ink(c);s.textContent=(Lstar(c)/10).toFixed(1);s.title=hex(c);el.appendChild(s)}
+}
+R.value=function(){
+  drawSV();
+  ladder($('#ldTint'),[255,255,255]);ladder($('#ldTone'),[128,128,128]);ladder($('#ldShade'),[0,0,0]);
+  var L=Lstar(unhex(curHex())),sc=$('#scaleStrip');sc.replaceChildren();
+  var cells=[];for(var i=0;i<=10;i++)cells.push(hex(grayFromL(i*10)));sc.innerHTML=cells.map(function(c){return '<i style="background:'+c+'"></i>'}).join('');
+  var tk=$('#scaleTicks');tk.innerHTML='';for(i=0;i<=10;i++)tk.innerHTML+='<span>'+i+'</span>';
+  var mk=$('#scaleMk');mk.style.left=((L/10+.5)/11*100)+'%';mk.textContent=(L/10).toFixed(1);
+  var hs=harmony(st.scheme),box=$('#vcheck');box.replaceChildren();
+  hs.forEach(function(c){
+    var rgb=unhex(c.hex),g=hex(grayRGB(rgb)),d=document.createElement('div');d.className='vcell';
+    d.innerHTML='<span class="chip" style="background:'+c.hex+'"></span><span class="chip" style="background:'+g+'"></span><span class="hx">'+c.label+' · '+(Lstar(rgb)/10).toFixed(1)+'</span>';box.appendChild(d);
+  });
+  var warns=[];
+  for(i=0;i<hs.length;i++)for(var j=i+1;j<hs.length;j++){
+    if(hs[i].hex===hs[j].hex)continue;var dl=Math.abs(Lstar(unhex(hs[i].hex))-Lstar(unhex(hs[j].hex)));
+    if(dl<9)warns.push(hs[i].label+' and '+hs[j].label+' (difference '+dl.toFixed(1)+' of 100)');
+  }
+  $('#vnote').innerHTML=warns.length
+    ?'<b>These would merge in a black and white photo:</b> '+warns.join('; ')+'. Different hues can share a value, which makes a picture look flat even when the colors are lovely. Make one lighter or darker if you want them to read as separate shapes.'
+    :'<b>Good separation.</b> Every swatch in this harmony sits at a clearly different value, so the shapes will hold together even without color.';
+};
+
+/* ===== CONTRAST ===== */
+var tempIdx=8;
+R.contrast=function(){
+  var base=curHex(),surr=[
+    ['On dark','#1d1e23'],['On light','#f2f2ef'],['On its complement',colorAt(st.h+180,.6,.85)],['On a neighbor',colorAt(st.h+30,.55,.8)]];
+  var tiles=$('#tiles');tiles.replaceChildren();
+  surr.forEach(function(s){var d=document.createElement('div');d.innerHTML='<div class="tile" style="background:'+s[1]+'"><i style="background:'+base+'"></i></div><p class="small muted" style="margin-top:6px">'+s[0]+'</p>';tiles.appendChild(d)});
+  $('#joined').innerHTML=surr.map(function(){return '<i style="background:'+base+'"></i>'}).join('');
+  $('#simNote').innerHTML='<b>What you are seeing.</b> On dark your color looks lighter and glows. On light it looks heavier. On its complement it looks more saturated. On a neighbor it looks quieter and shifts slightly toward the opposite hue. Use this on purpose: a small area of color can look strong or subdued entirely because of what you put around it.';
+  var chips=$('#tchips');chips.replaceChildren();
+  for(var i=0;i<12;i++){
+    (function(i){var hx=hex(hsv2rgb(i*30,Math.max(st.s,.55),Math.max(st.v,.7))),b=document.createElement('button');
+      b.type='button';b.style.background=hx;b.title=hueName(i*30)+' '+hx;b.setAttribute('aria-label',hueName(i*30));b.setAttribute('aria-pressed',i===tempIdx);
+      b.addEventListener('click',function(){tempIdx=i;R.contrast()});chips.appendChild(b)})(i);
+  }
+  var A=unhex(base),B=hsv2rgb(tempIdx*30,Math.max(st.s,.55),Math.max(st.v,.7)),wa=warmth(A),wb=warmth(B);
+  $('#mkA').style.left=((wa+1)/2*100)+'%';$('#mkB').style.left=((wb+1)/2*100)+'%';
+  var lbl=function(w){return w>.45?'warm':w<-.45?'cool':'near the middle'};
+  $('#tA').textContent=hueName(rgb2hsv(A[0],A[1],A[2])[0])+', '+lbl(wa);
+  $('#tB').textContent=hueName(tempIdx*30)+', '+lbl(wb);
+  var diff=wb-wa;
+  $('#tempNote').innerHTML=Math.abs(diff)<.12
+    ?'<b>These two sit at nearly the same temperature.</b> To create temperature contrast, pick a hue from the opposite end of the bar.'
+    :'<b>The second color is '+(diff>0?'warmer':'cooler')+' than your base.</b> Warm colors tend to advance and cool colors tend to recede, so a '+(diff>0?'warmer':'cooler')+' color placed against your base will '+(diff>0?'move forward':'sit back')+'. Painters use this for depth: warm light with cool shadow, or the reverse, and cooler, paler distances.';
+};
+
+/* ===== MEDIUMS ===== */
+var MEDIUMS=[
+  {id:'digital',name:'Digital screen',kind:'Additive light',
+   essence:'Color is emitted, not reflected. Mixing adds light, so overlapping colors get brighter and white is every color at once.',
+   props:[['Light comes from','The screen itself'],['Transparency','Opacity and blend modes per layer'],['Lightest light','Full screen white'],['Reworking','Unlimited']],
+   wet:'Full brightness',dry:'Night shift',
+   shift:function(c){return [c[0]*.9,c[1]*.82,c[2]*.64].map(Math.round)},
+   starter:[['Base',null],['Complement',null],['Light','#f3f3f0'],['Dark','#1a1a1f']],
+   tips:['Your complements are red and cyan, green and magenta, blue and yellow, because the primaries are light.','Adjust one dimension at a time in a hue, saturation, brightness picker, so you learn what each does.','Multiply, screen and overlay layers imitate other media. Use them to rehearse a glaze or a glow before you commit paint.'],
+   trap:'Screens show colors no pigment can make. A pure cyan or neon green on screen has no paint equivalent, and the same file looks different on every display.'},
+  {id:'print',name:'Print (CMYK)',kind:'Subtractive ink',
+   essence:'Transparent inks overprint on paper. The paper is the white, and every ink layer absorbs a part of the light.',
+   props:[['Light comes from','Paper reflecting through ink'],['Transparency','Transparent inks'],['Lightest light','Paper white'],['Reworking','None once printed']],
+   wet:'On screen',dry:'In print',
+   shift:function(c){var h=rgb2hsv(c[0],c[1],c[2]);return hsv2rgb(h[0],h[1]*.78,h[2]*.94)},
+   starter:[['Cyan','#00aeef'],['Magenta','#ec008c'],['Yellow','#fff200'],['Black','#231f20']],
+   tips:['Cyan plus yellow makes green, magenta plus yellow makes red, cyan plus magenta makes blue. These are the real subtractive primaries.','Paper stock is a color. Coated white, uncoated and cream paper change every color you print.','Check a printed proof early. Vivid greens, oranges and blues leave the printable range first.'],
+   trap:'Large dark areas can print muddy, and fine detail in four-color black can blur. Keep text and linework in pure black ink.'},
+  {id:'watercolor',name:'Watercolor',kind:'Transparent pigment',
+   essence:'Thin, transparent washes on white paper. Light travels through the pigment, bounces off the paper and comes back, so the paper is your white.',
+   props:[['Light comes from','The paper, through the wash'],['Transparency','Fully transparent'],['Lightest light','Unpainted paper'],['Reworking','Limited. Lifting only']],
+   wet:'Wet',dry:'Dry',
+   shift:function(c){var d=lerp(c,[255,255,255],.2),h=rgb2hsv(d[0],d[1],d[2]);return hsv2rgb(h[0],h[1]*.92,h[2])},
+   starter:[['Lemon Yellow',pig('Lemon Yellow')],['Quinacridone Magenta',pig('Quinacridone Magenta')],['Phthalo Blue',pig('Phthalo Blue')],['Yellow Ochre',pig('Yellow Ochre')]],
+   tips:['Keep your lights by leaving the paper bare. White paint is a last resort.','Paint light to dark. A glaze of one color over another mixes in the eye and stays cleaner than mixing on the palette.','Colors dry 15 to 25 percent lighter. Mix darker and richer than looks right while wet.'],
+   trap:'Too many layers turn muddy. Aim for two or three glazes per area and no more than two or three pigments in a mix.'},
+  {id:'gouache',name:'Gouache',kind:'Opaque water-based',
+   essence:'Opaque, matte and water soluble. You can paint light over dark, so mistakes are fixable and flat shapes of color come easily.',
+   props:[['Light comes from','Opaque pigment surface'],['Transparency','Opaque, thin layers semi-clear'],['Lightest light','White gouache'],['Reworking','Good, but re-wets lower layers']],
+   wet:'Wet',dry:'Dry',
+   shift:function(c){var h=rgb2hsv(c[0],c[1],c[2]);return hsv2rgb(h[0],h[1]*.93,h[2]+(.55-h[2])*.18)},
+   starter:[['Cadmium Yellow',pig('Cadmium Yellow')],['Cadmium Red',pig('Cadmium Red')],['Ultramarine',pig('Ultramarine')],['Titanium White',pig('Titanium White')]],
+   tips:['Dark colors dry lighter and light colors dry darker, so values drift toward the middle. Test each mix on scrap and let it dry first.','Mix a value string for each hue before you paint, from near black to near white.','White cools and chalks a color. For a warm light, tint with a lighter, warmer version of the hue instead.'],
+   trap:'Wetting an old layer lifts it and muddies the new one. Let layers dry fully and use a light touch.'},
+  {id:'acrylic',name:'Acrylic',kind:'Opaque or transparent',
+   essence:'Fast-drying plastic paint that behaves two ways. Thick and opaque it acts like gouache. Thinned with medium it glazes like watercolor.',
+   props:[['Light comes from','Surface, or the ground through glazes'],['Transparency','Both, depending on mix'],['Lightest light','Titanium white'],['Reworking','Fast. Dries permanent']],
+   wet:'Wet',dry:'Dry',
+   shift:function(c){var h=rgb2hsv(c[0],c[1],c[2]);return hsv2rgb(h[0],Math.min(1,h[1]*1.04),h[2]*.92)},
+   starter:[['Cadmium Yellow',pig('Cadmium Yellow')],['Cadmium Red',pig('Cadmium Red')],['Ultramarine',pig('Ultramarine')],['Titanium White',pig('Titanium White')]],
+   tips:['Most acrylics dry darker, especially light colors. Mix slightly lighter than your target.','Glaze with gloss or matte medium to get stained-glass depth that opaque mixing cannot give.','Drying is quick, so blend with glazes and hatching, or slow it with a wet palette and retarder.'],
+   trap:'Phthalo blues and greens are extremely strong. Add the tiniest amount to a mix or they take it over.'},
+  {id:'oil',name:'Oil',kind:'Opaque or glazed',
+   essence:'Slow-drying paint that can be blended on the canvas for days. Thick passages are opaque and thin glazes glow from within.',
+   props:[['Light comes from','Surface, or the ground through glazes'],['Transparency','Both, depending on mix'],['Lightest light','Titanium or zinc white'],['Reworking','Excellent while wet']],
+   wet:'Wet',dry:'Dry',
+   shift:function(c){var h=rgb2hsv(c[0],c[1],c[2]);return hsv2rgb(h[0],h[1]*.96,h[2]*.97)},
+   starter:[['Lemon Yellow',pig('Lemon Yellow')],['Cadmium Red',pig('Cadmium Red')],['Ultramarine',pig('Ultramarine')],['Burnt Sienna',pig('Burnt Sienna')]],
+   tips:['Slow drying lets you soften edges and make smooth temperature transitions. Warm to cool across a form is the classic use.','Work fat over lean: thicker, oilier paint on top of thinner paint, so the layers dry stably.','Titanium white is cool and dense. A touch of yellow ochre in your white keeps lights warm.'],
+   trap:'Some areas dry dull and sunken. A light coat of medium, called oiling out, brings the color back before you continue.'},
+  {id:'pastel',name:'Pastel and pencil',kind:'Dry pigment',
+   essence:'Pigment applied dry. Colors do not mix on a palette, they mix on the paper through layering, hatching and blending.',
+   props:[['Light comes from','Paper tone plus pigment'],['Transparency','Semi-opaque'],['Lightest light','White pastel or the paper'],['Reworking','Moderate. Layers fill the tooth']],
+   wet:'Applied',dry:'On toned paper',
+   shift:function(c){return lerp(c,[196,188,172],.12)},
+   starter:[['Warm grey paper','#bfb8a8'],['Cool grey paper','#a6adb5'],['Ultramarine',pig('Ultramarine')],['Cadmium Orange',pig('Cadmium Orange')]],
+   tips:['Layer a cool over a warm, or the reverse, and your eye mixes a lively grey that a flat stroke cannot give.','Paper tone is a color in the picture. A mid-tone paper sets your values and unifies the palette instantly.','Plan the lights early. Heavy layers fill the paper tooth and leave no room for bright accents.'],
+   trap:'Over-blending kills vibrancy. Leave some visible strokes of separate color so the eye can do the mixing.'}
+];
+var medId=store.get('med','watercolor');
+var medSeg=$('#medSeg');
+MEDIUMS.forEach(function(m){var b=document.createElement('button');b.type='button';b.textContent=m.name;b.dataset.m=m.id;b.addEventListener('click',function(){medId=m.id;store.set('med',medId);R.mediums()});medSeg.appendChild(b)});
+var ly={a:'#2a3790',b:'#f7b500',o:.75};
+$('#lyA').addEventListener('input',function(e){ly.a=e.target.value;layerRender()});
+$('#lyB').addEventListener('input',function(e){ly.b=e.target.value;layerRender()});
+$('#lyO').addEventListener('input',function(e){ly.o=e.target.value/100;layerRender()});
+$('#lyBase').addEventListener('click',function(){ly.a=curHex();ly.b=colorAt(st.h+180);$('#lyA').value=ly.a;$('#lyB').value=ly.b;layerRender()});
+function layerRender(){
+  $('#oLy').textContent=Math.round(ly.o*100)+'%';
+  var modes=[
+    ['opaque','Opaque paint','Oil, gouache and thick acrylic. The top layer covers what is below, so you can paint light over dark and correct mistakes.','#fbfaf6','normal'],
+    ['glaze','Transparent glaze','Watercolor, thin acrylic, oil glazes and printing ink. Layers multiply, so the overlap is darker than both and leans toward the colors they share.','#fbfaf6','multiply'],
+    ['light','Projected light','Screens and stage lights. Layers add, so the overlap is lighter than either. Mixing light never gets darker.','#0b0b0d','screen']];
+  var box=$('#layers');box.replaceChildren();
+  modes.forEach(function(m){
+    var d=document.createElement('div');d.className='res';
+    d.innerHTML='<h3>'+m[1]+'</h3><div class="lbox" style="background:'+m[3]+'"><i style="background:'+ly.a+'"></i><i style="background:'+ly.b+';opacity:'+ly.o+';mix-blend-mode:'+m[4]+'"></i></div><p class="small muted">'+m[2]+'</p>';
+    box.appendChild(d);
+  });
+}
+R.mediums=function(){
+  var m=MEDIUMS.filter(function(x){return x.id===medId})[0]||MEDIUMS[2];
+  $$('button',medSeg).forEach(function(b){b.setAttribute('aria-pressed',b.dataset.m===m.id)});
+  $('#mKind').textContent=m.kind;$('#mName').textContent=m.name;$('#mEssence').textContent=m.essence;
+  var c=unhex(curHex()),d=m.shift(c).map(Math.round),dl=Math.round(Lstar(d)-Lstar(c));
+  $('#mPair').innerHTML='<div style="background:'+hex(c)+';color:'+ink(c)+'">'+m.wet+'</div><div style="background:'+hex(d)+';color:'+ink(d)+'">'+m.dry+'</div>';
+  $('#mDelta').textContent=(dl===0?'Almost no change in lightness for your color.':'Your color shifts '+Math.abs(dl)+' points '+(dl>0?'lighter':'darker')+' on a 100-point lightness scale.')+' General tendency, so test your own paints.';
+  var st2=$('#mStarter');st2.replaceChildren();
+  m.starter.forEach(function(s,i){
+    var hx=s[1]||(i===0?curHex():colorAt(st.h+180)),b=document.createElement('button');b.type='button';b.className='sw';b.style.width='84px';b.title='Copy '+hx;
+    b.innerHTML='<span class="chip" style="background:'+hx+';height:44px"></span><span class="lb">'+s[0]+'</span>';b.addEventListener('click',function(){copy(hx)});st2.appendChild(b);
+  });
+  $('#mProps').innerHTML=m.props.map(function(p){return '<dt>'+p[0]+'</dt><dd>'+p[1]+'</dd>'}).join('');
+  $('#mTips').innerHTML=m.tips.map(function(t){return '<li>'+t+'</li>'}).join('');
+  $('#mTrap').textContent=m.trap;
+  var rows=[['digital','Emitted by the screen','Per-layer opacity','Screen white','Depends on the display'],['print','Paper through the ink','Transparent inks','Paper white','Dot gain darkens'],['watercolor','Paper through the wash','Transparent','Unpainted paper','15 to 25% lighter'],['gouache','Opaque pigment surface','Opaque','White gouache','Toward mid-value'],['acrylic','Surface or ground through glazes','Both','Titanium white','5 to 10% darker'],['oil','Surface or ground through glazes','Both','Titanium or zinc white','Minimal'],['pastel','Paper tone plus pigment','Semi-opaque','White pastel or paper','None']];
+  $('#medTable').innerHTML='<thead><tr><th>Medium</th><th>Light comes from</th><th>Transparency</th><th>Lightest light</th><th>Drying shift</th></tr></thead><tbody>'+
+    rows.map(function(r){var nm=MEDIUMS.filter(function(x){return x.id===r[0]})[0].name;return '<tr'+(r[0]===m.id?' class="cur"':'')+'><td><b>'+nm+'</b></td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td><td>'+r[4]+'</td></tr>'}).join('')+'</tbody>';
+  layerRender();
+};
+
+/* ===== PALETTE ===== */
+var pal={key:.55,int:.5};
+(function(){
+  var sel=$('#palScheme');SCHEME_KEYS.forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=SCHEMES[k].name;sel.appendChild(o)});
+  sel.addEventListener('change',function(){setState({scheme:sel.value})});
+  $('#palKey').addEventListener('input',function(e){pal.key=e.target.value/100;R.palette()});
+  $('#palInt').addEventListener('input',function(e){pal.int=e.target.value/100;R.palette()});
+  $('#grayChk').addEventListener('change',function(e){$('#land').classList.toggle('gray',e.target.checked)});
+  $('#palShuffle').addEventListener('click',function(){setState({h:Math.floor(Math.random()*360)})});
+})();
+function buildPalette(){
+  var sc=SCHEMES[st.scheme],r=sc.roles,mono=st.scheme==='mono';
+  var vDom=.3+pal.key*.55,sDom=.1+pal.int*.55;
+  var vSec=vDom>.55?vDom-.24:vDom+.22,sSec=Math.min(1,sDom*1.15+.08);
+  var secA=mono?st.h:st.h+r[1],accA=mono?st.h:st.h+r[2];
+  var dom=colorAt(st.h,sDom,vDom),sec=colorAt(secA,mono?sDom*.7:sSec,vSec);
+  var acc=colorAt(accA,mono?Math.min(1,.4+pal.int*.5):.45+pal.int*.5,mono?.92:.9);
+  var light=colorAt(st.h,.06+pal.int*.1,.97),dark=colorAt(st.h,.5,.2);
+  return [{role:'Light',hex:light,pct:''},{role:'Dominant',hex:dom,pct:'60%'},{role:'Secondary',hex:sec,pct:'30%'},{role:'Accent',hex:acc,pct:'10%'},{role:'Dark',hex:dark,pct:''}];
+}
+R.palette=function(){
+  $('#palScheme').value=st.scheme;$('#oKey').textContent=pal.key<.35?'Low':pal.key>.7?'High':'Mid';$('#oInt').textContent=pal.int<.35?'Muted':pal.int>.7?'Vivid':'Mid';
+  var p=buildPalette(),box=$('#palSwatches');box.replaceChildren.apply(box,p.map(function(c){return swatchEl(c.hex,c.role+(c.pct?' '+c.pct:''))}));
+  $('#pbar').innerHTML='<i style="width:60%;background:'+p[1].hex+'"></i><i style="width:30%;background:'+p[2].hex+'"></i><i style="width:10%;background:'+p[3].hex+'"></i>';
+  var sky=hex(lerp(unhex(p[0].hex),unhex(p[1].hex),.22+(1-pal.key)*.35)),far=hex(lerp(unhex(p[2].hex),unhex(sky),.55));
+  var map={sky:sky,acc:p[3].hex,far:far,mid:p[2].hex,fore:p[1].hex,dark:p[4].hex};
+  $$('#land [data-r]').forEach(function(el){el.setAttribute('fill',map[el.dataset.r])});
+  var dl=Math.abs(Lstar(unhex(p[1].hex))-Lstar(unhex(p[2].hex))),da=Math.abs(Lstar(unhex(p[3].hex))-Lstar(unhex(p[1].hex)));
+  var msgs=[];
+  msgs.push(dl<10?'<b>Dominant and secondary have almost the same value.</b> They will blend together in greyscale. Move the Key slider or choose a different scheme to separate them.':'<b>Dominant and secondary are separated in value,</b> so the big shapes will read clearly.');
+  msgs.push(da<12?'The accent is close in value to the dominant color, so it will not pop. Make it lighter or darker.':'The accent stands apart in value, which is what makes a small touch of color draw the eye.');
+  msgs.push('The far hills are mixed toward the sky color. That is atmospheric perspective: distant things are paler, cooler and less saturated.');
+  $('#palNote').innerHTML=msgs.join(' ');
+  $('#palCopy').onclick=function(){copy(p.map(function(c){return c.hex}).join(', '),'Copied palette')};
+};
+
+/* ===== PRACTICE ===== */
+var score=Object.assign({right:0,total:0,streak:0,best:0},store.get('score',{}));
+var pq={mode:'comp',q:null,done:false};
+function plevel(){return 1+Math.min(5,Math.floor(score.right/8))}
+function pick(arr,n){var c=arr.slice(),o=[];while(o.length<n&&c.length)o.push(c.splice(Math.floor(Math.random()*c.length),1)[0]);return o}
+function shuffle(a){return a.map(function(x){return [Math.random(),x]}).sort(function(p,q){return p[0]-q[0]}).map(function(x){return x[1]})}
+function makeQ(){
+  var lv=plevel(),q;
+  if(pq.mode==='comp'){
+    var ang=Math.floor(Math.random()*24)*15,s=rnd(.5,.9),v=rnd(.6,.95),pool=[60,90,120,-60,-90,-120];
+    if(lv>=3)pool.push(150,-150);if(lv>=5)pool.push(165,-165);
+    var opts=[{angle:ang+180,ok:true}].concat(pick(pool,3).map(function(d){return {angle:ang+d,ok:false}}));
+    opts.forEach(function(o){o.hex=colorAt(o.angle,s,v)});
+    q={target:colorAt(ang,s,v),tAng:ang,opts:shuffle(opts),prompt:'Which color is the complement of this one on the '+modelName()+' wheel?'};
+  } else if(pq.mode==='temp'){
+    var gap=[.9,.7,.55,.4,.3,.2][lv-1],ask=Math.random()<.5?'warm':'cool',items,tries=0;
+    do{items=[0,1,2].map(function(){var h=Math.random()*360,c=hsv2rgb(h,rnd(.55,.9),rnd(.65,.95));return {hex:hex(c),w:warmth(c),h:h}});
+      var srt=items.slice().sort(function(a,b){return ask==='warm'?b.w-a.w:a.w-b.w});
+      var ok=Math.abs(srt[0].w-srt[1].w)>=gap;if(ok){srt[0].ok=true}tries++;}while(!ok&&tries<400);
+    q={opts:items,prompt:'Which of these is the '+(ask==='warm'?'warmest':'coolest')+'?',ask:ask};
+  } else if(pq.mode==='mixq'){
+    var nm=PIG.map(function(p){return p[0]}).filter(function(n){return n!=='Titanium White'&&n!=='Ivory Black'}),pr,mo,ok3,t3=0;
+    do{pr=pick(nm,3);var ra=unhex(pig(pr[0])),rb=unhex(pig(pr[1]));
+      mo=[{c:specToRgb(kmMix([SPEC[pr[0]],SPEC[pr[1]]],[.5,.5])),ok:true,lab:'paint mix'},{c:mixAvg(ra,rb,.5),lab:'digital average'},{c:mixLight(ra,rb,.5),lab:'light added'},{c:specToRgb(kmMix([SPEC[pr[0]],SPEC[pr[2]]],[.5,.5])),lab:'a different pair'}];
+      ok3=true;for(var i3=0;i3<4;i3++)for(var j3=i3+1;j3<4;j3++)if(dE(mo[i3].c,mo[j3].c)<12)ok3=false;t3++;}while(!ok3&&t3<200);
+    mo.forEach(function(o){o.hex=hex(o.c)});
+    q={target:'linear-gradient(90deg,'+pig(pr[0])+' 50%,'+pig(pr[1])+' 50%)',opts:shuffle(mo),prompt:'Equal parts of '+pr[0]+' and '+pr[1]+' are mixed as paint. Which swatch is the result?'};
+  } else {
+    var gap2=[28,22,16,12,9,6][lv-1],ask2=Math.random()<.5?'lightest':'darkest',it,t2=0;
+    do{it=[0,1,2,3].map(function(){var c=hsv2rgb(Math.random()*360,rnd(.3,.95),rnd(.25,1));return {hex:hex(c),L:Lstar(c)}});
+      var s2=it.slice().sort(function(a,b){return ask2==='lightest'?b.L-a.L:a.L-b.L});
+      var ok2=Math.abs(s2[0].L-s2[1].L)>=gap2;if(ok2){s2[0].ok=true}t2++;}while(!ok2&&t2<600);
+    q={opts:it,prompt:'Which of these is the '+ask2+'? Judge by how light or dark it is, ignoring hue.',ask:ask2};
+  }
+  pq.q=q;pq.done=false;
+}
+function pAnswer(i){
+  if(pq.done)return;pq.done=true;var q=pq.q,o=q.opts[i],good=!!o.ok;
+  score.total++;if(good){score.right++;score.streak++;score.best=Math.max(score.best,score.streak)}else score.streak=0;
+  store.set('score',score);
+  var fb;
+  if(pq.mode==='comp'){var cOpt=q.opts.filter(function(x){return x.ok})[0];
+    fb=(good?'Yes. ':'Not quite. ')+hueName(hueOf(q.tAng))+' sits directly opposite '+hueName(hueOf(cOpt.angle))+' on the '+modelName()+' wheel, 180 degrees apart.'}
+  else if(pq.mode==='mixq')fb=(good?'Yes. ':'Not quite. ')+'A paint mix is darker and duller than the digital average, because each pigment removes light the other would have reflected. Only the wavelengths both paints let through survive. Open the Mix lab to see the two curves.';
+  else if(pq.mode==='temp')fb=(good?'Yes. ':'Not quite. ')+'Temperature follows hue: oranges and reds are warmest, blues and blue-greens coolest. Yellow-greens and violets sit near the middle and can lean either way depending on neighbors.';
+  else fb=(good?'Yes. ':'Not quite. ')+'Saturated yellows are surprisingly light and saturated blues and violets are surprisingly dark, so hue is a poor guide. Squint, or imagine the black and white photo.';
+  $('#pFeedback').textContent=fb;R.practice(true);
+}
+$$('[data-pm]').forEach(function(b){b.addEventListener('click',function(){pq.mode=b.dataset.pm;makeQ();R.practice()})});
+$('#pNext').addEventListener('click',function(){makeQ();R.practice()});
+R.practice=function(keepFb){
+  if(!pq.q)makeQ();
+  $$('[data-pm]').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.pm===pq.mode)});
+  var q=pq.q;$('#pPrompt').textContent=q.prompt;
+  var tg=$('#pTarget'),hasT=pq.mode==='comp'||pq.mode==='mixq';tg.hidden=!hasT;if(hasT)tg.style.background=q.target;
+  var box=$('#pOpts');box.replaceChildren();
+  q.opts.forEach(function(o,i){
+    var b=document.createElement('button');b.type='button';b.className='popt';b.setAttribute('aria-label','Option '+(i+1));
+    var note='';
+    if(pq.done){
+      var info=pq.mode==='mixq'?o.lab:pq.mode==='comp'?hueName(hueOf(o.angle)):pq.mode==='temp'?'warmth '+(o.w>=0?'+':'')+o.w.toFixed(2):'lightness '+Math.round(o.L);
+      note=(o.ok?'✓ ':'')+info;if(o.ok)b.classList.add('ok');
+    }
+    b.innerHTML='<span class="chip" style="background:'+o.hex+'"></span><span class="note">'+note+'</span>';
+    b.addEventListener('click',function(){pAnswer(i)});box.appendChild(b);
+  });
+  if(pq.done){
+    var chosen=-1;
+  }
+  if(!keepFb)$('#pFeedback').textContent='';
+  var lv=plevel();
+  $('#pScore').innerHTML='<span>Correct <b>'+score.right+'</b> of <b>'+score.total+'</b></span><span>Streak <b>'+score.streak+'</b></span><span>Best <b>'+score.best+'</b></span><span>Level <b>'+lv+'</b>'+(lv<6?' ('+(score.right%8)+'/8 to next)':' (top)')+'</span>';
+};
+/* mark the wrong choice as well, without a re-render losing which was clicked */
+(function(){
+  var orig=pAnswer;
+  pAnswer=function(i){
+    if(pq.done)return;orig(i);
+    var btns=$$('#pOpts .popt'),o=pq.q.opts[i];
+    if(!o.ok&&btns[i]){btns[i].classList.add('bad');var n=btns[i].querySelector('.note');if(n)n.textContent='✗ '+n.textContent}
+  };
+})();
+
+/* ===== PATH ===== */
+var LEVELS=[
+  {t:'Foundations',sub:'Light, surface, eye and brain',goal:'Understand the four steps that produce every color you see. Each later level is a consequence of one of them.',ex:[
+    ['Move the wavelength slider and say out loud which cones respond at 450, 550 and 620 nm. Then make the two yellow patches match.','foundations'],
+    ['Put the paint box under each light source. Explain to yourself why the blues go dark by candlelight.','foundations'],
+    ['Run the afterimage test with three different colors. Predict the ghost color before each run.','foundations'],
+    ['Without looking, write down the six mechanism and rule pairs from the bottom of the Foundations lab. Check yourself.','foundations']]},
+  {t:'See',sub:'Hue, value and saturation',goal:'Every color has three independent dimensions. Learn to see and name each one.',ex:[
+    ['Drag around the wheel and name every hue you land on. Then switch to the other wheel and notice what changes.','wheel'],
+    ['Paint or draw a nine-step value scale in a single hue, from nearly white to nearly black.','value'],
+    ['Photograph a room, turn it to greyscale, and point to the lightest and darkest objects.',null]]},
+  {t:'Mix',sub:'Primaries and chromatic greys',goal:'Understand why paint mixes get duller, and use that on purpose.',ex:[
+    ['Choose a warm and a cool version of each primary, six paints in all, and mix every pair into a chart.','mix'],
+    ['Mix a complementary pair into a neutral in three different ratios. Note which greys lean warm and which lean cool.','mix'],
+    ['Paint one object using only three primaries and white.',null],
+    ['Before five real mixes, write your prediction of the result. Then mix and compare. Check the reflectance curves for any that surprised you.','mix'],
+    ['Pick a color from a photo, run the recipe finder, then mix it in real paint and note where your tubes differ.','mix']]},
+  {t:'Structure',sub:'Value before color',goal:'Value carries the picture. Get it right first and color becomes forgiving.',ex:[
+    ['Draw five small thumbnails of one scene in three values only: black, grey, white.','value'],
+    ['Photograph a finished piece in greyscale. Fix any two colors that merge.','value'],
+    ['Paint the same still life twice, once in a single hue and once in full color, keeping the same values.',null]]},
+  {t:'Harmony',sub:'Schemes and dominance',goal:'Limit your choices so the picture feels unified. Let one color lead.',ex:[
+    ['Pick the analogous scheme and paint a small study using only those hues plus neutrals.','wheel'],
+    ['Build a palette in the Palette lab and paint the landscape using the 60, 30, 10 split.','palette'],
+    ['Repaint it breaking one rule on purpose, for example a loud accent. Compare which you prefer.',null]]},
+  {t:'Contrast',sub:'Neighbors and temperature',goal:'Learn how surroundings change a color, then use that to direct the eye.',ex:[
+    ['Paint one color on three different backgrounds so it looks like three colors. This is the classic Albers study.','contrast'],
+    ['Paint a single object with warm light and cool shadow. Then reverse it.','contrast'],
+    ['Make a scene where the only saturated color sits at the focal point.',null],
+    ['Set one object near a window with a lamp on the other side. Name the color of the light and of the shadow fill before you paint it.','light']]},
+  {t:'Mediums',sub:'Light, layers and drying',goal:'Learn how your materials treat color, and use their quirks.',ex:[
+    ['Swatch one mixed color in two mediums and record how each looks wet and dry.','mediums'],
+    ['Glaze a transparent color over a value study, then try the same with an opaque layer.','mediums'],
+    ['Paint three landscape planes, each cooler, paler and less saturated than the one before.','palette']]},
+  {t:'Voice',sub:'Your own palette',goal:'Stop following rules and start choosing. Your palette is part of your handwriting.',ex:[
+    ['Choose five pigments as your signature palette. Use only those for thirty days of small studies, even short ones.',null],
+    ['Study a painter you love. Copy their palette, not their painting, and compare with the labs.','wheel'],
+    ['Make six pieces around one palette idea with different subjects.',null],
+    ['Answer the five decisions in writing before each of your next three pieces. Afterward, use the diagnosis guide on whatever did not work.','apply']]}
+];
+var done=store.get('done',{}),pathBuilt=false;
+function lid(li){return li===0?'F':'l'+(li-1)}
+var TOTAL=LEVELS.reduce(function(n,l){return n+l.ex.length},0);
+function buildPath(){
+  var box=$('#levels');box.replaceChildren();
+  LEVELS.forEach(function(l,li){
+    var s=document.createElement('section');s.className='lvl';s.dataset.li=li;
+    var items=l.ex.map(function(e,ei){var id=lid(li)+'e'+ei;
+      return '<li><label for="'+id+'"><input type="checkbox" id="'+id+'" data-id="'+id+'"><span>'+e[0]+'</span></label>'+(e[1]?'<button type="button" class="go" data-lab="'+e[1]+'">Open the '+e[1]+' lab</button>':'')+'</li>'}).join('');
+    s.innerHTML='<div class="no">'+li+'</div><div><h3>'+l.t+'<span class="tag" hidden></span></h3><p class="muted small">'+l.sub+'</p><p style="margin-top:8px">'+l.goal+'</p><ul>'+items+'</ul></div>';
+    box.appendChild(s);
+  });
+  $$('#levels input').forEach(function(c){
+    c.checked=!!done[c.dataset.id];
+    c.addEventListener('change',function(){if(c.checked)done[c.dataset.id]=1;else delete done[c.dataset.id];store.set('done',done);refreshPath()});
+  });
+  $$('#levels .go').forEach(function(b){b.addEventListener('click',function(){show(b.dataset.lab);try{history.replaceState(null,'','#'+b.dataset.lab)}catch(e){}window.scrollTo(0,0)})});
+  pathBuilt=true;
+}
+function pathInfo(){
+  var n=0,nextL=-1,nextE=-1;
+  LEVELS.forEach(function(l,li){l.ex.forEach(function(e,ei){if(done[lid(li)+'e'+ei])n++;else if(nextL<0){nextL=li;nextE=ei}})});
+  return {n:n,nextL:nextL,nextE:nextE};
+}
+function refreshPath(headerOnly){
+  var p=pathInfo();
+  $('#progChip').textContent=p.nextL<0?'Path complete':'Level '+p.nextL+' · '+p.n+'/'+TOTAL+' done';
+  if(headerOnly&&active!=='path')return;
+  if(!pathBuilt)buildPath();
+  $('#pathBar').style.width=(p.n/TOTAL*100)+'%';
+  $('#pathCount').textContent=p.n+' of '+TOTAL+' exercises done';
+  $$('#levels .lvl').forEach(function(s,li){
+    var cnt=LEVELS[li].ex.filter(function(e,ei){return done[lid(li)+'e'+ei]}).length,tag=s.querySelector('.tag');
+    s.classList.toggle('next',li===p.nextL);tag.hidden=!(li===p.nextL||cnt===LEVELS[li].ex.length);
+    tag.textContent=cnt===LEVELS[li].ex.length?'Done':li===p.nextL?'Up next':'';
+    $$('input',s).forEach(function(c){c.checked=!!done[c.dataset.id]});
+  });
+  var nu=$('#nextUp');
+  if(p.nextL<0)nu.innerHTML='<b>You have finished every exercise.</b> Pick a palette, make a body of work, and come back to the labs whenever a painting is not working. That habit is the real skill.';
+  else{var e=LEVELS[p.nextL].ex[p.nextE];nu.innerHTML='<b>Up next, level '+p.nextL+':</b> '+e[0]}
+}
+R.path=function(){refreshPath()};
+var resetArmed=false;
+$('#pathReset').addEventListener('click',function(){
+  var b=$('#pathReset');
+  if(!resetArmed){resetArmed=true;b.textContent='Tap again to erase all progress';setTimeout(function(){resetArmed=false;b.textContent='Reset progress'},3500);return}
+  resetArmed=false;done={};store.set('done',done);b.textContent='Reset progress';refreshPath();
+});
+
+/* ---------- boot ---------- */
+var raf;
+window.addEventListener('resize',function(){cancelAnimationFrame(raf);raf=requestAnimationFrame(function(){render()})});
+try{new MutationObserver(function(){render()}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']})}catch(e){}
+try{window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){render()})}catch(e){}
+show(location.hash.slice(1)||'foundations');
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){if(active==='wheel')render()});
+})();
+</script>
+
+</body></html>

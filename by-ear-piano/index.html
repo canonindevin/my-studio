@@ -1,0 +1,618 @@
+<!doctype html><html lang="en"><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>By Ear Piano</title></head><body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a one-screen instrument. The lesson panel scrolls on top; the piano stays docked
+   at the bottom like a real keybed, with the felt strip above the keys. */
+:root{
+  --bg:#edf0f2; --panel:#ffffff; --ink:#16202a; --muted:#566370; --line:#d3d9df;
+  --brass:#9a5f06; --brass-soft:#fbedd0; --teal:#0d6f68; --teal-soft:#d5efec; --on-teal:#ffffff;
+  --good:#187646; --good-soft:#d9f2e4; --bad:#b93229; --bad-soft:#fbe1de;
+  --case:#20262d; --case-ink:#e9edf0; --case-line:#3a434d; --felt:#8e1f2f;
+  --ivory:#fbfaf5; --ebony:#17191c; --key-edge:#9aa1a8; --key-ink:#2b3138;
+  --k-lit:#86d9cf; --k-target:#f3c865; --k-good:#8bdcae; --k-bad:#f29990;
+  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",sans-serif;
+  --body:"Figtree","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#11151a; --panel:#1a2027; --ink:#e8ecef; --muted:#9ba6b1; --line:#2d3640;
+  --brass:#e3ad52; --brass-soft:#3a2d13; --teal:#56c7bb; --teal-soft:#14332f; --on-teal:#06211e;
+  --good:#55c990; --good-soft:#143324; --bad:#f27d73; --bad-soft:#3d1a17;
+  --case:#0a0d10; --case-ink:#e9edf0; --case-line:#2a323a; --felt:#a32a3c;
+  --ivory:#ebe8df; --ebony:#0b0c0e; --key-edge:#6f767d; --key-ink:#2b3138;
+  color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#11151a; --panel:#1a2027; --ink:#e8ecef; --muted:#9ba6b1; --line:#2d3640;
+  --brass:#e3ad52; --brass-soft:#3a2d13; --teal:#56c7bb; --teal-soft:#14332f; --on-teal:#06211e;
+  --good:#55c990; --good-soft:#143324; --bad:#f27d73; --bad-soft:#3d1a17;
+  --case:#0a0d10; --case-ink:#e9edf0; --case-line:#2a323a; --felt:#a32a3c;
+  --ivory:#ebe8df; --ebony:#0b0c0e; --key-edge:#6f767d; --key-ink:#2b3138;
+  color-scheme:dark }
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.gut{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.app{height:100%;display:flex;flex-direction:column}
+
+/* top bar */
+.top{background:var(--panel);border-bottom:1px solid var(--line);padding-block:10px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px}
+.brand{font-family:var(--display);font-weight:700;font-size:1.25rem;letter-spacing:-.01em;margin:0}
+.brand i{font-style:normal;color:var(--brass)}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tabs button{border:0;background:none;padding:7px 14px;border-radius:999px;font-weight:600;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.prog{margin-left:auto;font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* main */
+main{flex:1;min-height:0;overflow-y:auto}
+.wrap{max-width:1000px;margin:0 auto;padding-block:22px 36px}
+.learn,.songs{display:grid;grid-template-columns:230px minmax(0,1fr);gap:28px;align-items:start}
+.ladder,.songlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.ladder button,.songlist button{width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:8px;display:flex;gap:10px;align-items:center;color:var(--muted);font-weight:500}
+.ladder button.cur,.songlist button.cur{background:var(--panel);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.ladder .num{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid currentColor;display:grid;place-items:center;font-size:.78rem;font-weight:700;font-variant-numeric:tabular-nums}
+.ladder button.done .num{background:var(--brass);border-color:var(--brass);color:var(--panel)}
+.songlist .tick{margin-left:auto;font-size:.72rem;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:.06em}
+
+.lesson{min-width:0;display:flex;flex-direction:column;gap:16px}
+.lesson>*{margin:0}
+.eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--brass)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(1.6rem,4vw,2.2rem);line-height:1.1;letter-spacing:-.02em;text-wrap:balance}
+h2{font-family:var(--display);font-weight:700;font-size:1.05rem;margin:0}
+.prose{display:flex;flex-direction:column;gap:10px;max-width:64ch}
+.prose p{margin:0}
+.prose b{font-weight:700}
+.term{font-weight:700;color:var(--teal)}
+.aside{border-left:3px solid var(--brass);padding:2px 0 2px 14px;color:var(--muted);max-width:62ch}
+.aside b{color:var(--ink)}
+
+.demo,.check,.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.check{border-color:var(--brass);background:var(--panel)}
+.check h2{color:var(--brass)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{border:1px solid var(--line);background:var(--panel);padding:8px 14px;border-radius:8px;font-weight:600}
+.btn:hover{border-color:var(--teal)}
+.btn.pri{background:var(--teal);border-color:var(--teal);color:var(--on-teal)}
+.btn.big{padding:12px 22px;font-size:1.05rem}
+.btn.on{background:var(--teal-soft);border-color:var(--teal)}
+.btn.good{background:var(--good-soft);border-color:var(--good)}
+.btn.bad{background:var(--bad-soft);border-color:var(--bad)}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opts .btn{text-align:left;font-weight:500}
+.fb{min-height:1.5em;color:var(--muted);max-width:64ch}
+.fb.good{color:var(--good);font-weight:600}
+.fb.bad{color:var(--bad);font-weight:600}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:none;padding:7px 12px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.small{font-size:.88rem;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--teal)}
+
+/* rung 1: one second of wiggles */
+.second{height:44px;border-radius:6px;border:1px solid var(--line);background-color:var(--bg)}
+/* rung 2: landing chart */
+.ticks{width:100%;height:auto;display:block}
+.ticks .ta{fill:var(--teal)} .ticks .tb{fill:var(--muted)}
+.ticks .hit{fill:var(--brass)}
+.ticks .land{stroke:var(--brass);stroke-width:2;stroke-dasharray:4 4}
+.ticks .rail{stroke:var(--line);stroke-width:2}
+.ticks text{fill:var(--ink);font:700 15px var(--body)}
+.ticks #ph{stroke:var(--ink);stroke-width:2}
+/* rung 6: recipe */
+.recipe{display:flex;flex-wrap:wrap;align-items:center;gap:4px;font-variant-numeric:tabular-nums}
+.recipe .n{width:32px;height:32px;border-radius:50%;background:var(--teal-soft);color:var(--ink);display:grid;place-items:center;font-weight:700}
+.recipe .n.h{background:var(--brass);color:var(--panel)}
+.recipe .s{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:0 2px}
+.recipe .s.half{color:var(--brass)}
+
+/* ear gym */
+.gym{display:flex;flex-direction:column;gap:16px;max-width:680px}
+.gym>*{margin:0}
+.stats{display:flex;gap:22px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.stats div{display:flex;flex-direction:column}
+.stats b{font-family:var(--display);font-size:1.5rem;line-height:1.1}
+.stats span{font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700}
+
+/* note chips */
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.nc{position:relative;min-width:34px;height:40px;padding:0 6px;border-radius:7px;border:1px solid var(--line);background:var(--bg);display:grid;place-items:center;font-weight:700;font-variant-numeric:tabular-nums}
+.nc.long{min-width:56px}
+.nc.hid{color:var(--muted)}
+.nc.cur{border-color:var(--brass);box-shadow:0 0 0 2px var(--brass-soft)}
+.nc.on{background:var(--teal);border-color:var(--teal);color:var(--on-teal)}
+.nc.lo::after,.nc.hi::after{content:"";position:absolute;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:currentColor}
+.nc.lo::after{bottom:3px} .nc.hi::after{top:3px}
+.phrases{display:flex;flex-direction:column;gap:10px}
+.phrase{display:grid;grid-template-columns:96px minmax(0,1fr);gap:6px 12px;align-items:start;padding:10px;border-radius:10px;border:1px solid transparent}
+.phrase.cur{border-color:var(--line);background:var(--panel)}
+.phrase .btn{padding:8px 10px;white-space:nowrap}
+.chordline{grid-column:2;font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.chordline b{color:var(--ink)}
+label.tog{display:inline-flex;gap:8px;align-items:center;font-weight:500}
+label.tog input{accent-color:var(--teal);width:18px;height:18px}
+
+/* dock: the piano */
+.dock{flex:none;background:var(--case);color:var(--case-ink)}
+.dockbar{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding-block:8px;font-size:.88rem}
+.dockbar label{display:inline-flex;gap:8px;align-items:center;font-weight:600}
+.dockbar select{background:var(--case);color:var(--case-ink);border:1px solid var(--case-line);border-radius:6px;padding:4px 8px}
+.dockbar .seg{border-color:var(--case-line)}
+.dockbar .seg button{color:var(--case-ink);opacity:.7;padding:4px 10px}
+.dockbar .seg button[aria-pressed="true"]{background:var(--case-ink);color:var(--case);opacity:1}
+.dockbar .tip{margin-left:auto;opacity:.65}
+.felt{height:5px;background:var(--felt)}
+.kbwrap{overflow-x:auto;padding-bottom:env(safe-area-inset-bottom,0px)}
+.kb{position:relative;display:flex;min-width:660px;height:clamp(92px,19vh,150px);user-select:none;-webkit-user-select:none;touch-action:pan-x}
+.k{border:0;padding:0;margin:0;font-family:var(--body)}
+.k.w{flex:1;background:var(--ivory);border-left:1px solid var(--key-edge);border-radius:0 0 5px 5px;position:relative}
+.k.b{position:absolute;top:0;height:60%;width:2.9%;background:var(--ebony);border-radius:0 0 4px 4px;z-index:2;box-shadow:0 2px 3px #0006}
+.k .lab{position:absolute;left:0;right:0;bottom:6px;text-align:center;font-size:.74rem;font-weight:700;color:var(--key-ink);pointer-events:none;font-variant-numeric:tabular-nums}
+.k.b .lab{color:var(--ivory);font-size:.6rem;bottom:4px}
+.k.home .lab span{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 3px;border-radius:10px;background:var(--felt);color:var(--ivory)}
+.k.b.home .lab span{min-width:16px;height:16px}
+.k.down{filter:brightness(.86)}
+.k.lit{background:var(--k-lit)} .k.target{background:var(--k-target)}
+.k.good{background:var(--k-good)} .k.bad{background:var(--k-bad)}
+.k.b.lit .lab,.k.b.target .lab,.k.b.good .lab,.k.b.bad .lab{color:var(--key-ink)}
+
+@media (max-width:760px){
+  .learn,.songs{grid-template-columns:minmax(0,1fr);gap:14px}
+  .ladder,.songlist{flex-direction:row;overflow-x:auto;padding-bottom:4px}
+  .ladder button,.songlist button{white-space:nowrap;width:auto}
+  .ladder button span:not(.num){display:none}
+  .ladder button.cur span:not(.num){display:inline}
+  .phrase{grid-template-columns:minmax(0,1fr)}
+  .chordline{grid-column:1}
+  .dockbar .tip{display:none}
+  .prog{margin-left:0}
+}
+@media (prefers-reduced-motion:no-preference){ .btn,.tabs button,.k{transition:background-color .12s,border-color .12s,filter .08s} }
+</style>
+
+<div class="app">
+  <header class="top gut">
+    <p class="brand">By <i>Ear</i></p>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button role="tab" data-tab="learn">Learn</button>
+      <button role="tab" data-tab="gym">Ear gym</button>
+      <button role="tab" data-tab="songs">Songs</button>
+    </nav>
+    <span class="prog" id="prog"></span>
+  </header>
+
+  <main><div class="wrap gut" id="view"></div></main>
+
+  <footer class="dock">
+    <div class="dockbar gut">
+      <label for="keysel">Home note <select id="keysel"></select></label>
+      <div class="seg" id="labseg" role="group" aria-label="Key labels">
+        <button data-lab="numbers">Numbers</button><button data-lab="letters">Letters</button><button data-lab="none">Blank</button>
+      </div>
+      <span class="tip">Number keys 1 to 8 play the scale</span>
+    </div>
+    <div class="felt"></div>
+    <div class="kbwrap" id="kbwrap"><div class="kb" id="kb" aria-label="Piano keyboard"></div></div>
+  </footer>
+</div>
+
+<script>
+(()=>{
+const $=(s,el=document)=>el.querySelector(s), $$=(s,el=document)=>[...el.querySelectorAll(s)];
+const NOTE=['C','D♭','D','E♭','E','F','F♯','G','A♭','A','B♭','B'];
+const MAJOR=[0,2,4,5,7,9,11], BLACK=[1,3,6,8,10], LO=48, HI=84;
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1)), pick=a=>a[ri(0,a.length-1)];
+const ord=n=>n===1?'':n===2?'2nd ':n===3?'3rd ':n+'th ';
+
+/* ---------- saved state ---------- */
+let saved={}; try{saved=JSON.parse(localStorage.getItem('byear')||'{}')||{}}catch(e){}
+const S=Object.assign({tab:'learn',key:0,labels:'numbers',rung:0,done:{},gym:{},songs:{}},saved);
+const save=()=>{try{localStorage.setItem('byear',JSON.stringify(S))}catch(e){}};
+
+/* ---------- music math ---------- */
+const tonic=()=>S.key<=5?60+S.key:48+S.key;
+const degToMidi=d=>{const i=d-1,o=Math.floor(i/7);return tonic()+MAJOR[((i%7)+7)%7]+12*o};
+const midiToDeg=m=>{const pc=(((m-tonic())%12)+12)%12,i=MAJOR.indexOf(pc);return i<0?0:i+1};
+const hz=m=>440*2**((m-69)/12);
+const chordDegs=n=>[n,n+2,n+4];
+
+/* ---------- sound ---------- */
+let AC,out;
+function audio(){
+  if(!AC){const C=window.AudioContext||window.webkitAudioContext;AC=new C();
+    const comp=AC.createDynamicsCompressor();out=AC.createGain();out.gain.value=.9;out.connect(comp);comp.connect(AC.destination);}
+  if(AC.state==='suspended')AC.resume();
+  return AC;
+}
+function pluck(freq,dur=1.4,vol=.3){
+  const a=audio(),t=a.currentTime,g=a.createGain(),f=a.createBiquadFilter();
+  f.type='lowpass';f.frequency.setValueAtTime(Math.min(freq*7,9000),t);f.frequency.exponentialRampToValueAtTime(Math.max(freq*2,500),t+dur);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  [[1,'triangle',1],[2,'sine',.35],[3,'sine',.12]].forEach(([m,type,lv])=>{
+    const o=a.createOscillator(),og=a.createGain();o.type=type;o.frequency.value=freq*m;og.gain.value=lv;
+    o.connect(og);og.connect(g);o.start(t);o.stop(t+dur+.05);});
+  g.connect(f);f.connect(out);
+}
+function hold(freq,dur=1.8,vol=.14){
+  const a=audio(),t=a.currentTime,g=a.createGain(),o=a.createOscillator();
+  o.type='triangle';o.frequency.value=freq;
+  g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(vol,t+.05);g.gain.setValueAtTime(vol,t+dur-.15);g.gain.linearRampToValueAtTime(.0001,t+dur);
+  o.connect(g);g.connect(out);o.start(t);o.stop(t+dur+.05);
+}
+function tick(high){
+  const a=audio(),t=a.currentTime,g=a.createGain(),o=a.createOscillator();
+  o.type='square';o.frequency.value=high?1500:700;
+  g.gain.setValueAtTime(.18,t);g.gain.exponentialRampToValueAtTime(.0001,t+.05);
+  o.connect(g);g.connect(out);o.start(t);o.stop(t+.06);
+}
+let wig=null;
+function wigStop(){if(wig){try{wig.stop()}catch(e){}wig=null}}
+
+/* ---------- timers ---------- */
+const timers=[];let raf=0;
+const later=(fn,ms)=>timers.push(setTimeout(fn,ms));
+function stopAll(){timers.forEach(clearTimeout);timers.length=0;cancelAnimationFrame(raf);wigStop();}
+function playSeq(notes,bpm,opt={}){
+  stopAll();const beat=60000/bpm;let t=0;
+  notes.forEach((n,i)=>{
+    later(()=>{
+      if(n.m!=null){const ms=[].concat(n.m);
+        ms.forEach(m=>pluck(hz(m),Math.max(.6,n.b*beat/1000*1.4),n.vol||(ms.length>1?.2:.3)));
+        if(opt.light)ms.forEach(m=>light(m,'lit',n.b*beat*.9));}
+      opt.onNote&&opt.onNote(i);
+    },t);
+    t+=n.b*beat;});
+  later(()=>opt.onEnd&&opt.onEnd(),t);
+  return t;
+}
+
+/* ---------- the piano ---------- */
+const keyEl={};let onKey=null,targets=[],hideLabels=false;
+function buildKb(){
+  const kb=$('#kb');let w=0,html='',blacks='';const nw=[...Array(HI-LO+1)].filter((_,i)=>!BLACK.includes((LO+i)%12)).length;
+  for(let m=LO;m<=HI;m++){
+    if(BLACK.includes(m%12))blacks+=`<button class="k b" data-m="${m}" style="left:calc(${w} * 100% / ${nw} - 1.45%)" aria-label="${NOTE[m%12]}"><span class="lab"></span></button>`;
+    else{html+=`<button class="k w" data-m="${m}" aria-label="${NOTE[m%12]}"><span class="lab"></span></button>`;w++;}
+  }
+  kb.innerHTML=html+blacks;
+  $$('.k',kb).forEach(el=>keyEl[el.dataset.m]=el);
+  kb.addEventListener('pointerdown',e=>{const k=e.target.closest('.k');if(k)press(+k.dataset.m)});
+  kb.addEventListener('contextmenu',e=>e.preventDefault());
+}
+function press(m){pluck(hz(m));light(m,'down',160);onKey&&onKey(m)}
+function light(m,cls,ms){const el=keyEl[m];if(!el)return;el.classList.add(cls);setTimeout(()=>el.classList.remove(cls),ms)}
+function clearMarks(){Object.values(keyEl).forEach(el=>el.classList.remove('lit','good','bad'))}
+function paintKeys(){
+  for(const m in keyEl){const el=keyEl[m],pc=m%12,deg=midiToDeg(+m);let t='';
+    if(!hideLabels){if(S.labels==='numbers')t=deg||'';else if(S.labels==='letters')t=NOTE[pc];}
+    el.classList.toggle('home',!!t&&pc===S.key&&!hideLabels);
+    el.classList.toggle('target',targets.includes(+m));
+    el.firstElementChild.innerHTML=t?`<span>${t}</span>`:'';}
+  $$('#labseg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lab===S.labels));
+}
+function centerKb(){const w=$('#kbwrap'),el=keyEl[tonic()+4];if(el&&w.scrollWidth>w.clientWidth)w.scrollLeft=el.offsetLeft-w.clientWidth/2}
+
+/* ---------- LEARN ---------- */
+const kn=()=>NOTE[S.key];
+const scaleSeq=(degs,b=1)=>degs.map(d=>({m:degToMidi(d),b}));
+const RATIOS=[[2,1],[3,2],[4,3],[5,4],[16,15]];let ratio=1;
+function ratioChart(){
+  const [p,q]=RATIOS[ratio],cyc=q<=4?2:1,X=t=>(44+526*t/cyc).toFixed(1);let s='';
+  s+=`<line class="rail" x1="44" y1="46" x2="570" y2="46"/><line class="rail" x1="44" y1="90" x2="570" y2="90"/>`;
+  for(let c=0;c<=cyc;c++)s+=`<line class="land" x1="${X(c)}" y1="20" x2="${X(c)}" y2="116"/>`;
+  for(let i=0;i<=q*cyc;i++)s+=`<circle class="ta ${i%q===0?'hit':''}" cx="${X(i/q)}" cy="46" r="${i%q===0?8:5.5}"/>`;
+  for(let j=0;j<=p*cyc;j++)s+=`<circle class="tb ${j%p===0?'hit':''}" cx="${X(j/p)}" cy="90" r="${j%p===0?8:5.5}"/>`;
+  s+=`<text x="8" y="51">A</text><text x="8" y="95">B</text><line id="ph" x1="44" y1="14" x2="44" y2="122" visibility="hidden"/>`;
+  return `<svg class="ticks" viewBox="0 0 590 130" role="img" aria-label="Wiggles of note A and note B on a timeline">${s}</svg>`;
+}
+function ratioCaption(){const [p,q]=RATIOS[ratio];
+  return `While A (the slow note) wiggles <b>${q}</b> time${q>1?'s':''}, B (the fast note) wiggles <b>${p}</b>. They land together on every ${ord(q)}wiggle of A, which is every ${ord(p)}wiggle of B. The dashed lines mark each landing.`}
+
+const RUNGS=[
+{id:'wiggle',title:'Sound is a wiggle',
+ body:()=>`<p>Pluck a rubber band and it wiggles back and forth. The wiggle pushes the air, the air pushes your eardrum, and you hear a sound.</p>
+ <p>Count how many times it wiggles in one second. That count is the only number you need for now. A slow wiggle sounds low. A fast wiggle sounds high.</p>`,
+ demo:()=>`<h2>Speed it up and listen</h2>
+ <div class="row"><button class="btn pri" data-act="d" data-v="go" id="wgo">Start the wiggle</button><b id="wout"></b></div>
+ <input type="range" id="wr" min="0" max="100" value="0" aria-label="Wiggles per second">
+ <div class="second" id="wbar" aria-hidden="true"></div>
+ <p class="small" id="wtxt"></p>`,
+ wire(){const r=$('#wr'),f=()=>2*220**(r.value/100);
+   const upd=()=>{const v=f(),n=Math.round(v);$('#wout').textContent=n+' wiggles per second';
+     $('#wbar').style.backgroundImage=`repeating-linear-gradient(90deg,var(--teal) 0 2px,transparent 2px ${100/n}%)`;
+     $('#wtxt').textContent='The bar shows one second. '+(v<20?'Slow enough to hear each wiggle as its own click.':v<70?'The clicks are blurring into a buzz.':'Too fast to count. Your ear now hears one steady note, and faster means higher.');
+     if(wig)wig.frequency.value=v;};
+   r.addEventListener('input',upd);upd();
+   this.acts={go:b=>{if(wig){wigStop();b.textContent='Start the wiggle';return}
+     const a=audio(),o=a.createOscillator(),g=a.createGain(),lp=a.createBiquadFilter();o.type='sawtooth';o.frequency.value=f();
+     lp.type='lowpass';lp.frequency.value=2600;g.gain.value=.11;o.connect(lp);lp.connect(g);g.connect(out);o.start();wig=o;b.textContent='Stop';}};},
+ check:{q:'One string wiggles 100 times a second. Another wiggles 400 times a second. Which sounds higher?',opts:[
+  {t:'The one at 400',ok:1,why:'Yes. Faster wiggle, higher sound. That is the whole rule.'},
+  {t:'The one at 100',why:'It runs the other way: slower wiggles sound lower. Drag the slider right and listen to it climb.'},
+  {t:'They sound the same',why:'They would sound clearly different. Speed is what sets how high a note sounds.'}]}},
+
+{id:'pair',title:'Two notes at once',
+ body:()=>`<p>Play two notes together and their wiggles overlap. Picture two turn signals blinking at different speeds. Every so often they blink at the same instant. Call that a <span class="term">landing</span>.</p>
+ <p>To describe a pair, count how many wiggles each note fits in between one landing and the next. Writing <b>3:2</b> means the fast note fits 3 wiggles in the time the slow note fits 2.</p>
+ <p>Frequent landings sound smooth. Rare landings sound rough. Small numbers mean frequent landings.</p>
+ <p class="aside"><b>Which wiggle do you count?</b> Either one. Both counts describe the same moment. In a 3:2 pair, the landing falls on every 2nd wiggle of the slow note, and that is the same instant as every 3rd wiggle of the fast note.</p>`,
+ demo:()=>`<h2>Watch them land</h2>
+ <div class="row" id="rbtns">${RATIOS.map(([p,q],i)=>`<button class="btn ${i===ratio?'on':''}" data-act="d" data-v="r${i}">${p}:${q}</button>`).join('')}</div>
+ <div id="rchart">${ratioChart()}</div><p class="small" id="rcap">${ratioCaption()}</p>
+ <div class="row"><button class="btn pri" data-act="d" data-v="slow">Play slow, as clicks</button><button class="btn" data-act="d" data-v="fast">Play fast, as notes</button></div>`,
+ wire(){const set=i=>{stopAll();ratio=i;$('#rchart').innerHTML=ratioChart();$('#rcap').innerHTML=ratioCaption();$$('#rbtns .btn').forEach((b,j)=>b.classList.toggle('on',j===i))};
+   this.acts={slow:()=>{stopAll();const [p,q]=RATIOS[ratio],cyc=q<=4?2:1,rate=q>4?3:2,D=cyc*q/rate*1000;
+       for(let i=0;i<=q*cyc;i++)later(()=>tick(false),i/rate*1000);
+       for(let j=0;j<=p*cyc;j++)later(()=>tick(true),j*q/p/rate*1000);
+       const ph=$('#ph'),t0=performance.now();
+       if(ph&&!matchMedia('(prefers-reduced-motion: reduce)').matches){ph.setAttribute('visibility','visible');
+         const step=()=>{const k=Math.min(1,(performance.now()-t0)/D),x=44+526*k;ph.setAttribute('x1',x);ph.setAttribute('x2',x);if(k<1)raf=requestAnimationFrame(step);else ph.setAttribute('visibility','hidden')};step();}},
+     fast:()=>{stopAll();const [p,q]=RATIOS[ratio];hold(220,2);hold(220*p/q,2)}};
+   RATIOS.forEach((_,i)=>this.acts['r'+i]=()=>set(i));},
+ check:{q:'Two strings wiggle 300 and 450 times a second. Divide both by 150 and you get 2 and 3. How often do they land together?',opts:[
+  {t:'Every 2nd wiggle of the slow string, which is every 3rd wiggle of the fast one',ok:1,why:'Exactly. One landing, two ways to count it. And 3:2 is small numbers, so it sounds smooth.'},
+  {t:'Every 3rd wiggle of the slow string',why:'The 3 belongs to the fast string. The slow one only fits 2 wiggles in before they land. Pick 3:2 above and count the dots on row A between dashed lines.'},
+  {t:'Every 150th wiggle',why:'150 was only the number we divided by to shrink the fraction. The answer is in what is left over: 2 and 3.'}]}},
+
+{id:'octave',title:'Double is the same note',
+ body:()=>`<p>The smoothest pair of all is 2:1. One note wiggles exactly twice as fast as the other, so they land together on every single wiggle of the slow note.</p>
+ <p>They blend so well that your ear hears one note in two sizes, low and high. A child and an adult singing Happy Birthday together are doing this without trying.</p>
+ <p>That doubling has a name: an <span class="term">octave</span>.</p>`,
+ demo:()=>`<h2>Hear the doubling</h2><div class="row">
+ <button class="btn" data-act="d" data-v="a">220 alone</button><button class="btn" data-act="d" data-v="b">440 alone</button>
+ <button class="btn pri" data-act="d" data-v="ab">220 and 440 together</button><button class="btn" data-act="d" data-v="x">220 and 415, not quite double</button></div>
+ <p class="small">The 2:1 pair melts into one sound. The near miss does not.</p>`,
+ wire(){this.acts={a:()=>hold(220),b:()=>hold(440),ab:()=>{hold(220,2.2);hold(440,2.2)},x:()=>{hold(220,2.2);hold(415,2.2)}}},
+ check:{q:'A note wiggles 220 times a second. Which two speeds sound like the same note, one lower and one higher?',opts:[
+  {t:'110 and 440',ok:1,why:'Half and double. Halve or double again (55, 880) and it is still the same note.'},
+  {t:'210 and 230',why:'Close in speed is not the same thing. 210 against 220 shrinks to 21:22, big numbers, so it sounds rough.'},
+  {t:'320 and 420',why:'Adding 100 does not do it. The ear cares about multiplying: times 2 or divided by 2.'}]}},
+
+{id:'twelve',title:'Twelve keys, then repeat',
+ body:()=>`<p>A piano needs notes between a note and its double. It fits in 12 equal steps. Each key wiggles about 6% faster than the key on its left, and twelve of those steps multiply out to exactly double. Then the pattern starts over.</p>
+ <p>That is why the piano below repeats. The black keys come in groups of two and three, and that is your map. The white key just left of any group of two black keys is called <span class="term">C</span>. The white keys are named A to G, then the names start again.</p>`,
+ demo:()=>`<h2>Walk it on the piano below</h2><div class="row"><button class="btn pri" data-act="d" data-v="walk">Walk the 12 steps from C to C</button><button class="btn" data-act="d" data-v="cs">Show every C</button></div><p class="small" id="walkout">Each step multiplies the speed by about 1.06.</p>`,
+ wire(){this.acts={walk:()=>{const ns=[...Array(13)].map((_,i)=>({m:60+i,b:1}));
+     playSeq(ns,150,{light:1,onNote:i=>{const o=$('#walkout');if(o)o.textContent=`${NOTE[i%12]}: ${Math.round(hz(60+i))} wiggles per second`+(i===12?', exactly double where we started.':'')}})},
+   cs:()=>{[48,60,72,84].forEach((m,i)=>later(()=>{pluck(hz(m));light(m,'lit',1400)},i*260))}}},
+ check:{type:'key',q:'Tap any C on the piano below. The labels are hidden for this one.',
+  test:m=>m%12===0?{ok:1,why:'That is a C. Every C is a doubling of the C below it.'}:{why:`That one is ${NOTE[m%12]}. Find a group of two black keys and tap the white key just to its left.`}}},
+
+{id:'steps',title:'Half steps and whole steps',
+ body:()=>`<p>The distance from one key to the very next key, black or white, is a <span class="term">half step</span>. Two half steps make a <span class="term">whole step</span>. Always count every key, black ones included.</p>
+ <p>One trap: E to F and B to C have no black key between them. Those neighbours are only a half step apart.</p>`,
+ demo:()=>`<h2>Hear the two sizes</h2><div class="row">
+ <button class="btn" data-act="d" data-v="h1">Half step: C to D♭</button><button class="btn" data-act="d" data-v="w1">Whole step: C to D</button>
+ <button class="btn" data-act="d" data-v="h2">Half step: E to F</button><button class="btn" data-act="d" data-v="w2">Whole step: E to F♯</button></div>`,
+ wire(){const go=(a,b)=>()=>playSeq([{m:a,b:1},{m:b,b:1.5}],90,{light:1});this.acts={h1:go(60,61),w1:go(60,62),h2:go(64,65),w2:go(64,66)}},
+ check:{type:'key',q:'The glowing key is E. Tap the key one whole step above it.',targets:[64],
+  test:m=>m===66?{ok:1,why:'F♯. E to F is the first half step, F to F♯ is the second.'}:m===65?{why:'F is only a half step from E, because no black key sits between them. Go one key further.'}:{why:'Count two keys to the right of the glowing E, and count black keys too.'}}},
+
+{id:'scale',title:'Seven keys make a scale',
+ body:()=>`<p>Most songs you know use only 7 of the 12 keys. To find them, pick any starting key and follow this recipe of steps: whole, whole, half, whole, whole, whole, half.</p>
+ <p>The keys you land on are a <span class="term">major scale</span>. Number them 1 to 7. Note 1 is <span class="term">home</span>.</p>
+ <p>Start on C and the recipe lands on white keys only. Start anywhere else and the recipe tells you which black keys you need.</p>`,
+ demo:()=>`<h2>The recipe, starting on ${kn()}</h2>
+ <div class="recipe">${[1,2,3,4,5,6,7,8].map((n,i)=>`<span class="n ${n===1||n===8?'h':''}">${n===8?1:n}</span>${i<7?`<span class="s ${[2,6].includes(i)?'half':''}">${[2,6].includes(i)?'half':'whole'}</span>`:''}`).join('')}</div>
+ <p class="small">In letters: ${[1,2,3,4,5,6,7,8].map(d=>NOTE[degToMidi(d)%12]).join(' · ')}</p>
+ <div class="row"><button class="btn pri" data-act="d" data-v="sc">Play the scale</button></div>
+ <p class="small">Change <b>Home note</b> in the bar above the piano and play it again. Same recipe, different keys, same sound.</p>`,
+ wire(){this.acts={sc:()=>playSeq(scaleSeq([1,2,3,4,5,6,7,8]),130,{light:1})}},
+ check:{q:'Home is D, so D is note 1. A whole step up is E, note 2. Another whole step up is note 3. Which key is it?',opts:[
+  {t:'F♯',ok:1,why:'Right. E to F is only a half step, so a whole step from E lands on the black key F♯.'},
+  {t:'F',why:'F is the next white key, but E to F is only a half step. The recipe asks for a whole step here.'},
+  {t:'G',why:'G is three keys above E. A whole step is two keys.'}]}},
+
+{id:'numbers',title:'Songs are numbers',
+ body:()=>`<p>A melody is a list of scale numbers. Twinkle Twinkle starts 1 1 5 5 6 6 5. Those numbers work from any home note, which is why you can sing a song higher or lower and it is still the same song.</p>
+ <p>Playing by ear comes down to two skills. First, hearing where home is. Second, hearing how far each note sits from home.</p>
+ <p>Each number has a feel. Note 1 sounds finished. Note 7 sounds like it is leaning into 1 and has not arrived yet.</p>`,
+ demo:()=>`<h2>Feel the pull toward home</h2><div class="row">
+ <button class="btn" data-act="d" data-v="up">Climb 1 to 7 and stop</button><button class="btn pri" data-act="d" data-v="home">Now land on 1</button>
+ <button class="btn" data-act="d" data-v="tw">1 1 5 5 6 6 5 with ${kn()} as home</button></div>
+ <p class="small">Change <b>Home note</b> and press the last button again. Different keys, same tune.</p>`,
+ wire(){this.acts={up:()=>playSeq(scaleSeq([1,2,3,4,5,6,7]),140,{light:1}),home:()=>playSeq([{m:degToMidi(8),b:2}],100,{light:1}),
+   tw:()=>playSeq([1,1,5,5,6,6].map(d=>({m:degToMidi(d),b:1})).concat({m:degToMidi(5),b:2}),120,{light:1})}},
+ check:{q:'You worked out a tune as 3 2 1 2 3 3 3 with C as home. A friend wants to sing it with G as home. What do you play?',opts:[
+  {t:'The same numbers, counted on G\'s scale',ok:1,why:'Yes. Learn a song as numbers once and you own it in every key.'},
+  {t:'The same letter names as before',why:'Then nothing has moved and it is still in C. The numbers stay the same; the letters change.'},
+  {t:'Every note moved up by the same count of white keys',why:'Close, but it breaks when the recipe needs a black key. G\'s scale uses F♯. Numbers handle that for you.'}]}},
+
+{id:'chords',title:'Three chords carry most songs',
+ body:()=>`<p>A <span class="term">chord</span> is several notes played together. The basic recipe: pick a scale note, skip one, play the next, skip one, play the next.</p>
+ <p>From note 1 that gives 1, 3, 5. That is the home chord. Do the same from 4 and from 5 and you have the three chords that accompany a huge share of simple songs.</p>
+ <p>The chord built on 6 uses the same recipe but sounds darker. Its bottom gap is 3 keys wide where the others are 4. That darker kind is called a <span class="term">minor</span> chord.</p>`,
+ demo:()=>`<h2>Chords with ${kn()} as home</h2><div class="row">
+ ${[1,4,5,6].map(n=>`<button class="btn" data-act="d" data-v="c${n}">${n} chord${n===6?' (minor)':''}</button>`).join('')}
+ <button class="btn pri" data-act="d" data-v="prog">Play 1, 4, 5, 1</button></div>
+ <p class="small">The 5 chord wants to go home. The 4 chord feels like a step away from home.</p>`,
+ wire(){const ch=n=>chordDegs(n).map(degToMidi);this.acts={prog:()=>playSeq([1,4,5,1].map(n=>({m:ch(n),b:2})),100,{light:1})};
+   [1,4,5,6].forEach(n=>this.acts['c'+n]=()=>playSeq([{m:ch(n),b:2}],80,{light:1}))},
+ check:{q:'Use the skip-one recipe starting on note 4. Which scale notes do you get?',opts:[
+  {t:'4, 6, 1',ok:1,why:'Right. After 7 the numbers wrap around to 1 again.'},
+  {t:'4, 5, 6',why:'Those are neighbours. Skip one note each time.'},
+  {t:'1, 3, 5',why:'That is the recipe started from note 1, the home chord.'}]}}
+];
+const ACT={};
+function paintLearn(){
+  const i=S.rung,r=RUNGS[i];
+  view.innerHTML=`<div class="learn"><ol class="ladder">${RUNGS.map((x,j)=>`<li><button data-act="rung" data-v="${j}" class="${j===i?'cur':''} ${S.done[x.id]?'done':''}"><span class="num">${j+1}</span><span>${x.title}</span></button></li>`).join('')}</ol>
+  <article class="lesson"><p class="eyebrow">Rung ${i+1} of ${RUNGS.length}</p><h1>${r.title}</h1><div class="prose">${r.body()}</div>
+  <section class="demo">${r.demo()}</section><section class="check" id="check"></section></article></div>`;
+  r.wire();paintCheck();
+}
+function paintCheck(){
+  const r=RUNGS[S.rung],c=r.check,done=S.done[r.id],last=S.rung===RUNGS.length-1;
+  const next=`<div class="row"><button class="btn pri" data-act="next">${last?'Go to the ear gym':'Climb to rung '+(S.rung+2)}</button></div>`;
+  $('#check').innerHTML=`<h2>Check yourself</h2><p>${c.q}</p>`+
+    (c.type==='key'?'':`<div class="opts">${c.opts.map((o,j)=>`<button class="btn" data-act="opt" data-v="${j}">${o.t}</button>`).join('')}</div>`)+
+    `<p class="fb" id="fb">${done?'You have passed this one. Try it again any time.':''}</p><div id="nx">${done?next:''}</div>`;
+  if(c.type==='key'){hideLabels=true;targets=c.targets||[];paintKeys();
+    onKey=m=>{const res=c.test(m);light(m,res.ok?'good':'bad',700);finish(res,next)};}
+}
+function finish(res,next){
+  const fb=$('#fb');fb.textContent=res.why;fb.className='fb '+(res.ok?'good':'bad');
+  if(res.ok){S.done[RUNGS[S.rung].id]=true;save();$('#nx').innerHTML=next;paintProg();$('.ladder .cur').classList.add('done');}
+}
+ACT.rung=v=>{S.rung=+v;save();render()};
+ACT.d=(v,el)=>{const a=RUNGS[S.rung].acts;a&&a[v]&&a[v](el)};
+ACT.opt=(v,el)=>{const o=RUNGS[S.rung].check.opts[v];el.classList.remove('good','bad');el.classList.add(o.ok?'good':'bad');
+  finish(o,`<div class="row"><button class="btn pri" data-act="next">${S.rung===RUNGS.length-1?'Go to the ear gym':'Climb to rung '+(S.rung+2)}</button></div>`)};
+ACT.next=()=>{if(S.rung<RUNGS.length-1)S.rung++;else S.tab='gym';save();render();$('main').scrollTop=0};
+
+/* ---------- EAR GYM ---------- */
+const DRILLS={
+  hilo:{name:'Higher or lower',blurb:'You hear two notes. Is the second one higher or lower than the first? This is rung 1 turned into a reflex.',levels:['Wide gap','Medium gap','Tiny gap']},
+  number:{name:'Name the number',blurb:'You hear home first (1, 3, 5, then the chord), then one mystery note. Which scale number is it? Answer with the buttons or on the piano.',levels:['1, 3, 5','1 to 5','All seven']},
+  echo:{name:'Echo',blurb:'You hear a short tune. Play it back on the piano. This is playing by ear in miniature.',levels:['3 notes','4 notes','5 notes']},
+  chord:{name:'Which chord',blurb:'You hear the home chord, then a mystery chord. Which one is it?',levels:['1, 4, 5','Add the 6 chord']}
+};
+const G={drill:'hilo',q:null,missed:false};
+const gs=()=>S.gym[G.drill]||(S.gym[G.drill]={level:0,right:0,streak:0,best:0});
+function paintGym(){
+  const d=DRILLS[G.drill],st=gs();if(st.level>=d.levels.length)st.level=0;
+  view.innerHTML=`<div class="gym"><p class="eyebrow">Ear gym · home is ${kn()}</p><h1>${d.name}</h1>
+  <div class="seg" role="group" aria-label="Drill">${Object.entries(DRILLS).map(([k,x])=>`<button data-act="drill" data-v="${k}" aria-pressed="${k===G.drill}">${x.name}</button>`).join('')}</div>
+  <p class="prose">${d.blurb}</p>
+  <div class="card"><div class="row"><span class="small">Level</span><div class="seg" role="group" aria-label="Level">${d.levels.map((l,j)=>`<button data-act="level" data-v="${j}" aria-pressed="${j===st.level}">${l}</button>`).join('')}</div></div>
+  <div class="row"><button class="btn pri big" data-act="gplay" id="gplay">${G.q?'Hear it again':'Start'}</button></div>
+  <div id="gans"></div><p class="fb" id="gfb"></p></div>
+  <div class="stats" id="gstats"></div></div>`;
+  paintAns();paintStats();
+  onKey=m=>{if(!G.q||G.q.over)return;
+    if(G.drill==='number'){const d=midiToDeg(m);if(G.q.pool.includes(d))answer(d,m)}
+    if(G.drill==='echo'){const exp=G.q.seq[G.q.i];
+      if(m%12===degToMidi(exp)%12){light(m,'good',500);G.q.i++;paintAns();if(G.q.i>=G.q.seq.length)right('You played it back.')}
+      else{light(m,'bad',500);miss('Not that key. Hear it again and try the next note.')}}};
+}
+function paintStats(){const st=gs();$('#gstats').innerHTML=`<div><b>${st.right}</b><span>Solved</span></div><div><b>${st.streak}</b><span>First-try streak</span></div><div><b>${st.best}</b><span>Best streak</span></div>`}
+function paintAns(){
+  const el=$('#gans');if(!el)return;const q=G.q;if(!q){el.innerHTML='';return}
+  if(G.drill==='hilo')el.innerHTML=`<div class="row"><button class="btn" data-act="ans" data-v="hi">Higher</button><button class="btn" data-act="ans" data-v="lo">Lower</button></div>`;
+  if(G.drill==='number')el.innerHTML=`<div class="row">${q.pool.map(n=>`<button class="btn" data-act="ans" data-v="${n}">${n}</button>`).join('')}</div>`;
+  if(G.drill==='chord')el.innerHTML=`<div class="row">${q.pool.map(n=>`<button class="btn" data-act="ans" data-v="${n}">${n} chord</button>`).join('')}</div>`;
+  if(G.drill==='echo')el.innerHTML=`<div class="chips">${q.seq.map((d,j)=>`<span class="nc ${j<q.i?'':'hid'} ${j===q.i?'cur':''} ${d>7?'hi':''}">${j<q.i?(d>7?d-7:d):'?'}</span>`).join('')}</div><p class="small">${q.seq[0]===1?'It starts on 1, home. ':''}Play it on the piano or with number keys 1 to 8.</p>`;
+}
+function newQ(){
+  const L=gs().level,T=tonic(),prev=G.q;G.missed=false;clearMarks();
+  if(G.drill==='hilo'){const [a0,b0]=[[5,9],[2,4],[1,2]][L],gap=ri(a0,b0),a=T+ri(0,7),up=Math.random()<.5;G.q={a,b:a+(up?gap:-gap),ans:up?'hi':'lo'};}
+  if(G.drill==='number'){const pool=[[1,3,5],[1,2,3,4,5],[1,2,3,4,5,6,7]][L];let x;do{x=pick(pool)}while(prev&&prev.ans===x);G.q={pool,ans:x};}
+  if(G.drill==='chord'){const pool=[[1,4,5],[1,4,5,6]][L];let x;do{x=pick(pool)}while(prev&&prev.ans===x&&Math.random()<.7);G.q={pool,ans:x};}
+  if(G.drill==='echo'){const len=3+L,max=[5,6,8][L];let d=L<2?1:pick([1,3,5]);const seq=[d];
+    while(seq.length<len){let n=d+pick([-1,1,1,-1,2,-2]);if(n<1||n>max||n===d)continue;seq.push(d=n);}G.q={seq,i:0};}
+  const fb=$('#gfb');fb.textContent='';fb.className='fb';$('#gplay').textContent='Hear it again';paintAns();playQ();
+}
+function playQ(){
+  const q=G.q,c=n=>chordDegs(n).map(degToMidi);
+  if(G.drill==='hilo')playSeq([{m:q.a,b:1.2},{m:q.b,b:1.5}],100);
+  if(G.drill==='number')playSeq([{m:degToMidi(1),b:1},{m:degToMidi(3),b:1},{m:degToMidi(5),b:1},{m:c(1),b:2},{m:null,b:1},{m:degToMidi(q.ans),b:2}],140);
+  if(G.drill==='chord')playSeq([{m:c(1),b:2},{m:null,b:.6},{m:c(q.ans),b:2}],84);
+  if(G.drill==='echo')playSeq(q.seq.map(d=>({m:degToMidi(d),b:1})),96);
+}
+function right(msg){const st=gs();G.q.over=true;st.right++;if(!G.missed){st.streak++;st.best=Math.max(st.best,st.streak)}save();paintStats();
+  const fb=$('#gfb');fb.textContent=msg+' Next one coming.';fb.className='fb good';later(newQ,1500)}
+function miss(msg){G.missed=true;gs().streak=0;save();paintStats();const fb=$('#gfb');fb.textContent=msg;fb.className='fb bad'}
+function answer(a,m){
+  const q=G.q,btn=$(`#gans [data-v="${a}"]`);
+  if(String(a)===String(q.ans)){btn&&btn.classList.add('good');
+    if(G.drill==='hilo'){light(q.a,'lit',1300);light(q.b,'good',1300);right(q.ans==='hi'?'Higher. Watch the two keys light up.':'Lower. Watch the two keys light up.')}
+    else if(G.drill==='number'){light(degToMidi(q.ans),'good',1300);right(`It was ${q.ans}.`)}
+    else{chordDegs(q.ans).forEach(d=>light(degToMidi(d),'good',1300));right(`The ${q.ans} chord: notes ${chordDegs(q.ans).map(d=>(d-1)%7+1).join(', ')}.`)}
+  }else{btn&&btn.classList.add('bad');if(m)light(m,'bad',500);
+    miss(G.drill==='hilo'?'Not this time. Hear it again and hum both notes.':G.drill==='number'?'Not that one. Hear it again and compare the note to home.':'Not that one. Does it feel like leaving home, or wanting to return?')}
+}
+ACT.drill=v=>{G.drill=v;G.q=null;render()};
+ACT.level=v=>{gs().level=+v;G.q=null;save();render()};
+ACT.gplay=()=>{if(!G.q||G.q.over)newQ();else playQ()};
+ACT.ans=v=>{if(G.q&&!G.q.over)answer(v)};
+
+/* ---------- SONGS ---------- */
+const parse=s=>s.trim().split(/\s+/).map(tok=>{const [n,b]=tok.split(':'),k=n.match(/^(\d)([,']?)$/);let d=+k[1];
+  if(d===0)d=null;else if(k[2]===',')d-=7;else if(k[2]==="'")d+=7;return{d,b:b?+b:1}});
+const SONGS=[
+ {id:'mary',title:'Mary Had a Little Lamb',bpm:116,meter:'4 beats to a bar',note:'A good first song. It uses only notes 1, 2, 3 and 5, and it starts on 3.',
+  ph:['3 2 1 2 3 3 3:2','2 2 2:2 3 5 5:2','3 2 1 2 3 3 3 3','2 2 3 2 1:4'],ch:['1:4 1:4','5:4 1:4','1:4 1:4','5:4 1:4']},
+ {id:'twinkle',title:'Twinkle Twinkle Little Star',bpm:112,meter:'4 beats to a bar',note:'Starts at home, jumps to 5, then walks back down to home one step at a time.',
+  ph:['1 1 5 5 6 6 5:2','4 4 3 3 2 2 1:2','5 5 4 4 3 3 2:2','5 5 4 4 3 3 2:2','1 1 5 5 6 6 5:2','4 4 3 3 2 2 1:2'],
+  ch:['1:4 4:2 1:2','4:2 1:2 5:2 1:2','1:2 4:2 1:2 5:2','1:2 4:2 1:2 5:2','1:4 4:2 1:2','4:2 1:2 5:2 1:2']},
+ {id:'ode',title:'Ode to Joy',bpm:120,meter:'4 beats to a bar',note:'Almost every move is to a neighbour note. Starts on 3.',
+  ph:['3 3 4 5 5 4 3 2 1 1 2 3 3:1.5 2:.5 2:2','3 3 4 5 5 4 3 2 1 1 2 3 2:1.5 1:.5 1:2','2 2 3 1 2 3:.5 4:.5 3 1 2 3:.5 4:.5 3 2 1 2 5,:2','3 3 4 5 5 4 3 2 1 1 2 3 2:1.5 1:.5 1:2'],
+  ch:['1:4 5:4 1:4 1:2 5:2','1:4 5:4 1:4 5:2 1:2','5:2 1:2 5:2 1:2 5:2 1:2 5:4','1:4 5:4 1:4 5:2 1:2']},
+ {id:'jingle',title:'Jingle Bells (chorus)',bpm:132,meter:'4 beats to a bar',note:'Lots of repeated 3s. Listen for the one jump up to 5.',
+  ph:['3 3 3:2 3 3 3:2 3 5 1:1.5 2:.5 3:4','4 4 4:1.5 4:.5 4 3 3 3:.5 3:.5 3 2 2 3 2:2 5:2','3 3 3:2 3 3 3:2 3 5 1:1.5 2:.5 3:4','4 4 4:1.5 4:.5 4 3 3 3:.5 3:.5 5 5 4 2 1:4'],
+  ch:['1:4 1:4 1:4 1:4','4:4 1:4 5:4 5:4','1:4 1:4 1:4 1:4','4:4 1:4 5:4 1:4']},
+ {id:'birthday',title:'Happy Birthday',bpm:104,meter:'3 beats to a bar',note:'Starts below home, on the low 5. Each line jumps a little higher than the last.',
+  ph:['5,:.75 5,:.25 6, 5, 1 7,:2','5,:.75 5,:.25 6, 5, 2 1:2','5,:.75 5,:.25 5 3 1 7, 6,','4:.75 4:.25 3 1 2 1:3'],
+  ch:['0:1 1:3 5:2','5:1 5:3 1:2','1:1 1:3 4:2','4:1 1:2 5:1 1:3']},
+ {id:'grace',title:'Amazing Grace',bpm:92,meter:'3 beats to a bar',note:'Uses only five different notes: 1, 2, 3, 5, 6. Starts on the low 5.',
+  ph:['5, 1:2 3:.5 1:.5 3:2 2 1:2 6, 5,:2','5, 1:2 3:.5 1:.5 3:2 2 5:2','3:.5 5:.5 5:1.5 3:.5 5:.5 3:.5 1:2 5, 6,:1.5 1:.5 1:.5 6,:.5 5,:2','5, 1:2 3:.5 1:.5 3:2 2 1:3'],
+  ch:['0:1 1:3 1:3 4:3 1:2','1:1 1:3 1:3 5:2','5:1 1:3 1:3 4:3 1:2','1:1 1:3 5:3 1:3']}
+];
+SONGS.forEach(s=>{s.P=s.ph.map(parse);s.C=s.ch.map(parse)});
+const SG={id:'mary',mode:'ear',p:0,i:0,chords:false,msg:''};
+const song=()=>SONGS.find(s=>s.id===SG.id);
+function paintSongs(){
+  const s=song(),ear=SG.mode==='ear',done=SG.p>=s.P.length,open=!ear||done;
+  const msg=SG.msg||(ear?(done?'You found the whole song. Change Home note above the piano and play it again from the same numbers.':`Press Line ${SG.p+1} to hear it, then find its notes on the piano. Wrong keys cost nothing.`):'Read the numbers and play along. Home is the key marked 1.');
+  view.innerHTML=`<div class="songs"><nav class="songlist" aria-label="Songs">${SONGS.map(x=>`<button data-act="song" data-v="${x.id}" class="${x.id===SG.id?'cur':''}">${x.title}${S.songs[x.id]?'<span class="tick">found</span>':''}</button>`).join('')}</nav>
+  <article class="lesson"><p class="eyebrow">Home is ${kn()} · ${s.meter}</p><h1>${s.title}</h1><p class="prose">${s.note}</p>
+  <div class="row"><div class="seg" role="group" aria-label="Mode"><button data-act="mode" data-v="ear" aria-pressed="${ear}">Find it by ear</button><button data-act="mode" data-v="show" aria-pressed="${!ear}">Show the numbers</button></div>
+  <button class="btn" data-act="sall">Hear the whole song</button><button class="btn" data-act="sstop">Stop</button>
+  <label class="tog" for="chk-chords"><input type="checkbox" id="chk-chords" ${SG.chords?'checked':''}> Add chords underneath</label></div>
+  <p class="fb ${done&&ear?'good':''}" id="smsg">${msg}</p>
+  <div class="phrases">${s.P.map((ph,pi)=>`<div class="phrase ${ear&&pi===SG.p?'cur':''}"><button class="btn ${ear&&pi===SG.p?'pri':''}" data-act="sph" data-v="${pi}">▶ Line ${pi+1}</button>
+   <div class="chips">${ph.map((n,ni)=>{const vis=open||pi<SG.p||(pi===SG.p&&ni<SG.i),cur=ear&&pi===SG.p&&ni===SG.i;
+     return `<span id="c-${pi}-${ni}" class="nc ${n.b>=2?'long':''} ${vis?(n.d<1?'lo':n.d>7?'hi':''):'hid'} ${cur?'cur':''}">${vis?((n.d-1)%7+7)%7+1:'·'}</span>`}).join('')}</div>
+   ${open?`<div class="chordline">Chords: ${s.C[pi].filter(c=>c.d).map(c=>`<b>${c.d}</b>`).join(' → ')}</div>`:''}</div>`).join('')}</div>
+  ${ear&&!done?`<div class="row"><button class="btn" data-act="hint">Show me the next note</button><button class="btn" data-act="sreset">Start this song over</button></div>`:ear?`<div class="row"><button class="btn" data-act="sreset">Find it again</button></div>`:''}
+  <p class="small">A dot under a number means the lower one, below home. Wide boxes are held longer.</p></article></div>`;
+  $('#chk-chords').addEventListener('change',e=>SG.chords=e.target.checked);
+  onKey=ear&&!done?songKey:null;
+}
+function advance(){const s=song();SG.i++;SG.msg='';
+  if(SG.i>=s.P[SG.p].length){SG.p++;SG.i=0;
+    if(SG.p>=s.P.length){S.songs[s.id]=true;save()}else SG.msg=`Line ${SG.p} found. Now press Line ${SG.p+1} and find that one.`;}
+  paintSongs();}
+function songKey(m){const s=song(),n=s.P[SG.p][SG.i];
+  if(m%12===((degToMidi(n.d)%12)+12)%12){light(m,'good',450);advance()}
+  else{light(m,'bad',450);const up=((degToMidi(n.d)-m)%12+12)%12;const el=$('#smsg');el.textContent=up<=6?'Not that one. Try a little higher.':'Not that one. Try a little lower.';el.className='fb bad'}}
+function playSong(idx){
+  const s=song(),beat=60000/s.bpm,open=SG.mode==='show'||SG.p>=s.P.length,map=[],notes=[];
+  idx.forEach(pi=>s.P[pi].forEach((n,ni)=>{notes.push({m:degToMidi(n.d),b:n.b});map.push([pi,ni])}));
+  playSeq(notes,s.bpm,{light:open,onNote:i=>{const [pi,ni]=map[i],el=$(`#c-${pi}-${ni}`);
+    if(el&&(open||!el.classList.contains('hid'))){el.classList.add('on');setTimeout(()=>el.classList.remove('on'),notes[i].b*beat*.9)}}});
+  if(SG.chords){let t=0;idx.forEach(pi=>s.C[pi].forEach(c=>{if(c.d)later(()=>chordDegs(c.d).forEach(d=>pluck(hz(degToMidi(d-7)),Math.max(1,c.b*beat/1000*1.2),.13)),t);t+=c.b*beat}))}
+}
+ACT.song=v=>{SG.id=v;SG.p=0;SG.i=0;SG.msg='';render();$('main').scrollTop=0};
+ACT.mode=v=>{SG.mode=v;SG.msg='';render()};
+ACT.sall=()=>playSong(song().P.map((_,i)=>i));
+ACT.sph=v=>playSong([+v]);
+ACT.sstop=()=>stopAll();
+ACT.sreset=()=>{SG.p=0;SG.i=0;SG.msg='';render()};
+ACT.hint=()=>{const n=song().P[SG.p][SG.i],m=degToMidi(n.d);pluck(hz(m));light(m,'target',900);advance()};
+
+/* ---------- shell ---------- */
+const view=$('#view');
+function paintProg(){const n=RUNGS.filter(r=>S.done[r.id]).length,f=SONGS.filter(s=>S.songs[s.id]).length;$('#prog').textContent=`${n} of ${RUNGS.length} rungs · ${f} of ${SONGS.length} songs found`}
+function render(){
+  stopAll();onKey=null;targets=[];hideLabels=false;clearMarks();
+  $$('.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===S.tab));
+  ({learn:paintLearn,gym:paintGym,songs:paintSongs})[S.tab]();
+  paintKeys();paintProg();
+}
+view.addEventListener('click',e=>{const a=e.target.closest('[data-act]');if(a&&ACT[a.dataset.act])ACT[a.dataset.act](a.dataset.v,a)});
+$('.tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b){S.tab=b.dataset.tab;G.q=null;save();render();$('main').scrollTop=0}});
+$('#labseg').addEventListener('click',e=>{const b=e.target.closest('[data-lab]');if(b){S.labels=b.dataset.lab;save();paintKeys()}});
+const ks=$('#keysel');ks.innerHTML=NOTE.map((n,i)=>`<option value="${i}">${n}</option>`).join('');ks.value=S.key;
+ks.addEventListener('change',()=>{S.key=+ks.value;G.q=null;if(S.tab==='songs'){SG.msg=''}save();render();centerKb()});
+document.addEventListener('keydown',e=>{if(e.repeat||e.metaKey||e.ctrlKey||e.altKey)return;if(/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName))return;
+  if(e.key>='1'&&e.key<='8')press(degToMidi(+e.key))});
+if(!RUNGS[S.rung])S.rung=0;if(!['learn','gym','songs'].includes(S.tab))S.tab='learn';
+buildKb();render();centerKb();
+})();
+</script>
+
+</body></html>

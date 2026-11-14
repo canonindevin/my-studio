@@ -1,0 +1,828 @@
+<!doctype html><html lang="en"><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>Crazy Forts Build Book</title></head><body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Baloo+2:wght@600;800&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: graph-paper sheet. Header + supply chips, ball-trick card, house rules, then fort tabs -> 3D viewer + step card | full step list */
+:root{
+  --paper:#f5f4fa; --grid:#e6e2f1; --card:#ffffff; --line:#dcd6ec;
+  --ink:#221935; --muted:#5f5674;
+  --ball:#6b3fb2; --stick:#4f9e24; --new:#ee8312; --sheet:#4a86cf; --curtain:#c22f4a;
+  --rug:#ece7f6; --edge:rgba(34,25,53,.30); --hole:#2a1748;
+  --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#14111c; --grid:#1e1929; --card:#1c1827; --line:#30293f;
+    --ink:#eee9f7; --muted:#a79ebb;
+    --ball:#a47be8; --stick:#7fcb4c; --new:#ffa23a; --sheet:#6aa3e6; --curtain:#e2566f;
+    --rug:#231e30; --edge:rgba(0,0,0,.55); --hole:#1a0f2e;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#14111c; --grid:#1e1929; --card:#1c1827; --line:#30293f;
+  --ink:#eee9f7; --muted:#a79ebb;
+  --ball:#a47be8; --stick:#7fcb4c; --new:#ffa23a; --sheet:#6aa3e6; --curtain:#e2566f;
+  --rug:#231e30; --edge:rgba(0,0,0,.55); --hole:#1a0f2e;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:22px 22px;
+  color:var(--ink); font:16px/1.55 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0 56px;
+}
+:focus-visible{outline:2.5px solid var(--sheet);outline-offset:2px}
+.wrap{max-width:1120px;margin:0 auto;display:grid;gap:30px}
+p{margin:0}
+
+/* header */
+.top{padding-block:40px 0;display:grid;gap:14px;max-width:780px}
+.eyebrow{font:600 12px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h1{font:800 clamp(2.5rem,8vw,4.2rem)/.92 var(--display);margin:0;letter-spacing:-.01em;text-wrap:balance}
+h1 em{font-style:normal;color:var(--ball)}
+.lede{font-size:1.1rem;color:var(--muted);max-width:62ch}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:2px 0 0;padding:0;list-style:none}
+.chip{display:inline-flex;align-items:center;gap:9px;padding:7px 13px;border:1px solid var(--line);border-radius:999px;background:var(--card);font:600 13px/1 var(--mono);font-variant-numeric:tabular-nums}
+.i-ball{width:13px;height:13px;border-radius:50%;background:var(--ball)}
+.i-stick{width:24px;height:5px;border-radius:3px;background:var(--stick)}
+.i-rule{width:22px;height:8px;border:2px solid var(--muted);border-top:0}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px}
+.sec{font:800 1.75rem/1.05 var(--display);margin:0;text-wrap:balance}
+.sec-sub{color:var(--muted);margin-top:4px;max-width:62ch}
+.label{font:600 11px/1.3 var(--mono);letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
+
+/* ball trick */
+.trick{padding:24px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:center}
+.figs{display:flex;flex-wrap:wrap;gap:10px}
+.figs figure{margin:0;flex:1 1 210px;min-width:0;display:grid;gap:4px}
+.figs svg{width:100%;height:auto;display:block}
+.figs figcaption{text-align:center}
+.rules{margin:16px 0 0;padding:0;list-style:none;display:grid;gap:14px;counter-reset:r}
+.rules li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;align-items:start}
+.rules li::before{counter-increment:r;content:counter(r);width:30px;height:30px;border-radius:50%;background:var(--ball);color:var(--card);display:grid;place-items:center;font:600 14px var(--mono)}
+.rules b{display:block}
+.rules span{color:var(--muted)}
+
+/* house rules */
+.house{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:14px 0 0;padding:0;list-style:none}
+.house li{padding:14px 16px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.house b{display:block;margin-bottom:2px}
+.house span{color:var(--muted)}
+
+/* tabs */
+.tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
+.tab{appearance:none;text-align:left;cursor:pointer;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;color:var(--ink);font:inherit;display:grid;gap:3px}
+.tab:hover{border-color:var(--muted)}
+.tab[aria-selected="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.tab .nm{font:800 1.3rem/1.1 var(--display)}
+.tab .mt{font:500 12px/1.3 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* fort panel */
+.panel{padding:24px;display:grid;gap:24px;margin-top:12px}
+.fort-head{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:28px;align-items:start}
+.fort-head h3{font:800 clamp(2rem,5vw,2.6rem)/1 var(--display);margin:4px 0 10px;text-wrap:balance}
+.fort-head .blurb{max-width:58ch}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 20px;margin:0}
+.stats div{min-width:0}
+.stats dd{margin:3px 0 0;font-variant-numeric:tabular-nums}
+.bar{height:8px;border-radius:4px;background:var(--rug);overflow:hidden;margin-top:6px}
+.bar span{display:block;height:100%;border-radius:4px}
+.fort-body{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:28px;align-items:start}
+
+.view{border-radius:14px;background:var(--paper);border:1px solid var(--line);overflow:hidden;position:relative}
+canvas{display:block;width:100%;touch-action:pan-y;cursor:grab}
+canvas:active{cursor:grabbing}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font:500 12px var(--mono);color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;border-radius:50%}
+.sw.new{background:var(--new)}
+.sw.old{background:var(--ball)}
+.sw.ghost{border:1.5px dashed var(--muted)}
+.controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btn{appearance:none;border:1.5px solid var(--ink);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 16px;font:700 14px/1 var(--body);cursor:pointer;min-height:42px}
+.btn.primary{background:var(--ink);color:var(--card)}
+.btn:disabled{opacity:.35;cursor:default}
+.btn.quiet{border-color:var(--line);font-weight:600}
+.counter{font:600 13px var(--mono);color:var(--muted);margin-right:auto;padding-left:4px;font-variant-numeric:tabular-nums}
+
+.stepcard{margin-top:16px;padding:18px 20px;border:1.5px solid var(--line);border-radius:14px;background:var(--card);display:grid;gap:12px}
+.stepcard h4{font:800 1.5rem/1.1 var(--display);margin:0;text-wrap:balance}
+.adds{display:flex;flex-wrap:wrap;gap:6px 14px;font:600 13px var(--mono);font-variant-numeric:tabular-nums}
+.adds .so{color:var(--muted);font-weight:500}
+.jobs{display:grid;gap:8px;padding-top:12px;border-top:1px dashed var(--line)}
+.job{display:grid;grid-template-columns:76px minmax(0,1fr);gap:10px;align-items:baseline}
+.who{font:700 12px/1 var(--mono);padding:5px 0;border-radius:999px;border:1.5px solid;text-align:center}
+.who.h{border-color:var(--curtain)}
+.who.d{border-color:var(--sheet)}
+
+.steplist ol{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:4px}
+.steplist button{appearance:none;background:none;border:0;color:inherit;font:inherit;text-align:left;display:grid;grid-template-columns:32px minmax(0,1fr);gap:12px;align-items:start;width:100%;padding:10px 12px;border-radius:12px;cursor:pointer}
+.steplist button:hover{background:var(--paper)}
+.steplist button[aria-current="step"]{background:var(--paper);box-shadow:inset 0 0 0 1px var(--line)}
+.num{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font:600 13px var(--mono)}
+.done .num{background:var(--ink);border-color:var(--ink);color:var(--card)}
+[aria-current="step"] .num{background:var(--new);border-color:var(--new);color:#1d1306}
+.st-t{font-weight:700;display:block}
+.st-m{font:500 12px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.tip{margin-top:14px;padding:14px 16px;border-radius:14px;border:1.5px dashed var(--line);color:var(--muted);font-size:.95rem}
+.tip b{color:var(--ink)}
+
+.foot{color:var(--muted);font-size:.9rem;max-width:70ch}
+
+@media (max-width:900px){
+  .trick,.fort-head,.fort-body{grid-template-columns:minmax(0,1fr)}
+  .house{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:640px){
+  .house{grid-template-columns:minmax(0,1fr)}
+  .tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tab{padding:12px}
+  .tab .nm{font-size:1.1rem}
+  .panel,.trick{padding:18px}
+  .stats{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <p class="eyebrow">Weekend build plans · 2 kits</p>
+    <h1>Crazy Forts <em>Build Book</em></h1>
+    <p class="lede">Six forts sized for what's in your two boxes, each with a spin-around 3D diagram, step-by-step build, and a job for Hailey and Declan at every step.</p>
+    <ul class="chips" aria-label="Your supplies">
+      <li class="chip"><i class="i-ball"></i>50 balls</li>
+      <li class="chip"><i class="i-stick"></i>88 sticks</li>
+      <li class="chip"><i class="i-rule"></i>1 stick span ≈ 1½ ft</li>
+    </ul>
+  </header>
+
+  <section class="card trick" aria-labelledby="trickh">
+    <div class="figs">
+      <figure>
+        <svg viewBox="0 0 260 250" role="img" aria-label="Top view of a ball: flat sticks go straight out the sides, slanted holes point between them toward the middle of each square">
+          <g transform="translate(130,118)">
+            <g stroke="var(--stick)" stroke-width="9" stroke-linecap="round">
+              <line x1="54" y1="0" x2="104" y2="0"/><line x1="-54" y1="0" x2="-104" y2="0"/>
+              <line x1="0" y1="54" x2="0" y2="104"/><line x1="0" y1="-54" x2="0" y2="-104"/>
+            </g>
+            <g stroke="var(--new)" stroke-width="2" stroke-dasharray="4 4" fill="none">
+              <line x1="30" y1="30" x2="76" y2="76"/><line x1="-30" y1="30" x2="-76" y2="76"/>
+              <line x1="30" y1="-30" x2="76" y2="-76"/><line x1="-30" y1="-30" x2="-76" y2="-76"/>
+            </g>
+            <g fill="var(--new)">
+              <circle cx="80" cy="80" r="5"/><circle cx="-80" cy="80" r="5"/><circle cx="80" cy="-80" r="5"/><circle cx="-80" cy="-80" r="5"/>
+            </g>
+            <circle r="56" fill="var(--ball)"/>
+            <g fill="var(--hole)">
+              <circle cx="49" cy="0" r="5"/><circle cx="-49" cy="0" r="5"/><circle cx="0" cy="49" r="5"/><circle cx="0" cy="-49" r="5"/>
+              <circle cx="35" cy="35" r="4"/><circle cx="-35" cy="35" r="4"/><circle cx="35" cy="-35" r="4"/><circle cx="-35" cy="-35" r="4"/>
+            </g>
+            <g fill="var(--hole)" stroke="var(--new)" stroke-width="2.5">
+              <circle cx="24" cy="24" r="6"/><circle cx="-24" cy="24" r="6"/><circle cx="24" cy="-24" r="6"/><circle cx="-24" cy="-24" r="6"/>
+            </g>
+            <path d="M0 -12 L9 6 L0 2 L-9 6 Z" fill="var(--card)"/>
+          </g>
+          <text x="130" y="244" text-anchor="middle" font-family="var(--mono)" font-size="12" fill="var(--muted)">orange dots = middle of each square</text>
+        </svg>
+        <figcaption class="label">From the top</figcaption>
+      </figure>
+      <figure>
+        <svg viewBox="0 0 260 250" role="img" aria-label="Side view of a ball: post in the top hole, flat sticks in the belt holes, roof sticks in the slanted holes">
+          <g transform="translate(118,138)">
+            <line x1="0" y1="-50" x2="0" y2="-118" stroke="var(--stick)" stroke-width="9" stroke-linecap="round"/>
+            <line x1="0" y1="50" x2="0" y2="96" stroke="var(--stick)" stroke-width="9" stroke-linecap="round" stroke-dasharray="2 14"/>
+            <line x1="-50" y1="0" x2="-104" y2="0" stroke="var(--stick)" stroke-width="9" stroke-linecap="round"/>
+            <line x1="50" y1="0" x2="104" y2="0" stroke="var(--stick)" stroke-width="9" stroke-linecap="round"/>
+            <line x1="36" y1="-36" x2="84" y2="-84" stroke="var(--new)" stroke-width="9" stroke-linecap="round"/>
+            <line x1="-36" y1="-36" x2="-84" y2="-84" stroke="var(--new)" stroke-width="9" stroke-linecap="round"/>
+            <circle r="52" fill="var(--ball)"/>
+            <path d="M0 -38 L10 -20 L0 -25 L-10 -20 Z" fill="var(--card)"/>
+          </g>
+          <g font-family="var(--mono)" font-size="12" fill="var(--muted)">
+            <text x="128" y="20">post: top hole</text>
+            <text x="212" y="44" text-anchor="middle">roof stick:</text>
+            <text x="212" y="58" text-anchor="middle">slanted hole</text>
+            <text x="118" y="210" text-anchor="middle">flat sticks: belt holes</text>
+            <text x="118" y="226" text-anchor="middle">arrow always up</text>
+          </g>
+        </svg>
+        <figcaption class="label">From the side</figcaption>
+      </figure>
+    </div>
+    <div>
+      <p class="label">Read this first</p>
+      <h2 class="sec" id="trickh">The one ball trick</h2>
+      <p class="sec-sub">Most frustration with this kit comes from balls turned the wrong way. Do these four things on every ball and the roof sticks line up on their own.</p>
+      <ol class="rules">
+        <li><div><b>Arrow up, every time.</b><span>The little arrows on each ball point to the top hole. Posts go straight in there.</span></div></li>
+        <li><div><b>Flat sticks go in the belt.</b><span>That's the ring of holes around the ball's middle.</span></div></li>
+        <li><div><b>Turn before you push.</b><span>Spin the ball so its slanted holes aim between your flat sticks, toward the middle of the square. If a roof stick won't line up, pop the ball off, give it an eighth of a turn, and re-seat it.</span></div></li>
+        <li><div><b>Push and twist.</b><span>Each stick goes in with a twist until it stops. Half-seated sticks are why forts fall apart.</span></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section aria-labelledby="househ">
+    <h2 class="sec" id="househ">House rules for fort day</h2>
+    <ul class="house">
+      <li><b>Sort first.</b><span>Piles of 10 sticks and a bowl of balls. Hailey can run this while you read the step.</span></li>
+      <li><b>Build on a rug.</b><span>Balls roll on hard floors, and carpet grips the bottom row.</span></li>
+      <li><b>You hold, they click.</b><span>Above knee height, you steady the frame and the kids push sticks in.</span></li>
+      <li><b>Light sheets only.</b><span>Flat sheets plus clothespins or chip clips. Heavy blankets make roofs sag.</span></li>
+      <li><b>Sit in it, never on it.</b><span>No hanging on sticks. A tug on one post can bring the whole frame down.</span></li>
+      <li><b>Declan stays close.</b><span>The box says ages 5+, so his jobs are handing, pressing, and inspecting, right next to you.</span></li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="fortsh">
+    <h2 class="sec" id="fortsh">Pick a fort</h2>
+    <p class="sec-sub">Each one fits inside your two kits. Start with the tunnel if this is your first build, and save the Big Top and Base Camp for when you've got the ball trick down.</p>
+    <div class="tabs" role="tablist" aria-label="Forts" id="tabs"></div>
+
+    <div class="card panel" role="tabpanel" id="panel">
+      <div class="fort-head">
+        <div>
+          <p class="label" id="fTag"></p>
+          <h3 id="fName"></h3>
+          <p class="blurb" id="fBlurb"></p>
+        </div>
+        <dl class="stats" id="fStats"></dl>
+      </div>
+
+      <div class="fort-body">
+        <div>
+          <div class="view" id="view"><canvas id="cv" tabindex="0" aria-label="3D build diagram"></canvas></div>
+          <div class="legend">
+            <span><i class="sw new"></i>Add this step</span>
+            <span><i class="sw old"></i>Already built</span>
+            <span><i class="sw ghost"></i>Still to come</span>
+            <span>Drag to turn it</span>
+          </div>
+          <div class="controls">
+            <button class="btn" id="prev" type="button">Back</button>
+            <button class="btn primary" id="next" type="button">Next step</button>
+            <span class="counter" id="counter"></span>
+            <button class="btn quiet" id="spin" type="button" aria-pressed="true">Pause spin</button>
+          </div>
+          <article class="stepcard" id="card" aria-live="polite"></article>
+        </div>
+        <aside class="steplist">
+          <p class="label">All steps</p>
+          <ol id="steps"></ol>
+          <p class="tip" id="tip"></p>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <p class="foot">Sizes are approximate. Each stick is about 16 inches long, so one stick plus its balls spans roughly 1½ feet. If your kit's instruction sheet labels holes with letters, it's the same idea as the ball trick: flat sticks in the belt, slanted sticks aimed into the middle of the square.</p>
+</div>
+
+<script>
+/*MODEL*/
+const H = Math.SQRT1_2;
+const KEY = p => p.map(v => (Math.round(v * 1000) / 1000).toFixed(3)).join(',');
+class Model {
+  constructor(){ this.balls = new Map(); this.sticks = []; this.faces = []; this.labels = []; }
+  ball(p, step){ const k = KEY(p); if (!this.balls.has(k)) this.balls.set(k, { p: p.slice(), step }); }
+  has(p){ return this.balls.has(KEY(p)); }
+  stick(a, b, step){ this.sticks.push({ a: a.slice(), b: b.slice(), step }); }
+  down(p, zb, step){
+    for (const dx of [-.5, .5]) for (const dy of [-.5, .5]) {
+      const q = [p[0] + dx, p[1] + dy, zb];
+      if (this.has(q)) this.stick(q, p, step);
+    }
+  }
+  link(list, step, skip){
+    for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
+      const a = list[i], b = list[j];
+      const dx = Math.abs(a[0] - b[0]), dy = Math.abs(a[1] - b[1]);
+      if (Math.abs(dx + dy - 1) < 1e-6 && (dx < 1e-6 || dy < 1e-6) && !(skip && skip(a, b))) this.stick(a, b, step);
+    }
+  }
+}
+
+function buildTunnel(){
+  const m = new Model(), N = 4, T = 1, R = 1 + H;
+  for (let x = 0; x <= N; x++) for (let y = 0; y <= 1; y++) m.ball([x, y, 0], 0);
+  for (let y = 0; y <= 1; y++) for (let x = 0; x < N; x++) m.stick([x, y, 0], [x + 1, y, 0], 0);
+  for (let x = 1; x < N; x++) m.stick([x, 0, 0], [x, 1, 0], 0);
+  for (let x = 0; x <= N; x++) for (let y = 0; y <= 1; y++) { m.ball([x, y, T], 1); m.stick([x, y, 0], [x, y, T], 1); }
+  for (let y = 0; y <= 1; y++) for (let x = 0; x < N; x++) m.stick([x, y, T], [x + 1, y, T], 2);
+  m.stick([0, 0, T], [0, 1, T], 2); m.stick([N, 0, T], [N, 1, T], 2);
+  const ridge = [];
+  for (let k = 0; k < N; k++) { const p = [k + .5, .5, R]; m.ball(p, 3); m.down(p, T, 3); ridge.push(p); }
+  for (let k = 0; k < N - 1; k++) m.stick(ridge[k], ridge[k + 1], 4);
+  m.faces.push(
+    { pts: [[0,0,0],[N,0,0],[N,0,T],[0,0,T]], c: 'sheet' },
+    { pts: [[0,1,0],[N,1,0],[N,1,T],[0,1,T]], c: 'sheet' },
+    { pts: [[0,0,T],[N,0,T],[N-.5,.5,R],[.5,.5,R]], c: 'sheet' },
+    { pts: [[0,1,T],[N,1,T],[N-.5,.5,R],[.5,.5,R]], c: 'sheet' },
+    { pts: [[0,0,T],[0,1,T],[.5,.5,R]], c: 'sheet' },
+    { pts: [[N,0,T],[N,1,T],[N-.5,.5,R]], c: 'sheet' }
+  );
+  m.labels.push({ p: [-1.05, .5, 0], t: 'CRAWL IN' }, { p: [N + 1.05, .5, 0], t: 'CRAWL OUT' });
+  return m;
+}
+
+const per4 = z => {
+  const per = [];
+  for (let x = 0; x <= 3; x++) per.push([x, 0, z]);
+  for (let y = 1; y <= 3; y++) per.push([3, y, z]);
+  for (let x = 2; x >= 0; x--) per.push([x, 3, z]);
+  for (let y = 2; y >= 1; y--) per.push([0, y, z]);
+  return per;
+};
+const frontDoor = (a, b) => a[1] === 0 && b[1] === 0 && a[2] === 0 && b[2] === 0 && Math.min(a[0], b[0]) === 1 && Math.max(a[0], b[0]) === 2;
+
+// 3-stick pyramid with a six-sided front door. s = steps for [base, first row, first ring, second row + square, peak]
+function pyramidFrame(m, s){
+  const per = per4(0);
+  per.forEach(p => m.ball(p, s[0]));
+  m.link(per, s[0], frontDoor);
+  const l1 = [];
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
+    if (i === 1 && (j === 1 || j === 0)) continue;
+    const p = [i + .5, j + .5, H]; m.ball(p, s[1]); m.down(p, 0, s[1]); l1.push(p);
+  }
+  m.link(l1, s[2]);
+  const l2 = [];
+  for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) { const p = [i + 1, j + 1, 2 * H]; m.ball(p, s[3]); m.down(p, H, s[3]); l2.push(p); }
+  m.link(l2, s[3]);
+  const A = [1.5, 1.5, 3 * H]; m.ball(A, s[4]); m.down(A, 2 * H, s[4]);
+  const c0 = [0,0,0], c1 = [3,0,0], c2 = [3,3,0], c3 = [0,3,0];
+  m.faces.push(
+    { pts: [c0, c1, A], c: 'sheet', hole: [[1,0,0],[2,0,0],[2.5,.5,H],[2,1,2*H],[1,1,2*H],[.5,.5,H]] },
+    { pts: [c1, c2, A], c: 'sheet' },
+    { pts: [c2, c3, A], c: 'sheet' },
+    { pts: [c3, c0, A], c: 'sheet' }
+  );
+}
+
+function buildPyramid(){
+  const m = new Model();
+  pyramidFrame(m, [0, 1, 2, 3, 4]);
+  m.labels.push({ p: [1.5, -.75, 0], t: 'DOOR' });
+  return m;
+}
+
+function buildBigTop(){
+  const m = new Model();
+  const floor = per4(0);
+  floor.forEach(p => m.ball(p, 0));
+  m.link(floor, 0, frontDoor);
+  const top = per4(1);
+  top.forEach(p => { m.ball(p, 1); m.stick([p[0], p[1], 0], p, 1); });
+  m.link(top, 2);
+  const r1 = [];
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
+    if (i === 1 && j === 1) continue;
+    const p = [i + .5, j + .5, 1 + H]; m.ball(p, 3); m.down(p, 1, 3); r1.push(p);
+  }
+  m.link(r1, 4);
+  const r2 = [];
+  for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) { const p = [i + 1, j + 1, 1 + 2 * H]; m.ball(p, 5); m.down(p, 1 + H, 5); r2.push(p); }
+  m.link(r2, 5);
+  const A = [1.5, 1.5, 1 + 3 * H]; m.ball(A, 6); m.down(A, 1 + 2 * H, 6);
+  const t0 = [0,0,1], t1 = [3,0,1], t2 = [3,3,1], t3 = [0,3,1];
+  m.faces.push(
+    { pts: [[0,0,0],[3,0,0],t1,t0], c: 'sheet', hole: [[1,0,0],[2,0,0],[2,0,1],[1,0,1]] },
+    { pts: [[3,0,0],[3,3,0],t2,t1], c: 'sheet' },
+    { pts: [[3,3,0],[0,3,0],t3,t2], c: 'sheet' },
+    { pts: [[0,3,0],[0,0,0],t0,t3], c: 'sheet' },
+    { pts: [t0, t1, A], c: 'curtain' }, { pts: [t1, t2, A], c: 'sheet' },
+    { pts: [t2, t3, A], c: 'curtain' }, { pts: [t3, t0, A], c: 'sheet' }
+  );
+  m.labels.push({ p: [1.5, -.8, 0], t: 'DOOR' });
+  return m;
+}
+
+function buildRocket(){
+  const m = new Model();
+  const pad = [];
+  for (const x of [-.5, .5, 1.5]) for (const y of [-.5, .5, 1.5]) {
+    if (x === .5 && y === .5) continue;
+    if (x === .5 && y === -.5) continue; // hatch
+    pad.push([x, y, 0]);
+  }
+  pad.forEach(p => m.ball(p, 0)); m.link(pad, 0);
+  const lv = z => [[0,0,z],[1,0,z],[1,1,z],[0,1,z]];
+  const base = lv(H);
+  base.forEach(p => { m.ball(p, 1); m.down(p, 0, 1); });
+  m.link(base, 1, (a, b) => a[1] === 0 && b[1] === 0);
+  for (let k = 1; k <= 2; k++) {
+    const L = lv(H + k);
+    L.forEach(p => { m.ball(p, k + 1); m.stick([p[0], p[1], p[2] - 1], p, k + 1); });
+    m.link(L, k + 1);
+  }
+  const A = [.5, .5, 2 + 2 * H]; m.ball(A, 4); m.down(A, 2 + H, 4);
+  const z1 = H, z2 = 1 + H, z3 = 2 + H;
+  m.faces.push(
+    { pts: [[1.5,-.5,0],[1.5,1.5,0],[1,1,z1],[1,0,z1]], c: 'sheet' },
+    { pts: [[1.5,1.5,0],[-.5,1.5,0],[0,1,z1],[1,1,z1]], c: 'sheet' },
+    { pts: [[-.5,1.5,0],[-.5,-.5,0],[0,0,z1],[0,1,z1]], c: 'sheet' },
+    { pts: [[0,0,z2],[1,0,z2],[1,0,z3],[0,0,z3]], c: 'sheet' },
+    { pts: [[1,0,z1],[1,1,z1],[1,1,z3],[1,0,z3]], c: 'sheet' },
+    { pts: [[1,1,z1],[0,1,z1],[0,1,z3],[1,1,z3]], c: 'sheet' },
+    { pts: [[0,1,z1],[0,0,z1],[0,0,z3],[0,1,z3]], c: 'sheet' },
+    { pts: [[0,0,z3],[1,0,z3],A], c: 'curtain' }, { pts: [[1,0,z3],[1,1,z3],A], c: 'curtain' },
+    { pts: [[1,1,z3],[0,1,z3],A], c: 'curtain' }, { pts: [[0,1,z3],[0,0,z3],A], c: 'curtain' }
+  );
+  m.labels.push({ p: [.5, -1.3, 0], t: 'HATCH' });
+  return m;
+}
+
+function buildBaseCamp(){
+  const m = new Model();
+  pyramidFrame(m, [0, 1, 1, 2, 2]);
+  const T = 1, R = 1 + H;
+  for (const y of [-1, -2]) for (const x of [1, 2]) m.ball([x, y, 0], 3);
+  for (const x of [1, 2]) { m.stick([x, 0, 0], [x, -1, 0], 3); m.stick([x, -1, 0], [x, -2, 0], 3); }
+  m.stick([1, -1, 0], [2, -1, 0], 3);
+  for (const y of [0, -1, -2]) for (const x of [1, 2]) { m.ball([x, y, T], 4); m.stick([x, y, 0], [x, y, T], 4); }
+  for (const x of [1, 2]) { m.stick([x, 0, T], [x, -1, T], 4); m.stick([x, -1, T], [x, -2, T], 4); }
+  m.stick([1, 0, T], [2, 0, T], 4); m.stick([1, -2, T], [2, -2, T], 4);
+  const ra = [1.5, -.5, R], rb = [1.5, -1.5, R];
+  m.ball(ra, 5); m.down(ra, T, 5); m.ball(rb, 5); m.down(rb, T, 5); m.stick(ra, rb, 5);
+  m.faces.push(
+    { pts: [[1,0,0],[1,-2,0],[1,-2,T],[1,0,T]], c: 'curtain' },
+    { pts: [[2,0,0],[2,-2,0],[2,-2,T],[2,0,T]], c: 'curtain' },
+    { pts: [[1,0,T],[1,-2,T],rb,ra], c: 'curtain' },
+    { pts: [[2,0,T],[2,-2,T],rb,ra], c: 'curtain' },
+    { pts: [[1,0,T],[2,0,T],ra], c: 'curtain' },
+    { pts: [[1,-2,T],[2,-2,T],rb], c: 'curtain' }
+  );
+  m.labels.push({ p: [1.5, -3.05, 0], t: 'CRAWL IN' });
+  return m;
+}
+
+function buildStage(){
+  const m = new Model();
+  const ring = [[0,0],[1,0],[2,0],[2,1],[2,2],[1,2],[0,2],[0,1]];
+  const lvl = z => ring.filter(([x, y]) => !(x === 1 && y === 0 && z < 2)).map(([x, y]) => [x, y, z]);
+  const z0 = lvl(0); z0.forEach(p => m.ball(p, 0)); m.link(z0, 0);
+  const z1 = lvl(1); z1.forEach(p => { m.ball(p, 1); m.stick([p[0], p[1], 0], p, 1); }); m.link(z1, 1);
+  const z2 = lvl(2); z2.forEach(p => { m.ball(p, 2); if (m.has([p[0], p[1], 1])) m.stick([p[0], p[1], 1], p, 2); }); m.link(z2, 2);
+  const r = 2 + H, l1 = [];
+  for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) { const p = [i + .5, j + .5, r]; m.ball(p, 3); m.down(p, 2, 3); l1.push(p); }
+  m.link(l1, 3);
+  const A = [1, 1, 2 + 2 * H]; m.ball(A, 4); m.down(A, r, 4);
+  const t0 = [0,0,2], t1 = [2,0,2], t2 = [2,2,2], t3 = [0,2,2];
+  m.faces.push(
+    { pts: [t0, t1, A], c: 'sheet' }, { pts: [t1, t2, A], c: 'sheet' },
+    { pts: [t2, t3, A], c: 'sheet' }, { pts: [t3, t0, A], c: 'sheet' },
+    { pts: [[0,2,0],[2,2,0],t2,t3], c: 'sheet' },
+    { pts: [[0,0,0],[0,2,0],t3,t0], c: 'sheet' },
+    { pts: [[2,0,0],[2,2,0],t2,t1], c: 'sheet' },
+    { pts: [[0,0,2],[.72,0,2],[.24,0,1.05],[.16,0,0],[0,0,0]], c: 'curtain' },
+    { pts: [[2,0,2],[1.28,0,2],[1.76,0,1.05],[1.84,0,0],[2,0,0]], c: 'curtain' }
+  );
+  m.labels.push({ p: [1, -.95, 0], t: 'AUDIENCE' });
+  return m;
+}
+/*ENDMODEL*/
+
+const FORTS = [
+  {
+    id: 'tunnel', name: "Declan's Crawl Tunnel", tag: 'Easiest · start here', time: '20–30 min',
+    size: '6 ft long, 1½ ft wide, 2½ ft at the peak', build: buildTunnel, yaw: -0.62, pitch: 0.5,
+    blurb: "A long, low tunnel with a peaked roof. It's mostly straight posts and rails, so it's the gentlest first build, and it's exactly the right height for a toddler to crawl end to end.",
+    tip: '<b>Make it a wow:</b> drop a flashlight at the far end and play "crawl to the light," or tape paper "scales" to the sheet and call it a dragon.',
+    steps: [
+      { t: 'Lay the floor rails', d: 'Make two parallel lines of 5 balls, each line joined by 4 flat sticks. Tie the two lines together with 3 cross sticks on the middle balls. Leave both end pairs untied; those are the doorways.', h: 'Count the sticks into piles of 10.', k: 'Ball delivery: hand you one ball at a time.' },
+      { t: 'Stand up the posts', d: 'Push a stick straight up into the top hole of every floor ball, then cap each post with a ball, arrow up.', h: 'Arrow inspector: check every arrow points at the ceiling.', k: 'Press the cap balls down while you steady the post.' },
+      { t: 'Run the top rails', d: 'Connect the post tops along each side with 4 flat sticks, then add one cross stick at each end to frame the doorways.', h: 'Match each flat stick to the one directly below it.', k: 'Push-and-twist helper on sticks you start.' },
+      { t: 'Build the four peaks', d: "Work one square at a time. Four slanted sticks rise from the square's corners and meet in one ball over its middle. Four squares, four peaks. This is where the ball trick matters.", h: 'Hold each peak ball steady while you seat its sticks.', k: 'Count out loud: 1, 2, 3, 4 sticks per peak.' },
+      { t: 'Join the spine', d: 'Link the four peak balls with 3 flat sticks in a straight line. The roof is now locked and the tunnel stops wobbling.', h: 'Give it a gentle wiggle test.', k: 'First crawl-through inspector.' },
+      { t: 'Drape it', d: 'Lay one flat sheet over the top so it hangs to the floor on both sides, and clip it at the peaks with clothespins. Leave both ends open.', h: 'Pick the sheet and the clips.', k: 'Official tunnel tester.' }
+    ]
+  },
+  {
+    id: 'pyramid', name: 'The Great Pyramid', tag: 'Sturdiest', time: '25–35 min',
+    size: '4½ ft square base, 3 ft tall', build: buildPyramid, yaw: -0.5, pitch: 0.42,
+    blurb: 'Every part of it is a triangle, which makes it the hardest of the three to knock over. It has a six-sided door on the front and room for both kids inside.',
+    tip: '<b>Make it a wow:</b> a string of battery lights hung from the top ball turns it into a glowing tent. Lights off, flashlights on, story time inside.',
+    steps: [
+      { t: 'Lay the base square', d: 'Build a square 3 sticks long on each side: 4 balls per side, corners shared. Leave out the middle stick on the front side; that gap becomes the door.', h: 'Walk around the square and count the corners.', k: 'Ball delivery.' },
+      { t: 'Lean in the first row', d: 'Each small square around the edge gets a ball floating over its middle, held up by slanted sticks from its corners: 3 sticks for corner squares, 2 for side squares. Skip the front-middle square to keep the door open.', h: 'Push the slanted sticks in while you hold the ball.', k: 'Hand over sticks one at a time.' },
+      { t: 'Tie the first row', d: "Connect neighboring first-row balls with flat sticks so they make a ring. Don't bridge across the door.", h: 'Find the two balls that sit beside the door.', k: 'Push-and-twist helper.' },
+      { t: 'Build the second row', d: 'Add 4 balls higher up, each held by slanted sticks from the first-row balls below it (3 sticks each, or 2 for the pair above the door). Then join the 4 with flat sticks into a small square.', h: 'Hold the second-row balls while you connect them.', k: 'Count the four balls.' },
+      { t: 'Top it off', d: 'One last ball at the very top, held by 4 slanted sticks.', h: 'Place the top ball. Big moment.', k: 'Countdown from 4 for the last stick.' },
+      { t: 'Wrap it', d: 'Throw a queen flat sheet over the point and let it fall evenly. Fold the front corner up over the door and clip it open.', h: 'Make a sign for the door.', k: 'First one through the door.' }
+    ]
+  },
+  {
+    id: 'stage', name: "Hailey's Stage", tag: 'Showtime', time: '30–40 min',
+    size: '3 ft square, 3 ft walls, 5 ft at the peak', build: buildStage, yaw: -0.55, pitch: 0.36,
+    blurb: 'A tall, open-front bandstand with a curtain. Hailey performs under the roof while Declan and you are the audience. It\'s the tallest of the three, so she can stand up inside.',
+    tip: '<b>Make it a wow:</b> Declan works the "spotlight" with a flashlight, and Hailey gets a hairbrush microphone and a hand-drawn ticket for each audience member.',
+    steps: [
+      { t: 'Lay the floor', d: 'Make a square 2 sticks long on each side, but leave out the front-middle ball and its two sticks. You get a U shape. The open side is the front of the stage.', h: 'Decide which way the stage faces.', k: 'Ball delivery.' },
+      { t: 'Build the first level', d: 'Push a post straight up from each of the 7 floor balls, cap them with balls, and connect the caps with 6 flat sticks in the same U shape.', h: 'Arrow inspector on every cap ball.', k: 'Press the cap balls down.' },
+      { t: 'Second level and top ring', d: 'Posts up again from the 7 balls, then cap them. Now make a full ring of 8 flat sticks across the top. The front beam crosses the opening with one ball in its middle; hold that ball up until the roof goes on.', h: 'Hold the front-middle ball up high.', k: 'Hand up sticks.' },
+      { t: 'Raise the roof row', d: 'Over each of the 4 top squares, add a ball held by 3 slanted sticks from the outer corners. Then tie the 4 balls into a square with flat sticks.', h: 'Count 3 slanted sticks per ball.', k: 'Push-and-twist helper.' },
+      { t: 'Set the peak', d: 'One ball at the top with 4 slanted sticks. This part is about 5 feet up, so it\'s a grown-up job.', h: 'Hand you the peak ball.', k: 'Countdown for the last stick.' },
+      { t: 'Curtain up', d: 'Drape a sheet over the roof and down the back and sides. Clip a second sheet, or two bath towels, along the front beam so it splits in the middle.', h: 'Opening act: first song.', k: 'Spotlight operator with a flashlight.' }
+    ]
+  },
+  {
+    id: 'bigtop', name: 'The Big Top', tag: 'Whole family fits', time: '40–50 min',
+    size: '4½ ft square, 1½ ft walls, about 4½ ft at the peak', build: buildBigTop, yaw: -0.5, pitch: 0.4,
+    blurb: "A circus tent on short walls. It has the biggest floor in the book, so both kids and you can sit inside together. It uses 83 of your 88 sticks, so save it for an afternoon with time to spare.",
+    tip: '<b>Make it a wow:</b> stuffed animals become the circus acts, Hailey is the ringmaster, and a jump rope laid in a circle on the floor is the ring.',
+    steps: [
+      { t: 'Lay the floor', d: 'Build a square 3 sticks long on each side: 4 balls per side, corners shared. Leave out the middle stick on the front side; that gap becomes the door.', h: 'Count the balls on each side.', k: 'Ball delivery.' },
+      { t: 'Stand up the walls', d: 'Push a stick straight up from each of the 12 floor balls and cap each one with a ball, arrow up.', h: 'Arrow inspector on every cap.', k: 'Press the cap balls down.' },
+      { t: 'Tie the top ring', d: 'Connect the 12 post tops with flat sticks all the way around. The front-middle stick runs right over the door.', h: 'Walk the ring and count 12 sticks.', k: 'Push-and-twist helper.' },
+      { t: 'Lean in the first roof row', d: 'Over each small square along the edge, a ball floats above its middle on slanted sticks from the top-ring corners: 3 sticks for the 4 corner squares, 2 for the 4 side squares.', h: 'Push the slanted sticks in while you hold the ball.', k: 'Hand up sticks one at a time.' },
+      { t: 'Tie the roof ring', d: 'Connect the 8 first-row balls with flat sticks so they make a ring.', h: 'Find the next ball over each time.', k: 'Count out loud to 8.' },
+      { t: 'Build the second row', d: 'Add 4 balls higher up, each held by 3 slanted sticks from the first-row balls below it. Join them into a small square with 4 flat sticks.', h: 'Hold the second-row balls while you connect them.', k: 'Count the four balls.' },
+      { t: 'Top it off', d: 'The peak ball goes on with 4 slanted sticks. It\'s about 4½ feet up, so this one is yours.', h: 'Hand you the peak ball.', k: 'Countdown from 4.' },
+      { t: 'Raise the tent', d: 'One sheet over the roof, clipped along the top ring, and a second one wrapped around the walls. Leave the front flap loose over the door so it lifts.', h: 'Ringmaster: announce the first act.', k: 'First one through the door.' }
+    ]
+  },
+  {
+    id: 'rocket', name: 'Rocket Ship', tag: 'Quickest build', time: '15–25 min',
+    size: '3 ft square base, 1½ ft body, 5 ft tall', build: buildRocket, yaw: -0.6, pitch: 0.3,
+    blurb: 'A tall, skinny body on a flared launch base, with a pointed nose cone. It uses the fewest pieces in the book, and a kid can climb in through the hatch and stand up inside.',
+    tip: '<b>Make it a wow:</b> draw a control panel on a piece of cardboard and tape it inside. Count down from 10, and shine a flashlight under the base for the engine.',
+    steps: [
+      { t: 'Lay the launch pad', d: 'Make a square 2 sticks long on each side, with balls at the corners and side middles. Leave out the front-middle ball and its two sticks; that gap is the hatch.', h: 'Pick where the rocket launches from.', k: 'Ball delivery.' },
+      { t: 'Flare the base', d: 'Four balls float over the middle of the four small squares, held by slanted sticks down to the pad: 3 sticks each in back, 2 each in front. Tie them together with flat sticks on the back and sides only, so the hatch stays tall.', h: 'Push the slanted sticks in while you hold each ball.', k: 'Hand over sticks.' },
+      { t: 'Raise the body', d: 'A post straight up from each of the 4 base balls, capped with balls and tied into a square with 4 flat sticks.', h: 'Arrow inspector.', k: 'Press the caps down.' },
+      { t: 'Raise it again', d: 'Same thing one more level: 4 posts, 4 balls, 4 flat sticks.', h: 'Hold the posts straight while you work.', k: 'Count the 4 posts.' },
+      { t: 'Add the nose cone', d: 'One ball on top with 4 slanted sticks. It\'s about 5 feet up, so it\'s a grown-up job.', h: 'Hand you the nose ball.', k: 'Countdown from 10.' },
+      { t: 'Wrap it', d: 'Wrap one sheet around the body and base, leaving the hatch open. A red pillowcase or towel over the top makes the nose cone.', h: 'First astronaut aboard.', k: 'Mission control: shout "blast off!"' }
+    ]
+  },
+  {
+    id: 'basecamp', name: 'Pyramid Base Camp', tag: 'Biggest adventure', time: '45–60 min',
+    size: '7½ ft long: a 3 ft tunnel into a 4½ ft pyramid', build: buildBaseCamp, yaw: -0.75, pitch: 0.45,
+    blurb: "The Great Pyramid with a crawl tunnel attached to its door, so the only way in is through the tunnel. Build it after you've done the pyramid once and want the full expedition.",
+    tip: '<b>Make it a wow:</b> hide a snack or small toy in the pyramid and send them through the tunnel with flashlights to find the treasure.',
+    steps: [
+      { t: 'Lay the pyramid base', d: 'A square 3 sticks long on each side, 4 balls per side. Leave out the middle stick on the front side. The two balls beside that gap are where the tunnel attaches later.', h: 'Count the corners.', k: 'Ball delivery.' },
+      { t: 'Pyramid first row', d: 'Over each edge square except the front-middle one, a ball floats on slanted sticks from its corners (3 sticks for corners, 2 for sides). Tie the 7 balls into a ring with 6 flat sticks, without bridging the door.', h: 'Push slanted sticks while you hold the balls.', k: 'Hand over sticks.' },
+      { t: 'Pyramid second row and top', d: 'Add 4 higher balls on slanted sticks (3 each, or 2 for the pair over the door) and join them into a square. Then set the top ball with 4 more slanted sticks.', h: 'Place the top ball.', k: 'Countdown for the last stick.' },
+      { t: 'Run the tunnel floor', d: 'From the two balls beside the door, run two rails straight out the front, 2 sticks and 2 balls on each side. Tie them with one cross stick at the middle pair and leave the far end open.', h: 'Line the rails up with the door gap.', k: 'Ball delivery.' },
+      { t: 'Tunnel posts and rails', d: 'A post straight up from each of the 6 tunnel floor balls, including the two at the pyramid door, capped with balls. Connect the tops along each side and add a cross stick at each end.', h: 'Arrow inspector on every cap.', k: 'Press the caps down.' },
+      { t: 'Tunnel roof', d: 'Two peak balls, each on 4 slanted sticks over one tunnel square, then one flat stick joining them.', h: 'Hold each peak ball.', k: 'Count 1 to 4 per peak.' },
+      { t: 'Cover it', d: 'Sheet over the pyramid. A second sheet over the tunnel that overlaps the pyramid door, so it stays dark the whole way in.', h: 'Expedition leader: hand out the flashlights.', k: 'First explorer through the tunnel.' }
+    ]
+  }
+];
+const SUPPLY = { balls: 50, sticks: 88 };
+
+/* ---------- 3D viewer ---------- */
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function readColors(){
+  const cs = getComputedStyle(document.documentElement);
+  const g = n => cs.getPropertyValue(n).trim();
+  return { ball: g('--ball'), stick: g('--stick'), nw: g('--new'), sheet: g('--sheet'), curtain: g('--curtain'),
+    rug: g('--rug'), grid: g('--grid'), line: g('--line'), ink: g('--ink'), muted: g('--muted'), paper: g('--paper'),
+    edge: g('--edge'), mono: g('--mono') };
+}
+class Viewer {
+  constructor(canvas, wrap, onSpin){
+    this.c = canvas; this.ctx = canvas.getContext('2d'); this.wrap = wrap; this.onSpin = onSpin;
+    this.yaw = -0.6; this.pitch = 0.45; this.step = 0; this.spin = !reduceMotion; this.raf = 0; this.last = 0;
+    const end = () => { this.drag = null; };
+    canvas.addEventListener('pointerdown', e => { this.drag = { x: e.clientX, y: e.clientY }; try { canvas.setPointerCapture(e.pointerId); } catch(_){} this.setSpin(false); });
+    canvas.addEventListener('pointermove', e => {
+      if (!this.drag) return;
+      const dx = e.clientX - this.drag.x, dy = e.clientY - this.drag.y;
+      this.drag = { x: e.clientX, y: e.clientY };
+      this.yaw -= dx * 0.012;
+      this.pitch = Math.max(0.1, Math.min(1.25, this.pitch + dy * 0.008));
+      this.request();
+    });
+    canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', end);
+    new ResizeObserver(() => this.resize()).observe(wrap);
+    this.resize();
+  }
+  setModel(m, yaw, pitch){
+    this.model = m; this.yaw = yaw; this.pitch = pitch;
+    const pts = [];
+    m.balls.forEach(v => pts.push(v.p)); m.labels.forEach(l => pts.push(l.p));
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, z1 = -Infinity;
+    m.balls.forEach(({ p }) => { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); z1 = Math.max(z1, p[2]); });
+    const pad = .45;
+    this.rug = [[x0 - pad, y0 - pad, 0], [x1 + pad, y0 - pad, 0], [x1 + pad, y1 + pad, 0], [x0 - pad, y1 + pad, 0]];
+    this.bb = { x0, x1, y0, y1, pad };
+    pts.push(...this.rug);
+    this.center = [(x0 + x1) / 2, (y0 + y1) / 2, z1 / 2];
+    let R = 0; for (const p of pts) R = Math.max(R, Math.hypot(p[0] - this.center[0], p[1] - this.center[1], p[2] - this.center[2]));
+    this.R = R; this.D = R * 5; this.fitPts = pts;
+    this.fit();
+    this.request();
+  }
+  fit(){
+    // measure the on-screen footprint over a full turn so the zoom stays steady while it spins
+    const c = this.center, D = this.D, cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
+    let mx = 0, y0 = Infinity, y1 = -Infinity;
+    for (let a = 0; a < Math.PI * 2; a += Math.PI / 18) {
+      const cy = Math.cos(a), sy = Math.sin(a);
+      for (const p of this.fitPts) {
+        const x = p[0] - c[0], y = p[1] - c[1], z = p[2] - c[2];
+        const xr = x * cy - y * sy, yr = x * sy + y * cy, d = yr * cp - z * sp, f = D / (D + d);
+        mx = Math.max(mx, Math.abs(xr * f)); const up = (z * cp + yr * sp) * f; y0 = Math.min(y0, up); y1 = Math.max(y1, up);
+      }
+    }
+    this.ext = { mx, y0, y1 };
+    this.fitPitch = this.pitch;
+  }
+  setStep(s){ this.step = s; this.request(); }
+  setSpin(v){ this.spin = v; this.last = 0; this.onSpin && this.onSpin(v); if (v) this.request(); }
+  resize(){
+    const w = this.wrap.clientWidth; if (!w) return;
+    const h = Math.round(Math.min(w * 0.8, 540));
+    this.dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+    this.c.style.height = h + 'px';
+    this.c.width = Math.round(w * this.dpr); this.c.height = Math.round(h * this.dpr);
+    this.W = w; this.H = h; this.draw();
+  }
+  request(){ if (this.raf) return; this.raf = requestAnimationFrame(t => this.tick(t)); }
+  tick(t){
+    this.raf = 0;
+    if (this.spin) { if (this.last) this.yaw += Math.min(.05, (t - this.last) / 1000) * 0.3; this.last = t; }
+    this.draw();
+    if (this.spin) this.request();
+  }
+  draw(){
+    const m = this.model; if (!m || !this.W) return;
+    const ctx = this.ctx, W = this.W, Hh = this.H, C = readColors(), step = this.step, faceStep = this.faceStep;
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    ctx.clearRect(0, 0, W, Hh);
+    const cy = Math.cos(this.yaw), sy = Math.sin(this.yaw), cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
+    const c = this.center, D = this.D;
+    if (Math.abs(this.fitPitch - this.pitch) > .08) this.fit();
+    const E = this.ext;
+    const s = Math.min((W - 28) / (2 * E.mx), (Hh - 28) / (E.y1 - E.y0));
+    const midUp = (E.y0 + E.y1) / 2;
+    const P = p => {
+      const x = p[0] - c[0], y = p[1] - c[1], z = p[2] - c[2];
+      const xr = x * cy - y * sy, yr = x * sy + y * cy;
+      const up = z * cp + yr * sp, d = yr * cp - z * sp, f = D / (D + d);
+      return { x: W / 2 + xr * s * f, y: Hh / 2 - (up * f - midUp) * s, d, f };
+    };
+    const poly = (pts, close = true) => { pts.forEach((q, i) => i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)); if (close) ctx.closePath(); };
+
+    // rug with floor grid
+    ctx.beginPath(); poly(this.rug.map(P)); ctx.fillStyle = C.rug; ctx.fill();
+    ctx.strokeStyle = C.line; ctx.lineWidth = 1;
+    const b = this.bb;
+    for (let x = Math.ceil(b.x0); x <= b.x1; x++) { const a = P([x, b.y0 - b.pad, 0]), e = P([x, b.y1 + b.pad, 0]); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(e.x, e.y); ctx.stroke(); }
+    for (let y = Math.ceil(b.y0); y <= b.y1; y++) { const a = P([b.x0 - b.pad, y, 0]), e = P([b.x1 + b.pad, y, 0]); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(e.x, e.y); ctx.stroke(); }
+
+    // ghost of what's still to come
+    ctx.save(); ctx.globalAlpha = 0.28; ctx.strokeStyle = C.muted; ctx.lineWidth = 1.2; ctx.setLineDash([4, 4]);
+    for (const st of m.sticks) if (st.step > step) { const a = P(st.a), e = P(st.b); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(e.x, e.y); ctx.stroke(); }
+    ctx.setLineDash([]);
+    m.balls.forEach(v => { if (v.step > step) { const q = P(v.p); ctx.beginPath(); ctx.arc(q.x, q.y, Math.max(2.5, .05 * s * q.f), 0, Math.PI * 2); ctx.stroke(); } });
+    ctx.restore();
+
+    // solid pieces, far to near
+    const items = [];
+    for (const st of m.sticks) if (st.step <= step) { const a = P(st.a), e = P(st.b); items.push({ d: (a.d + e.d) / 2, k: 's', a, e, nw: st.step === step }); }
+    m.balls.forEach(v => { if (v.step <= step) { const q = P(v.p); items.push({ d: q.d - .06, k: 'b', q, nw: v.step === step }); } });
+    if (step >= faceStep) for (const f of m.faces) {
+      const pts = f.pts.map(P), hole = f.hole ? f.hole.map(P) : null;
+      items.push({ d: pts.reduce((t, q) => t + q.d, 0) / pts.length + .02, k: 'f', pts, hole, col: f.c === 'curtain' ? C.curtain : C.sheet });
+    }
+    items.sort((p, q) => q.d - p.d);
+    for (const it of items) {
+      if (it.k === 's') {
+        const w = Math.max(2.2, .05 * s * (it.a.f + it.e.f) / 2);
+        ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(it.a.x, it.a.y); ctx.lineTo(it.e.x, it.e.y);
+        ctx.strokeStyle = C.edge; ctx.lineWidth = w + 2; ctx.stroke();
+        if (it.nw) { ctx.shadowColor = C.nw; ctx.shadowBlur = 10; }
+        ctx.strokeStyle = it.nw ? C.nw : C.stick; ctx.lineWidth = w; ctx.stroke();
+        ctx.shadowBlur = 0;
+      } else if (it.k === 'b') {
+        const r = Math.max(4, .1 * s * it.q.f);
+        if (it.nw) { ctx.shadowColor = C.nw; ctx.shadowBlur = 14; }
+        ctx.beginPath(); ctx.arc(it.q.x, it.q.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = it.nw ? C.nw : C.ball; ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = C.edge; ctx.lineWidth = 1; ctx.stroke();
+        ctx.beginPath(); ctx.arc(it.q.x - r * .32, it.q.y - r * .35, r * .32, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,.32)'; ctx.fill();
+      } else {
+        ctx.beginPath(); poly(it.pts); if (it.hole) poly(it.hole);
+        ctx.globalAlpha = .84; ctx.fillStyle = it.col; ctx.fill('evenodd'); ctx.globalAlpha = 1;
+        ctx.strokeStyle = C.edge; ctx.lineWidth = 1; ctx.stroke();
+      }
+    }
+
+    // labels on the floor
+    ctx.font = `600 11px ${C.mono || 'monospace'}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (const L of m.labels) {
+      const q = P(L.p);
+      ctx.lineWidth = 4; ctx.strokeStyle = C.paper; ctx.strokeText(L.t, q.x, q.y);
+      ctx.fillStyle = C.muted; ctx.fillText(L.t, q.x, q.y);
+    }
+  }
+}
+
+/* ---------- page ---------- */
+const $ = id => document.getElementById(id);
+const models = FORTS.map(f => f.build());
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+function stepCounts(m, s){ let b = 0, k = 0; m.balls.forEach(v => { if (v.step === s) b++; }); m.sticks.forEach(v => { if (v.step === s) k++; }); return { b, k }; }
+function upTo(m, s){ let b = 0, k = 0; m.balls.forEach(v => { if (v.step <= s) b++; }); m.sticks.forEach(v => { if (v.step <= s) k++; }); return { b, k }; }
+
+let cur = 0, step = 0;
+const viewer = new Viewer($('cv'), $('view'), on => {
+  $('spin').textContent = on ? 'Pause spin' : 'Spin';
+  $('spin').setAttribute('aria-pressed', on ? 'true' : 'false');
+});
+viewer.onSpin(viewer.spin);
+
+$('tabs').innerHTML = FORTS.map((f, i) => {
+  const m = models[i];
+  return `<button class="tab" role="tab" type="button" id="tab-${f.id}" aria-controls="panel" aria-selected="false" data-i="${i}">
+    <span class="label">${i + 1} · ${f.tag}</span>
+    <span class="nm">${f.name}</span>
+    <span class="mt">${m.balls.size} balls · ${m.sticks.length} sticks · ${f.time}</span>
+  </button>`;
+}).join('');
+$('tabs').addEventListener('click', e => { const t = e.target.closest('.tab'); if (t) selectFort(+t.dataset.i); });
+$('tabs').addEventListener('keydown', e => {
+  if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+  const n = (cur + (e.key === 'ArrowRight' ? 1 : FORTS.length - 1)) % FORTS.length;
+  selectFort(n); document.querySelectorAll('.tab')[n].focus(); e.preventDefault();
+});
+
+function selectFort(i){
+  cur = i; const f = FORTS[i], m = models[i];
+  document.querySelectorAll('.tab').forEach((t, j) => { t.setAttribute('aria-selected', j === i ? 'true' : 'false'); t.tabIndex = j === i ? 0 : -1; });
+  $('panel').setAttribute('aria-labelledby', 'tab-' + f.id);
+  $('fTag').textContent = f.tag;
+  $('fName').textContent = f.name;
+  $('fBlurb').textContent = f.blurb;
+  const B = m.balls.size, S = m.sticks.length;
+  $('fStats').innerHTML = `
+    <div><dt class="label">Size (approx.)</dt><dd>${f.size}</dd></div>
+    <div><dt class="label">Build time</dt><dd>${f.time} with helpers</dd></div>
+    <div><dt class="label">Balls</dt><dd>${B} of your ${SUPPLY.balls} · ${SUPPLY.balls - B} spare<div class="bar"><span style="width:${B / SUPPLY.balls * 100}%;background:var(--ball)"></span></div></dd></div>
+    <div><dt class="label">Sticks</dt><dd>${S} of your ${SUPPLY.sticks} · ${SUPPLY.sticks - S} spare<div class="bar"><span style="width:${S / SUPPLY.sticks * 100}%;background:var(--stick)"></span></div></dd></div>`;
+  $('tip').innerHTML = f.tip;
+  viewer.faceStep = f.steps.length - 1;
+  viewer.setModel(m, f.yaw, f.pitch);
+  setStep(0);
+}
+
+function setStep(s){
+  const f = FORTS[cur], m = models[cur], n = f.steps.length;
+  step = Math.max(0, Math.min(n - 1, s));
+  const st = f.steps[step], c = stepCounts(m, step), u = upTo(m, step);
+  viewer.setStep(step);
+  $('counter').textContent = `Step ${step + 1} of ${n}`;
+  $('prev').disabled = step === 0;
+  $('next').disabled = step === n - 1;
+  $('next').textContent = step === n - 2 ? 'Finish it' : 'Next step';
+  const adds = c.b || c.k ? `Adds ${plural(c.b, 'ball')} · ${plural(c.k, 'stick')}` : 'No new pieces, just sheets and clips';
+  $('card').innerHTML = `
+    <p class="label">Step ${step + 1}</p>
+    <h4>${st.t}</h4>
+    <div class="adds"><span>${adds}</span><span class="so">Built so far: ${u.b}/${m.balls.size} balls, ${u.k}/${m.sticks.length} sticks</span></div>
+    <p>${st.d}</p>
+    <div class="jobs">
+      <div class="job"><span class="who h">Hailey</span><span>${st.h}</span></div>
+      <div class="job"><span class="who d">Declan</span><span>${st.k}</span></div>
+    </div>`;
+  $('cv').setAttribute('aria-label', `${f.name}, step ${step + 1}: ${st.t}`);
+  $('steps').innerHTML = f.steps.map((x, i) => {
+    const cc = stepCounts(m, i);
+    const meta = cc.b || cc.k ? `${plural(cc.b, 'ball')} · ${plural(cc.k, 'stick')}` : 'sheets + clips';
+    return `<li><button type="button" data-s="${i}" class="${i < step ? 'done' : ''}" ${i === step ? 'aria-current="step"' : ''}>
+      <span class="num">${i < step ? '✓' : i + 1}</span><span><span class="st-t">${x.t}</span><span class="st-m">${meta}</span></span></button></li>`;
+  }).join('');
+}
+$('steps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setStep(+b.dataset.s); });
+$('prev').addEventListener('click', () => setStep(step - 1));
+$('next').addEventListener('click', () => setStep(step + 1));
+$('spin').addEventListener('click', () => viewer.setSpin(!viewer.spin));
+$('cv').addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') { setStep(step + 1); e.preventDefault(); }
+  if (e.key === 'ArrowLeft') { setStep(step - 1); e.preventDefault(); }
+});
+const redraw = () => viewer.request();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redraw);
+new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+selectFort(0);
+</script>
+
+</body></html>

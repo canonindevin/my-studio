@@ -1,0 +1,441 @@
+<!doctype html><html lang="en"><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><title>Meet Your Kernel</title></head><body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a cross-section of the machine. Four strata stacked top to bottom
+   (you, apps, kernel, hardware); the kernel band is the only copper-colored thing on the page. */
+:root {
+  --bg: #f2f4f8;
+  --surface: #ffffff;
+  --ink: #17203a;
+  --muted: #56617c;
+  --line: #cdd4e2;
+  --apps: #2f55c8;
+  --apps-tint: #e1e8fb;
+  --kernel: #ad4f17;
+  --kernel-tint: #f9e4d3;
+  --hw: #1c6a54;
+  --hw-tint: #d9ede5;
+  --on-accent: #ffffff;
+  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1422; --surface: #171d2f; --ink: #e7ebf5; --muted: #9aa5c0; --line: #2c3550;
+    --apps: #8aa6ff; --apps-tint: #1b2547; --kernel: #f0935a; --kernel-tint: #3a2314;
+    --hw: #5fc9a6; --hw-tint: #12302a; --on-accent: #0f1422; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1422; --surface: #171d2f; --ink: #e7ebf5; --muted: #9aa5c0; --line: #2c3550;
+  --apps: #8aa6ff; --apps-tint: #1b2547; --kernel: #f0935a; --kernel-tint: #3a2314;
+  --hw: #5fc9a6; --hw-tint: #12302a; --on-accent: #0f1422; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--body); font-size: 17px; line-height: 1.6;
+}
+.wrap {
+  max-width: 980px; margin: 0 auto; padding-block: 48px 72px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 64px;
+}
+section, header { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+h1, h2, h3, p, ol, ul { margin: 0; }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(2.2rem, 6vw, 3.6rem); line-height: 1.05; letter-spacing: -0.02em; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 700; font-size: clamp(1.5rem, 3.6vw, 2rem); line-height: 1.15; letter-spacing: -0.01em; text-wrap: balance; }
+h3 { font-family: var(--display); font-weight: 500; font-size: 1.15rem; line-height: 1.25; }
+p { max-width: 65ch; }
+.lede { font-size: 1.2rem; color: var(--ink); }
+.muted { color: var(--muted); }
+.k { color: var(--kernel); }
+.eyebrow { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+code, .mono { font-family: var(--mono); font-size: 0.92em; }
+:focus-visible { outline: 3px solid var(--apps); outline-offset: 2px; }
+
+/* ---------- scenario picker ---------- */
+.picker { display: flex; flex-wrap: wrap; gap: 8px; }
+.picker button {
+  font: 500 0.95rem var(--body); color: var(--ink); background: transparent;
+  border: 1.5px solid var(--line); border-radius: 999px; padding: 8px 16px; cursor: pointer;
+}
+.picker button:hover { border-color: var(--ink); }
+.picker button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+/* ---------- the cross-section ---------- */
+.stage { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+.stack { display: flex; flex-direction: column; border: 1.5px solid var(--ink); border-radius: 6px; overflow: hidden; background: var(--surface); }
+.layer { display: grid; grid-template-columns: 118px minmax(0, 1fr); gap: 14px; padding: 16px; align-items: center; border-top: 1.5px solid var(--ink); }
+.layer:first-child { border-top: 0; }
+.layer .name { font-family: var(--display); font-weight: 700; font-size: 1.05rem; line-height: 1.15; }
+.layer .sub { display: block; font-family: var(--mono); font-weight: 400; font-size: 0.7rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+.nodes { display: flex; flex-wrap: wrap; gap: 8px; }
+.node {
+  font-size: 0.88rem; font-weight: 500; line-height: 1.2; padding: 8px 11px; border-radius: 4px;
+  border: 1.5px solid transparent; transition: background-color .25s, color .25s, border-color .25s;
+}
+.layer[data-l="apps"] { background: var(--apps-tint); }
+.layer[data-l="kernel"] { background: var(--kernel-tint); }
+.layer[data-l="hw"] { background: var(--hw-tint); }
+.layer[data-l="you"] .node { border-color: var(--line); }
+.layer[data-l="apps"] .node { border-color: var(--apps); color: var(--apps); }
+.layer[data-l="kernel"] .node { border-color: var(--kernel); color: var(--kernel); }
+.layer[data-l="hw"] .node { border-color: var(--hw); color: var(--hw); }
+.layer[data-l="you"] .node.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.layer[data-l="apps"] .node.on { background: var(--apps); color: var(--on-accent); }
+.layer[data-l="kernel"] .node.on { background: var(--kernel); color: var(--on-accent); }
+.layer[data-l="hw"] .node.on { background: var(--hw); color: var(--on-accent); }
+.layer[data-l="kernel"] .name { color: var(--kernel); }
+.gate {
+  border-top: 1.5px dashed var(--ink); padding: 7px 16px; text-align: center;
+  font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--muted); background: var(--surface); transition: background-color .25s, color .25s;
+}
+.gate.on { background: var(--ink); color: var(--bg); }
+.gate + .layer { border-top-style: dashed; }
+
+/* ---------- steps ---------- */
+.steps-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.steps { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 6px; counter-reset: s; }
+.steps button {
+  counter-increment: s; display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; width: 100%;
+  text-align: left; font: 400 0.95rem/1.45 var(--body); color: var(--muted);
+  background: transparent; border: 0; border-left: 3px solid var(--line); padding: 8px 10px 8px 12px; cursor: pointer;
+}
+.steps button::before { content: counter(s); font-family: var(--mono); font-size: 0.85rem; padding-top: 1px; }
+.steps button:hover { color: var(--ink); }
+.steps button[aria-current="step"] { color: var(--ink); border-left-color: var(--kernel); background: var(--surface); }
+.controls { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn {
+  font: 500 0.9rem var(--body); color: var(--ink); background: var(--surface);
+  border: 1.5px solid var(--ink); border-radius: 4px; padding: 7px 14px; cursor: pointer;
+}
+.btn:hover { background: var(--ink); color: var(--bg); }
+
+/* ---------- jobs ---------- */
+.jobs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; border-top: 1.5px solid var(--ink); }
+.job { padding: 18px 18px 18px 0; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
+.job:nth-child(even) { padding-left: 18px; border-left: 1px solid var(--line); }
+.job p { font-size: 0.97rem; color: var(--muted); }
+.job h3 { color: var(--kernel); }
+
+/* ---------- scheduler demo ---------- */
+.sched { background: var(--surface); border: 1.5px solid var(--ink); border-radius: 6px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.proc { display: grid; grid-template-columns: 92px minmax(0, 1fr) 76px; gap: 12px; align-items: center; font-size: 0.92rem; }
+.bar { height: 14px; background: var(--apps-tint); border-radius: 2px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--apps); }
+.state { font-family: var(--mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); text-align: right; }
+.proc.run .state { color: var(--kernel); font-weight: 500; }
+.proc.run .name2 { color: var(--kernel); font-weight: 600; }
+.sched-ctl { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; border-top: 1px solid var(--line); padding-top: 14px; }
+.sched-ctl label { font-size: 0.9rem; }
+.sched-ctl input[type=range] { flex: 1 1 180px; min-width: 0; accent-color: var(--kernel); }
+.readout { font-family: var(--mono); font-size: 0.85rem; font-variant-numeric: tabular-nums; min-width: 17ch; }
+
+/* ---------- table ---------- */
+.tablebox { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+th, td { text-align: left; padding: 10px 14px 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--mono); font-weight: 500; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border-bottom: 1.5px solid var(--ink); }
+td:nth-child(2) { font-weight: 600; white-space: nowrap; }
+.linux { color: var(--kernel); }
+
+/* ---------- note + try ---------- */
+.note { border-left: 3px solid var(--kernel); padding: 4px 0 4px 18px; display: flex; flex-direction: column; gap: 10px; }
+.try { display: flex; flex-direction: column; gap: 0; border-top: 1.5px solid var(--ink); }
+.cmd { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 18px; padding: 14px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.cmd code { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 5px 9px; display: inline-block; overflow-wrap: anywhere; }
+.cmd p { font-size: 0.95rem; color: var(--muted); }
+.next { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.next div { display: flex; flex-direction: column; gap: 6px; border-top: 1.5px solid var(--ink); padding-top: 12px; }
+.next p { font-size: 0.95rem; color: var(--muted); }
+
+@media (max-width: 760px) {
+  .stage { grid-template-columns: minmax(0, 1fr); }
+  .jobs, .next { grid-template-columns: minmax(0, 1fr); }
+  .job:nth-child(even) { padding-left: 0; border-left: 0; }
+  .cmd { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+}
+@media (max-width: 480px) {
+  body { font-size: 16px; }
+  .layer { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .proc { grid-template-columns: 78px minmax(0, 1fr) 64px; gap: 8px; }
+}
+@media (prefers-reduced-motion: reduce) { .node, .gate { transition: none; } }
+</style>
+
+<div class="wrap">
+
+<header>
+  <span class="eyebrow">A visual guide for the curious</span>
+  <h1>The <span class="k">kernel</span> is the one program that's allowed to touch the hardware.</h1>
+  <p class="lede">Every app on your phone or laptop is locked out of the chips it runs on. When an app wants to read a file, play a sound, or light up a pixel, it has to ask the kernel to do it. You make that request thousands of times a second without noticing.</p>
+</header>
+
+<section aria-labelledby="h-trace">
+  <h2 id="h-trace">Follow one everyday action through the machine</h2>
+  <p class="muted">Pick something you did today. Then step through it and watch which parts of the computer get involved.</p>
+  <div class="picker" id="picker" role="group" aria-label="Choose an action"></div>
+
+  <div class="stage">
+    <div class="stack" aria-label="Cross-section of a computer, from you at the top down to the hardware">
+      <div class="layer" data-l="you">
+        <div class="name">You<span class="sub">fingers, eyes, ears</span></div>
+        <div class="nodes"><span class="node" id="you">A person doing something ordinary</span></div>
+      </div>
+      <div class="layer" data-l="apps">
+        <div class="name">Apps<span class="sub">user space</span></div>
+        <div class="nodes">
+          <span class="node" id="a-browser">Browser</span>
+          <span class="node" id="a-music">Music</span>
+          <span class="node" id="a-msg">Messages</span>
+        </div>
+      </div>
+      <div class="gate" id="gate">system calls · the only door</div>
+      <div class="layer" data-l="kernel">
+        <div class="name">Kernel<span class="sub">kernel space</span></div>
+        <div class="nodes">
+          <span class="node" id="k-sched">Scheduler</span>
+          <span class="node" id="k-mem">Memory manager</span>
+          <span class="node" id="k-fs">File system</span>
+          <span class="node" id="k-net">Network stack</span>
+          <span class="node" id="k-drv">Device drivers</span>
+        </div>
+      </div>
+      <div class="layer" data-l="hw">
+        <div class="name">Hardware<span class="sub">silicon &amp; wires</span></div>
+        <div class="nodes">
+          <span class="node" id="h-cpu">CPU</span>
+          <span class="node" id="h-ram">RAM</span>
+          <span class="node" id="h-disk">Storage</span>
+          <span class="node" id="h-wifi">Wi-Fi radio</span>
+          <span class="node" id="h-in">Keyboard / touch</span>
+          <span class="node" id="h-out">Screen / speaker</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="steps-col">
+      <ol class="steps" id="steps"></ol>
+      <div class="controls">
+        <button class="btn" id="prev" type="button">Back</button>
+        <button class="btn" id="next" type="button">Next step</button>
+        <button class="btn" id="play" type="button">Play all</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-jobs">
+  <h2 id="h-jobs">What the kernel does all day</h2>
+  <p>A computer has one set of hardware and dozens of programs that all want it at once. The kernel is the referee. Its work comes down to four jobs.</p>
+  <div class="jobs">
+    <div class="job"><h3>Sharing the CPU</h3><p>The scheduler decides which program runs right now and for how long, then swaps in the next one. Each turn lasts a few milliseconds.</p></div>
+    <div class="job"><h3>Handing out memory</h3><p>Each program gets its own private slice of RAM. One app cannot read or scribble over another's, which is why a crashed app rarely takes the whole machine with it.</p></div>
+    <div class="job"><h3>Talking to devices</h3><p>Drivers are the kernel's translators. Each one knows the exact electrical language of one chip: a Wi-Fi radio, a touchscreen, a camera sensor.</p></div>
+    <div class="job"><h3>Organizing files and networks</h3><p>A drive only stores numbered blocks, and a network only carries packets. The kernel turns those into folders, files and connections that apps can use.</p></div>
+  </div>
+</section>
+
+<section aria-labelledby="h-sched">
+  <h2 id="h-sched">Try it: one CPU core, four apps</h2>
+  <p>A single core can run only one program at a time. Start slow to see the kernel pass the CPU around, then drag the slider right. Past about 30 switches a second your eye can no longer tell that anyone is waiting. A real kernel switches faster than that.</p>
+  <div class="sched">
+    <div id="procs"></div>
+    <div class="sched-ctl">
+      <button class="btn" id="sched-toggle" type="button">Pause</button>
+      <label for="speed">Switching speed</label>
+      <input type="range" id="speed" min="0" max="100" value="12" step="1">
+      <span class="readout" id="readout"></span>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-daily">
+  <h2 id="h-daily">Kernels you already use</h2>
+  <p>You have probably used several different kernels today. Linux is the most common one on Earth, mostly in places where nobody sees its name.</p>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Device</th><th>Kernel</th><th>How you meet it</th></tr></thead>
+      <tbody>
+        <tr><td>Android phone</td><td class="linux">Linux</td><td>Every tap, photo and notification passes through it.</td></tr>
+        <tr><td>iPhone, iPad, Mac</td><td>XNU</td><td>Apple's kernel, underneath iOS and macOS.</td></tr>
+        <tr><td>Windows PC</td><td>Windows NT</td><td>The same kernel family since the 1990s.</td></tr>
+        <tr><td>Home Wi-Fi router</td><td class="linux">Usually Linux</td><td>It moves your packets between Wi-Fi and the internet.</td></tr>
+        <tr><td>Smart TV, streaming stick</td><td class="linux">Usually Linux</td><td>Underneath Android TV, Roku, webOS and Tizen.</td></tr>
+        <tr><td>Websites you visit</td><td class="linux">Mostly Linux</td><td>The servers behind most of the web run it.</td></tr>
+        <tr><td>The 500 fastest supercomputers</td><td class="linux">Linux, all of them</td><td>Weather forecasts and scientific research.</td></tr>
+        <tr><td>Arduino, simple microcontrollers</td><td>None</td><td>One program runs alone and touches the hardware directly.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section aria-labelledby="h-linus">
+  <h2 id="h-linus">Linux, and the Linus behind it</h2>
+  <div class="note">
+    <p>The name you heard is <strong>Linux</strong>. It was started in 1991 by a Finnish student, <strong>Linus Torvalds</strong>, who wanted a free operating system for his own PC. The name blends "Linus" with "Unix", so typing "linus" was closer than you might think.</p>
+    <p>Strictly speaking, Linux is only the kernel. Ubuntu, Fedora and Android are complete systems built around it. Anyone can read its source code, which makes it the best kernel to learn from.</p>
+  </div>
+</section>
+
+<section aria-labelledby="h-try">
+  <h2 id="h-try">Say hello to your own kernel</h2>
+  <p>Open a terminal (Terminal on Mac or Linux, Command Prompt on Windows) and type one of these. Each takes about ten seconds and changes nothing on your machine.</p>
+  <div class="try">
+    <div class="cmd"><div><code>uname -sr</code></div><p>Mac and Linux. Prints your kernel's name and version. A Mac answers <span class="mono">Darwin</span>, the system XNU belongs to.</p></div>
+    <div class="cmd"><div><code>ver</code></div><p>Windows. Prints the Windows version, which carries the NT kernel's version number.</p></div>
+    <div class="cmd"><div><code>top</code></div><p>Mac and Linux. A live list of every program the scheduler is juggling. Press <span class="mono">q</span> to leave.</p></div>
+    <div class="cmd"><div><code>strace -c ls</code></div><p>Linux only. Counts every system call the tiny <span class="mono">ls</span> command makes. Listing one folder takes dozens of requests to the kernel.</p></div>
+  </div>
+</section>
+
+<section aria-labelledby="h-next">
+  <h2 id="h-next">Where electrical engineering meets the kernel</h2>
+  <p>The kernel is where software ends and circuits begin, which makes it a good place for your interests to meet. Three ways in, from easiest to deepest:</p>
+  <div class="next">
+    <div><h3>Run a kernel yourself</h3><p>A Raspberry Pi is a small Linux computer with exposed pins. Blinking an LED from it means asking the kernel to change a voltage for you.</p></div>
+    <div><h3>Then run without one</h3><p>Do the same blink on an Arduino, which has no kernel. Comparing the two teaches what a kernel adds and what it costs.</p></div>
+    <div><h3>Learn the vocabulary</h3><p>Interrupts, drivers and memory addressing are the ideas shared by both fields. A first course in digital logic or computer architecture covers all three.</p></div>
+  </div>
+</section>
+
+</div>
+
+<script>
+(function () {
+  var scenarios = [
+    { label: 'Type a letter', steps: [
+      { t: 'You press the A key. The keyboard closes a circuit and sends the CPU an electrical signal called an interrupt.', n: ['you', 'h-in', 'h-cpu'] },
+      { t: 'The CPU stops what it was doing and jumps into the kernel. The keyboard driver reads the signal and works out which key it was.', n: ['h-cpu', 'k-drv'] },
+      { t: 'The kernel passes the keypress up to the app you are typing in, and the scheduler gives that app a turn on the CPU.', n: ['k-sched', 'gate', 'a-msg'] },
+      { t: 'Messages wants to show the letter. It cannot touch the screen itself, so it makes a system call asking the kernel to draw.', n: ['a-msg', 'gate'] },
+      { t: 'The graphics driver turns the request into signals for the display. The letter appears a few thousandths of a second after your finger moved.', n: ['k-drv', 'h-out', 'you'] }
+    ]},
+    { label: 'Play a song', steps: [
+      { t: 'You tap play. The music app asks the kernel to open the song file, using a system call named open.', n: ['you', 'a-music', 'gate'] },
+      { t: 'The file system looks up where the pieces of that file are stored on the drive.', n: ['k-fs'] },
+      { t: 'The storage driver tells the drive to fetch those blocks.', n: ['k-drv', 'h-disk'] },
+      { t: 'The memory manager puts the data into RAM that belongs to the music app and to no other app.', n: ['k-mem', 'h-ram'] },
+      { t: 'The scheduler gives the app CPU time to decode the audio. The app hands the finished sound samples back with another system call.', n: ['k-sched', 'h-cpu', 'a-music', 'gate'] },
+      { t: 'The audio driver feeds the samples to the sound chip, which converts the numbers into a voltage that moves the speaker.', n: ['k-drv', 'h-out', 'you'] }
+    ]},
+    { label: 'Load a webpage', steps: [
+      { t: 'You enter an address. The browser asks the kernel to open a connection, using a system call named connect.', n: ['you', 'a-browser', 'gate'] },
+      { t: 'The network stack cuts the request into packets and addresses each one. This is the TCP/IP you may have heard of.', n: ['k-net'] },
+      { t: 'The Wi-Fi driver hands the packets to the radio, which sends them out as radio waves.', n: ['k-drv', 'h-wifi'] },
+      { t: 'The reply arrives. The radio raises an interrupt, the driver collects the packets, and the network stack puts them back in order.', n: ['h-wifi', 'h-cpu', 'k-drv', 'k-net'] },
+      { t: 'The kernel hands the finished data up to the browser, which works out how the page should look.', n: ['gate', 'a-browser', 'k-sched'] },
+      { t: 'The browser asks the kernel to draw, and the graphics driver lights the pixels.', n: ['a-browser', 'gate', 'k-drv', 'h-out', 'you'] }
+    ]},
+    { label: 'Run many apps at once', steps: [
+      { t: 'You have a browser, music and messages all open, on a CPU that can only do a handful of things at the same instant.', n: ['you', 'a-browser', 'a-music', 'a-msg', 'h-cpu'] },
+      { t: 'The scheduler gives each app a few milliseconds of CPU, then swaps in the next. It happens fast enough to look simultaneous.', n: ['k-sched', 'h-cpu'] },
+      { t: 'The memory manager gives each app its own private memory. No app can read or overwrite another app\'s data.', n: ['k-mem', 'h-ram'] },
+      { t: 'If the browser crashes, the kernel reclaims its memory and closes its files. Your music keeps playing.', n: ['a-browser', 'k-mem', 'a-music'] }
+    ]}
+  ];
+
+  var picker = document.getElementById('picker');
+  var stepsEl = document.getElementById('steps');
+  var playBtn = document.getElementById('play');
+  var cur = 0, step = 0, timer = null;
+
+  scenarios.forEach(function (s, i) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.textContent = s.label;
+    b.addEventListener('click', function () { stop(); cur = i; step = 0; renderScenario(); });
+    picker.appendChild(b);
+  });
+
+  function renderScenario() {
+    Array.prototype.forEach.call(picker.children, function (b, i) { b.setAttribute('aria-pressed', i === cur ? 'true' : 'false'); });
+    stepsEl.innerHTML = '';
+    scenarios[cur].steps.forEach(function (s, i) {
+      var li = document.createElement('li');
+      var b = document.createElement('button');
+      b.type = 'button';
+      var span = document.createElement('span'); span.textContent = s.t;
+      b.appendChild(span);
+      b.addEventListener('click', function () { stop(); step = i; renderStep(); });
+      li.appendChild(b); stepsEl.appendChild(li);
+    });
+    renderStep();
+  }
+
+  function renderStep() {
+    var active = scenarios[cur].steps[step].n;
+    Array.prototype.forEach.call(document.querySelectorAll('.node, .gate'), function (el) {
+      el.classList.toggle('on', active.indexOf(el.id) !== -1);
+    });
+    Array.prototype.forEach.call(stepsEl.querySelectorAll('button'), function (b, i) {
+      if (i === step) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+    });
+  }
+
+  function stop() { if (timer) { clearInterval(timer); timer = null; } playBtn.textContent = 'Play all'; }
+  function len() { return scenarios[cur].steps.length; }
+
+  document.getElementById('next').addEventListener('click', function () { stop(); step = (step + 1) % len(); renderStep(); });
+  document.getElementById('prev').addEventListener('click', function () { stop(); step = (step - 1 + len()) % len(); renderStep(); });
+  playBtn.addEventListener('click', function () {
+    if (timer) { stop(); return; }
+    step = 0; renderStep(); playBtn.textContent = 'Stop';
+    timer = setInterval(function () {
+      if (step >= len() - 1) { stop(); return; }
+      step++; renderStep();
+    }, 2600);
+  });
+  renderScenario();
+
+  /* ---------- scheduler demo ---------- */
+  var names = ['Browser', 'Music', 'Messages', 'Photos'];
+  var procsEl = document.getElementById('procs');
+  procsEl.style.display = 'flex'; procsEl.style.flexDirection = 'column'; procsEl.style.gap = '10px';
+  var rows = names.map(function (n, i) {
+    var r = document.createElement('div'); r.className = 'proc';
+    r.innerHTML = '<span class="name2"></span><div class="bar"><i></i></div><span class="state"></span>';
+    r.querySelector('.name2').textContent = n;
+    procsEl.appendChild(r);
+    return { el: r, fill: r.querySelector('i'), state: r.querySelector('.state'), work: [30, 55, 10, 72][i] };
+  });
+  var speedEl = document.getElementById('speed');
+  var readout = document.getElementById('readout');
+  var toggle = document.getElementById('sched-toggle');
+  var running = 0, acc = 0, last = 0, raf = null;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function rate() { return Math.round(Math.pow(200, speedEl.value / 100)); } // 1 to 200 switches per second
+  function paint() {
+    rows.forEach(function (r, i) {
+      r.fill.style.width = (r.work % 100) + '%';
+      r.el.classList.toggle('run', i === running);
+      r.state.textContent = i === running ? 'running' : 'waiting';
+    });
+    var n = rate();
+    readout.textContent = n + (n === 1 ? ' switch / sec' : ' switches / sec');
+  }
+  function frame(ts) {
+    if (!last) last = ts;
+    var dt = Math.min(0.1, (ts - last) / 1000); last = ts;
+    rows[running].work += dt * 40;            // only the running app makes progress
+    acc += dt * rate();
+    while (acc >= 1) { acc -= 1; running = (running + 1) % rows.length; }
+    paint();
+    raf = requestAnimationFrame(frame);
+  }
+  function start() { if (raf) return; last = 0; raf = requestAnimationFrame(frame); toggle.textContent = 'Pause'; }
+  function pause() { if (raf) cancelAnimationFrame(raf); raf = null; toggle.textContent = 'Start'; }
+  toggle.addEventListener('click', function () { if (raf) pause(); else start(); });
+  speedEl.addEventListener('input', paint);
+  paint();
+  if (reduce) pause(); else start();
+})();
+</script>
+
+</body></html>
